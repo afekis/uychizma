@@ -1,9 +1,9 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 Fikr</button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
-  <h3 style="margin:0 0 6px">Sayt sizga yoqdimi?</h3><p class="note" style="margin:0 0 8px">Fikringiz saytni yaxshilashga yordam beradi. Qayerda qiynaldingiz?</p>
+  <h3 style="margin:0 0 6px">Sayt sizga yoqdimi?</h3><p class="note" style="margin:0 0 8px">Fikringiz saytdagi «Odamlar fikri» bo'limida hammaga ko'rinadi. Telefon raqamingiz ko'rinmaydi.</p>
   <div class="fbstars" id="fbStars"><button type="button" data-v="1">★</button><button type="button" data-v="2">★</button><button type="button" data-v="3">★</button><button type="button" data-v="4">★</button><button type="button" data-v="5">★</button></div>
-  <textarea id="fbText" rows="4" placeholder="Masalan: savollar tushunarsiz edi, 3D sekin ochildi, narx juda baland chiqdi…"></textarea>
+  <input id="fbName" maxlength="40" placeholder="Ismingiz (hamma ko'radi)" style="width:100%;margin-bottom:8px"><textarea id="fbText" rows="4" placeholder="Masalan: savollar tushunarsiz edi, 3D sekin ochildi, narx juda baland chiqdi…"></textarea>
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn back small" id="fbClose" type="button">Yopish</button><button class="btn primary small" id="fbSend" type="button">Yuborish</button></div>
   <p class="note" id="fbMsg" role="status"></p></div></div>
 
@@ -124,7 +124,18 @@ section[data-screen]{display:flex;flex-direction:column;gap:28px}
 @media (max-width:640px){.archpk{grid-template-columns:1fr}}
 .fbfab{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:29;border:0;border-radius:999px;padding:10px 14px;background:#0A1120;color:#fff;font-weight:600;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);cursor:pointer}
 .fbm{position:fixed;inset:0;z-index:60;background:rgba(5,10,22,.55);display:flex;align-items:center;justify-content:center;padding:16px}.fbm[hidden]{display:none}.fbbox{background:var(--paper,#fff);border-radius:16px;padding:18px;max-width:440px;width:100%}.fbbox textarea{width:100%}
-.fbstars{display:flex;gap:4px;margin-bottom:8px}.fbstars button{font-size:28px;line-height:1;border:0;background:none;cursor:pointer;color:#C9CED6}.fbstars button.on{color:#F5A623}
+.fbstars{display:flex;gap:4px;margin-bottom:8px}
+.revs{padding:28px 0 20px;border-top:1px solid var(--line);background:var(--paper)}
+.revs .wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+.revs-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.revs-h h2{margin:0;font-size:22px}
+.revs-avg{color:var(--muted);font-weight:600}.revs-avg b{color:#F5A623;font-size:18px}
+.revs-h .btn{margin-left:auto}
+.revs-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.rev{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rev-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.rev-top b{color:var(--ink)}
+.rev-st{color:#F5A623;letter-spacing:1px;white-space:nowrap}.rev p{margin:6px 0 4px;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.rev small{color:var(--muted)}
+@media(max-width:640px){.revs-h .btn{margin-left:0;width:100%}}.fbstars button{font-size:28px;line-height:1;border:0;background:none;cursor:pointer;color:#C9CED6}.fbstars button.on{color:#F5A623}
 .callfab{position:fixed;right:14px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:29;border-radius:999px;padding:10px 14px;background:#16A34A;color:#fff;font-weight:700;text-decoration:none;box-shadow:0 8px 20px -8px rgba(0,0,0,.5)}
 .ctbar{background:#0A1120;color:#E6ECF5;font-size:14px;margin-top:24px}.ctbar a{color:#fff}.ct-phone b{font-size:17px}.ct-tg{background:#229ED9;padding:4px 10px;border-radius:8px;text-decoration:none}
 .archcall{display:inline-flex;gap:6px;align-items:center;margin-top:6px;font-weight:700}
@@ -752,6 +763,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 </main>
 <div class="toast" id="toast" role="status" hidden></div>
 <a class="callfab" id="callFab" hidden href="#" aria-label="Qo'ng'iroq qilish">📞 <span class="cf-num"></span></a>
+<section class="revs" id="revs"><div class="wrap">
+  <div class="revs-h"><h2>Odamlar fikri</h2><div class="revs-avg" id="revsAvg"></div><button class="btn primary small" id="revsAdd" type="button">✍️ Fikr qoldirish</button></div>
+  <div class="revs-list" id="revsList"><p class="note">Fikrlar yuklanmoqda…</p></div></div></section>
 <footer class="ctbar" id="ctBar" hidden><div class="wrap" style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:14px 16px">
   <span>Savol bo'lsa yoki loyihani buyurtma qilmoqchi bo'lsangiz:</span><a class="ct-phone" href="#"><b class="cf-num"></b></a><a class="ct-tg" href="#" target="_blank" rel="noopener" hidden>Telegram</a></div></footer>
 
@@ -2992,12 +3006,24 @@ $('#fbFab').onclick=()=>{ $('#fbModal').hidden=false; $('#fbMsg').textContent=''
 $('#fbClose').onclick=()=>{ $('#fbModal').hidden=true; };
 $('#fbModal').addEventListener('click',e=>{ if(e.target.id==='fbModal') $('#fbModal').hidden=true; });
 $('#fbStars').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; fbRate=+b.dataset.v; $$('#fbStars button').forEach(x=>x.classList.toggle('on',+x.dataset.v<=fbRate)); });
-$('#fbSend').onclick=async()=>{ const text=$('#fbText').value.trim(); if(!text&&!fbRate){ $('#fbMsg').textContent='Baho bering yoki fikr yozing.'; return; } const b=$('#fbSend'); b.disabled=true; $('#fbMsg').textContent='Yuborilmoqda…';
+$('#fbSend').onclick=async()=>{ const text=$('#fbText').value.trim(); if(!fbRate){ $('#fbMsg').textContent='Yulduzcha bilan baho bering (1–5).'; return; } const b=$('#fbSend'); b.disabled=true; $('#fbMsg').textContent='Yuborilmoqda…';
   const scr=[...document.querySelectorAll('section[data-screen]')].filter(s=>!s.hidden).map(s=>s.dataset.screen)[0]||'';
   const doc={text:text.slice(0,2900),rating:fbRate,screen:scr,step:S.step|0,mode:S.qmode||'',name:(S.user&&S.user.name)||'',phone:(S.user&&S.user.phone)||'',mobile:matchMedia('(max-width:640px)').matches,at:Date.now()};
-  let ok=false; try{ if(await cloudReady()){ await CLOUD.db.collection('feedback').add(doc); ok=true; } }catch(e){ console.warn(e); }
+  const pubName=($('#fbName').value.trim()||(S.user&&S.user.name)||'Mehmon').slice(0,40); doc.name=pubName;
+  let ok=false; try{ if(await cloudReady()){ await CLOUD.db.collection('feedback').add(doc); ok=true; if(fbRate>=1&&fbRate<=5){ try{ await CLOUD.db.collection('reviews').add({name:pubName,rating:fbRate,text:text.slice(0,600),at:Date.now()}); loadReviews(); }catch(e){ console.warn('review',e); } } } }catch(e){ console.warn(e); }
   if(!ok&&TG_USER){ window.open(`https://t.me/${TG_USER}?text=${encodeURIComponent('Fikr: '+fbRate+'★ '+text)}`,'_blank'); ok=true; }
   b.disabled=false; $('#fbMsg').textContent=ok?'Rahmat! Fikringiz yuborildi.':"Yuborib bo'lmadi, keyinroq urinib ko'ring."; if(ok){ $('#fbText').value=''; setTimeout(()=>{ $('#fbModal').hidden=true; },1200); } };
+
+/* ===== Odamlar fikri: hammaga ko'rinadi ===== */
+function revEsc(t){ return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function loadReviews(){ const L=$('#revsList'); if(!L) return; try{ if(!(await cloudReady())) throw 0;
+  const q=await CLOUD.db.collection('reviews').orderBy('at','desc').limit(60).get(); const rs=q.docs.map(d=>d.data()).filter(r=>r&&r.rating>=1&&r.rating<=5);
+  if(!rs.length){ L.innerHTML='<p class="note">Hali fikr yo\'q. Birinchi bo\'lib fikr qoldiring!</p>'; $('#revsAvg').textContent=''; return; }
+  const avg=rs.reduce((a,r)=>a+r.rating,0)/rs.length; $('#revsAvg').innerHTML=`<b>★ ${avg.toFixed(1)}</b> · ${rs.length} ta fikr`;
+  L.innerHTML=rs.map(r=>`<div class="rev"><div class="rev-top"><b>${revEsc(r.name||'Mehmon')}</b><span class="rev-st">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></div>${r.text?`<p>${revEsc(r.text)}</p>`:''}<small>${new Date(r.at||0).toLocaleDateString('uz-UZ')}</small></div>`).join('');
+  }catch(e){ L.innerHTML='<p class="note">Fikrlarni yuklab bo\'lmadi.</p>'; } }
+$('#revsAdd').onclick=()=>{ $('#fbFab').click(); };
+setTimeout(()=>{ if($('#fbName')&&S.user&&S.user.name&&!$('#fbName').value) $('#fbName').value=S.user.name; loadReviews(); },1500);
 
 /* ===== Aloqa telefoni: saytning ko'rinadigan joylarida ===== */
 const CONTACT_PHONE=''; // masalan '+998 90 123 45 67'
