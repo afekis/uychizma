@@ -3510,7 +3510,7 @@ async function freeAi(PR,w,h,tries){ w=w||1280; h=h||720; tries=tries||0; const 
 /* Asosiy bepul AI: Cloudflare Workers AI (Flux) — tez (3–5 soniya); limit tugasa Pollinations'ga o'tadi */
 const CF_AI='https://uychizma-ai.macbookmmacbook.workers.dev/';
 async function cfAi(PR){ const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),45000); let r;
-  try{ r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:String(PR).replace(/\s+/g,' ').slice(0,1800),steps:6,seed:Math.floor(Math.random()*1e6)}),signal:ctl?ctl.signal:undefined}); } finally{ clearTimeout(tm); }
+  try{ r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:String(PR).replace(/\s+/g,' ').slice(0,1800),steps:6}),signal:ctl?ctl.signal:undefined}); } finally{ clearTimeout(tm); }
   if(!r.ok) throw {code:'cf_http',status:r.status}; const b=await r.blob(); if(!/^image\//.test(b.type)||b.size<5000) throw {code:'cf_type'};
   return await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej({code:'cf_read'}); fr.readAsDataURL(b); }); }
 const aiAvail=async()=>!!(await getMcp())||FREE_AI;
