@@ -125,6 +125,7 @@ section[data-screen]{display:flex;flex-direction:column;gap:28px}
 .fbfab{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:29;border:0;border-radius:999px;padding:10px 14px;background:#0A1120;color:#fff;font-weight:600;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);cursor:pointer}
 .fbm{position:fixed;inset:0;z-index:60;background:rgba(5,10,22,.55);display:flex;align-items:center;justify-content:center;padding:16px}.fbm[hidden]{display:none}.fbbox{background:var(--paper,#fff);border-radius:16px;padding:18px;max-width:440px;width:100%}.fbbox textarea{width:100%}
 .fbstars{display:flex;gap:4px;margin-bottom:8px}
+.svgbox{cursor:zoom-in}
 .revs{padding:28px 0 20px;border-top:1px solid var(--line);background:var(--paper)}
 .revs .wrap{max-width:1100px;margin:0 auto;padding:0 16px}
 .revs-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.revs-h h2{margin:0;font-size:22px}
@@ -259,6 +260,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .rerow b.ch{color:var(--accent)}
 .rerow button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:16px;line-height:1}
 .rerow button.del{color:var(--danger)}
+.rerow .rsz{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex:none}
+.rerow .rsz button{width:auto;height:30px;padding:0 9px;border:0;border-radius:0;font-size:12.5px;font-weight:600;background:var(--card);color:var(--muted)}
+.rerow .rsz button+button{border-left:1px solid var(--line)}
+.rerow .rsz button[aria-pressed="true"]{background:var(--accent);color:#fff}
+@media(max-width:640px){.rerow{flex-wrap:wrap}.rerow .nm{flex:1 1 100%}.rerow .rsz{margin-right:auto}}
 .rerow.gone{opacity:.45;text-decoration:line-through}
 .rerow.added{border-color:var(--accent)}
 .readd{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
@@ -488,13 +494,15 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <div class="eyebrow" id="stepLabel">1 / 6 · Yer uchastkasi</div>
 
       <div data-step="0" class="field" style="gap:16px">
-        <div class="qmode" role="group" aria-label="Rejim"><button type="button" class="qm" data-m="tez" aria-pressed="true"><b>⚡ Tez</b><small>4 ta savol, 1 daqiqa</small></button><button type="button" class="qm" data-m="toliq" aria-pressed="false"><b>🧩 To'liq sozlash</b><small>9 qadam, hamma narsani o'zingiz tanlaysiz</small></button></div>
+        <div class="qmode" role="group" aria-label="Rejim"><button type="button" class="qm" data-m="tez" aria-pressed="true"><b>⚡ Tez</b><small>6 ta savol, 1 daqiqa</small></button><button type="button" class="qm" data-m="toliq" aria-pressed="false"><b>🧩 To'liq sozlash</b><small>9 qadam, hamma narsani o'zingiz tanlaysiz</small></button></div>
         <div class="quick" id="quick">
-          <h2 style="font-size:22px">Uyingiz haqida 4 ta savol</h2>
+          <h2 style="font-size:22px">Uyingiz haqida bir necha savol</h2>
           <div class="row2"><div class="field"><label for="qW">1. Yer eni (ko'cha tomoni), m</label><input id="qW" type="number" inputmode="decimal" min="9" max="60" step="0.5" value="18"></div><div class="field"><label for="qL">Yer uzunligi, m</label><input id="qL" type="number" inputmode="decimal" min="15" max="80" step="0.5" value="30"></div></div>
           <div class="field"><span class="flabel">2. Necha qavat?</span><div class="seg" id="qFloors"><button type="button" data-v="1">1 qavat</button><button type="button" data-v="2">2 qavat</button></div></div>
           <div class="field"><span class="flabel">3. Nechta yotoqxona?</span><div class="seg" id="qBeds"><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button><button type="button" data-v="6">6</button></div></div>
           <div class="field"><span class="flabel">4. Qaysi uslub yoqadi?</span><div class="seg" id="qStyle"><button type="button" data-v="zamonaviy">Zamonaviy</button><button type="button" data-v="klassik">Klassik</button><button type="button" data-v="milliy">Milliy</button></div></div>
+          <div class="field"><span class="flabel">5. Uy ichida xonalar qanday joylashsin?</span><div class="seg optseg" data-key="plan"><button type="button" data-v="auto">Har xil (avto)</button><button type="button" data-v="klassik">Klassik: old qator + yo'lak</button><button type="button" data-v="markaz">Markaziy hol</button><button type="button" data-v="orqa">Zal bog' tomonda</button></div></div>
+          <div class="field"><span class="flabel">6. Uy shakli (maket) — ixtiyoriy</span><div class="makets" id="qMaketGrid"></div></div>
           <p class="note" style="margin:0">Qolganini (tom, fasad, hovli, eshik-deraza, narx) sayt o'zi tanlaydi. Keyin natijada istagan narsani o'zgartirasiz.</p>
           <p class="err" id="qErr" role="alert"></p>
           <button class="btn primary" id="qGo" type="button" style="min-height:52px;font-size:17px">🏠 Uyimni ko'rsat</button>
@@ -585,6 +593,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <div class="field"><span class="flabel">Uy shakli: maketni tanlang</span>
           <div class="makets" id="maketGrid"></div>
           <small>Qaysi maketni bossangiz, uchala variant ham shu shaklda chiqadi, lekin o'lchami, uslubi va rangi har xil bo'ladi.</small>
+          <span class="flabel" style="margin-top:12px;display:block">Xonalar joylashuvi (uy ichi shakli)</span>
+          <div class="seg optseg" data-key="plan"><button type="button" data-v="auto">Har xil (avto)</button><button type="button" data-v="klassik">Klassik: old qator + yo'lak</button><button type="button" data-v="markaz">Markaziy hol: o'rtada uzun hol</button><button type="button" data-v="orqa">Zal bog' tomonda</button></div>
+          <small>«Har xil» tanlansa, uchala variantda xonalar har xil joylashadi.</small>
           <button type="button" class="btn primary" id="catBtn" style="margin-top:10px">📚 Katalog: 100 ta tayyor model</button>
           <div id="catWrap" hidden><div class="catbar"><input id="catQ" placeholder="Qidirish: hi-tech, shale, L-shakl, 1 qavat…" aria-label="Katalogdan qidirish"><span class="note" id="catN"></span></div><div class="makets" id="catGrid"></div></div>
           <div class="seg" id="layoutSeg" hidden><button type="button" data-v="auto">Farqi yo'q</button><button type="button" data-v="ixcham">Ixcham</button><button type="button" data-v="erker">Erkerli</button><button type="button" data-v="L">L-shakl</button><button type="button" data-v="U">U-shakl</button><button type="button" data-v="orqaL">Orqa L</button><button type="button" data-v="orqaU">Orqa U</button><button type="button" data-v="darvoza">Darvozaxonali</button></div>
@@ -776,7 +787,7 @@ const FH = 3.3, PL = 0.45, WT = 0.38, SB = 3;
 const DEF = {plotShape:'rect', plotW:18, plotL:30, plotBackW:12, floors:2, family:5, beds:4, targetArea:0,
   bigZal:true, darvoza:true, garage:false, ayvon:true, sauna:false, lux:'auto',
   pool:false, trees:6, gulzor:true, gazebo:false, tandir:true, playground:false, fountain:false, supa:true,
-  style:'klassik', sub:'', fence:'gisht', gatePat:'oddiy', gateCol:'qora', wall:'oq', roofShape:'auto', roofMat:'auto', roofCol:'auto', seed:0, layout:'auto', massing:'auto', styleFixed:false, wallFixed:false, winSize:'auto', winCount:'orta', winFrame:'auto', doorType:'bir', doorMat:'auto', intDoorH:2.1, gateW:4, gateH:2.4, gateType:'ochiladigan', kalitka:true, facade:'auto', intStyle:'auto', paint:'#E6D8C3', floorType:'auto', ceiling:'oddiy', furnZal:'tv,divan,stol', furnBed:'garderob,tv', furnKit:'orol,stol', street:'mahalla', neighbors:'ikki', view:'shahar', facing:'janub', budget:120000, rate:380, rateManual:false};
+  style:'klassik', sub:'', fence:'gisht', gatePat:'oddiy', gateCol:'qora', wall:'oq', roofShape:'auto', roofMat:'auto', roofCol:'auto', seed:0, layout:'auto', massing:'auto', plan:'auto', styleFixed:false, wallFixed:false, winSize:'auto', winCount:'orta', winFrame:'auto', doorType:'bir', doorMat:'auto', intDoorH:2.1, gateW:4, gateH:2.4, gateType:'ochiladigan', kalitka:true, facade:'auto', intStyle:'auto', paint:'#E6D8C3', floorType:'auto', ceiling:'oddiy', furnZal:'tv,divan,stol', furnBed:'garderob,tv', furnKit:'orol,stol', street:'mahalla', neighbors:'ikki', view:'shahar', facing:'janub', budget:120000, rate:380, rateManual:false};
 const RATE = {zamonaviy:420, klassik:460, milliy:440}; // $/m², 2026 Toshkent bozori (o'rta pardoz)
 const UZS_RATE=12100; // 1 $ ≈ so'm (2026 aprel, taxminiy)
 const somFmt=d=>{ const s=d*UZS_RATE; return s>=1e9?(s/1e9).toFixed(2).replace('.',',')+' mlrd so\'m':Math.round(s/1e6).toLocaleString('ru-RU')+' mln so\'m'; };
@@ -837,7 +848,8 @@ function colsAlongY(y0,len,x){ const n=Math.max(2,Math.round(len/3.2)+1); const 
 function genCompact(A,mw,opt){
   opt=opt||{}; const lux=luxOf(A), K=(opt.k||1)*LUXA[lux];
   const big=K>1.3?0.6:(K<0.65?-1.0:(K<0.8?-0.6:(K<0.95?-0.3:0)));
-  const dF=Math.max(4.2,(A.bigZal?6.0:5.4)-(opt.shallow?0.4:0)+big), C=K<0.8?1.2:1.4, dB=Math.max(4.4,4.8+big*0.5), D=dF+C+dB;
+  let dF=Math.max(4.2,(A.bigZal?6.0:5.4)-(opt.shallow?0.4:0)+big), C=K<0.8?1.2:1.4, dB=Math.max(4.4,4.8+big*0.5), D=dF+C+dB;
+  let plan=(A.plan&&A.plan!=='auto')?A.plan:(opt.plan||'klassik');
   const zal={n:A.bigZal?'Zal (mehmonxona)':'Zal',t:'zal',a:(A.bigZal?34:26)*K};
   const osh={n:'Oshxona-yemakxona',t:'kitchen',a:22*K};
   const dah={n:'Dahliz',t:'circ',m:2.6,entry:{nx:0,ny:-1}};
@@ -864,18 +876,23 @@ function genCompact(A,mw,opt){
     floorsSpec=[G];
   }
   applyEdits(A,floorsSpec,dF,dB);
+  if(plan==='orqa'){ floorsSpec.forEach(f=>{ const st=f.back.filter(i=>i.t==='stair'), circ=f.front.filter(i=>i.t==='circ'), o2=f.back.filter(i=>i.t!=='stair'), h=Math.ceil(o2.length/2);
+      const nf=o2.slice(0,h).concat(circ,o2.slice(h)), nb=st.concat(f.front.filter(i=>i.t!=='circ')); f.front=nf; f.back=nb; ensureFlex(f.front); ensureFlex(f.back); });
+    const t=dF; dF=dB; dB=t; }
   const MINW={zal:3.4,kitchen:2.7,bed:2.7,util:1.6,wet:1.6};
   floorsSpec.forEach(f=>[['front',dF],['back',dB]].forEach(([row,d])=>f[row].forEach(i=>{ if(!i.m) i.a=Math.max(i.a,(MINW[i.t]||2)*d); })));
   if(hasEdits(A)) floorsSpec.forEach(f=>[['front',dF],['back',dB]].forEach(([row,d])=>{ const fx=f[row].filter(i=>i.fixA&&!i.m); if(fx.length) f[row]=f[row].map(i=>i.fixA&&!i.m?Object.assign({},i,{m:i.a/d}):i); ensureFlex(f[row]); }));
+  const notes=[]; let floors=null, W=0, maxW=0;
+  if(plan==='markaz'){ const mz=markazFloors(A,floorsSpec,big,mw,opt,D); if(mz){ floors=mz.floors; W=mz.W; D=mz.D; maxW=mz.maxW; } }
+  if(!floors){
   let need=8.4; floorsSpec.forEach(f=>{ need=Math.max(need,rowW(f.front,dF),rowW(f.back,dB)); });
-  const notes=[];
-  let W=Math.round(need*2)/2;
-  const maxW=mw(D+(opt.extraDepth||4)); if(opt.minW) W=Math.max(W,Math.min(opt.minW,Math.floor(maxW*2)/2));
+  W=Math.round(need*2)/2;
+  maxW=mw(D+(opt.extraDepth||4)); if(opt.minW) W=Math.max(W,Math.min(opt.minW,Math.floor(maxW*2)/2));
   if(W>maxW){ notes.push("Yer eni yetmadi: xonalar biroz kichraytirildi."); W=Math.max(8,Math.floor(maxW*10)/10); }
-  const floors = floorsSpec.map((f,k)=>{
+  floors = floorsSpec.map((f,k)=>{
     const rooms = seg(0,W,0,dF,f.front).concat([room("Yo'lak",'circ',0,dF,W,C)]).concat(seg(0,W,dF+C,dB,f.back));
     return {rooms, blocks:[{x:0,y:0,w:W,h:D,roof:k===floorsSpec.length-1}], open:[]};
-  });
+  }); }
   if(opt.bays){
     floors.forEach(f=>{ f.rooms.filter(r=>r.y===0 && ['zal','kitchen','bed'].includes(r.t) && r.w>=4.2).forEach(r=>{ const bw=Math.min(3.4,r.w-1.4), bx=r.x+(r.w-bw)/2, bd=1.2; f.rooms.push(room(r.n,r.t,bx,-bd,bw,bd,{part:r})); f.blocks.push({x:bx,y:-bd,w:bw,h:bd,roof:true,bay:true}); }); });
   }
@@ -883,6 +900,7 @@ function genCompact(A,mw,opt){
   if(A.ayvon && (opt.bays||opt.backAyvon) && !opt.noAyvon){
     floors[0].open.push({type:'ayvon',x:0,y:D,w:W,h:2.4,roofed:true,low:floors.length>1,cols:colsAlong(0,W,D+2.1)});
   } else if((A.ayvon || opt.ayvon) && !opt.noAyvon){
+    floors[0].open=floors[0].open.filter(q=>!q.porch);
     floors[0].open.push({type:'ayvon',x:0,y:-2.4,w:W,h:2.4,roofed:true,cols:colsAlong(0,W,-2.1)});
     if(floors.length>1) floors[1].open.push({type:'balcony',x:0,y:-2.4,w:W,h:2.4});
   }
@@ -894,6 +912,25 @@ function genCompact(A,mw,opt){
   return {W:Wtot, D, floors, notes, car};
 }
 
+/* Markaziy hol: o'rtada uzun hol, chapda zal va yotoqxonalar, o'ngda zina, oshxona va xizmat xonalari */
+function planD(p){ return {markaz:'markaziy hol',orqa:"zal bog' tomonda"}[p]||''; }
+function mkFind(id){ try{ return MAKETS.find(x=>x.id===id&&x.o)||null; }catch(e){ return null; } }
+var MK_ALPH='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function MK_IDS(){ try{ return ['auto'].concat(MAKETS.map(m=>m.id)); }catch(e){ return ['auto','kub','porch','ayvon','erker','garaj','L','U','orqaL','orqaU','darvoza']; } }
+function markazFloors(A,spec,big,mw,opt,D0){
+  const Ch=1.9, wcL=Math.max(4.6,(A.bigZal?5.6:5.0)+big*0.5), wcR=Math.max(4.0,4.6+big*0.4), MINL={zal:3.4,kitchen:2.7,bed:2.7,util:1.4,wet:1.6};
+  const cols=spec.map(f=>{ const all=f.front.concat(f.back).filter(i=>i.t!=='circ').map(i=>Object.assign({},i));
+    const L=all.filter(i=>i.t==='zal'||i.t==='bed'), Rr=all.filter(i=>i.t==='stair').concat(all.filter(i=>i.t!=='stair'&&i.t!=='zal'&&i.t!=='bed'));
+    L.forEach(i=>{ if(!i.m) i.a=Math.max(i.a,(MINL[i.t]||2)*wcL); }); Rr.forEach(i=>{ if(!i.m) i.a=Math.max(i.a,(MINL[i.t]||2)*wcR); });
+    for(let g=0;g<6;g++){ const bs=L.filter(i=>i.t==='bed'); if(rowW(L,wcL)-rowW(Rr,wcR)<3.5||!bs.length||L.length<2) break; const b=bs[bs.length-1]; L.splice(L.indexOf(b),1); b.a=Math.max(b.a,2.7*wcR); Rr.push(b); }
+    ensureFlex(L,'Garderob'); ensureFlex(Rr,'Omborxona'); return {L,R:Rr}; });
+  let Dm=8; cols.forEach(c=>{ Dm=Math.max(Dm,rowW(c.L,wcL),rowW(c.R,wcR)); }); Dm=Math.round(Dm*2)/2;
+  const Wm=wcL+Ch+wcR, maxW=mw(Dm+(opt.extraDepth||4));
+  if(Wm>maxW || Dm>Math.max(D0*1.7,15)) return null;
+  const colRooms=(items,x0,wc)=>seg(0,Dm,0,wc,items).map(r=>room(r.n,r.t,x0,r.x,wc,r.w));
+  const floors=cols.map((c,k)=>({rooms:colRooms(c.L,0,wcL).concat([room(k===0?'Dahliz':"Yo'lak",'circ',wcL,0,Ch,Dm,k===0?{entry:{nx:0,ny:-1}}:null)]).concat(colRooms(c.R,wcL+Ch,wcR)), blocks:[{x:0,y:0,w:Wm,h:Dm,roof:k===cols.length-1}], open:[]}));
+  return {floors,W:Wm,D:Dm,maxW};
+}
 function applyEdits(A,spec,dF,dB){
   const E=A.rooms; if(!E) return;
   spec.forEach((f,k)=>{
@@ -947,7 +984,7 @@ function genFront(A,mw,two,opt){
   opt=opt||{};
   const Dg=(A.bigZal?6:5.4)+6.2, L=Math.min(9*(opt.Lk||1),A.plotL-Dg-6);
   if(L<4.5) return null;
-  const core=genCompact(A,d=>mw(d+L),{noGarage:true,noAyvon:true,mirror:opt.mirror!==false,k:opt.k,minW:two?2*((opt.ww||4.2)+(opt.gal||2.0))+3.5:0});
+  const core=genCompact(A,d=>mw(d+L),{noGarage:true,noAyvon:true,mirror:opt.mirror!==false,k:opt.k,plan:opt.plan,minW:two?2*((opt.ww||4.2)+(opt.gal||2.0))+3.5:0});
   const D=core.D, W=core.W, ww=opt.ww||4.2, gal=opt.gal||2.0;
   const G=core.floors[0];
   const left=A.garage ? [['Garaj','garage',Math.min(6.2,L*0.62),{nx:0,ny:-1}],['Yozgi oshxona','kitchen',0,{nx:1,ny:0}]] : [['Mehmonxona (katta)','zal',L*0.6,{nx:1,ny:0}],['Yozgi oshxona','kitchen',0,{nx:1,ny:0}]];
@@ -971,7 +1008,7 @@ function genFront(A,mw,two,opt){
 function genCourt(A,mw,two,opt){
   opt=opt||{};
   const Dg=(A.bigZal?5.6:5.0)+6.2, L=Math.max(4,Math.min(12*(opt.Lk||1),A.plotL-SB-Dg-3));
-  const core = genCompact(A,d=>mw(d+L),{shallow:true,mirror:opt.mirror!==false,noGarage:true,ayvon:true,k:opt.k,bays:opt.bays,porch:opt.porch,minW:two?(opt.ww||4.2)*2+4.5:0});
+  const core = genCompact(A,d=>mw(d+L),{shallow:true,mirror:opt.mirror!==false,noGarage:true,ayvon:true,k:opt.k,plan:opt.plan,bays:opt.bays,porch:opt.porch,minW:two?(opt.ww||4.2)*2+4.5:0});
   const D=core.D, W=core.W, ww=opt.ww||4.2, gal=opt.gal||2.0;
   const G=core.floors[0];
   const items=[]; if(A.garage) items.push(['Garaj','garage',6.2]); items.push(['Yozgi oshxona','kitchen',4.6]); items.push(['Omborxona','util',2.6]);
@@ -1014,16 +1051,19 @@ function buildRandom(A){
   const out=[], seen=new Set();
   for(let t=0;t<14&&out.length<3;t++){
     const fam=pick(fams); const o={mirror:ch(0.5),porch:ch(0.5),bays:ch(0.4),backAyvon:ch(0.5),shallow:ch(0.3),ww:3.8+R()*1.4,gal:1.6+R()*1.0,Lk:0.75+R()*0.35};
-    const ms=A.massing||'auto'; if(ms==='kub'){ o.porch=false; o.backAyvon=true; } if(ms==='porch'){ o.porch=true; } if(ms==='ayvon'){ o.backAyvon=false; o.frontAyvon=true; } if(ms==='garaj'){ o.porch=ch(0.5); }
+    const ms=A.massing||'auto', MK=mkFind(ms); if(MK) Object.assign(o,MK.o);
+    o.plan=(MK&&MK.plan)?MK.plan:((A.plan&&A.plan!=='auto')?A.plan:['klassik','orqa','markaz'][(t+out.length)%3]);
+    if(ms==='kub'){ o.porch=false; o.backAyvon=true; } if(ms==='porch'){ o.porch=true; } if(ms==='ayvon'){ o.backAyvon=false; o.frontAyvon=true; } if(ms==='garaj'){ o.porch=ch(0.5); }
     let v=null, nm='', ds=''; const J=0.9+R()*0.26;
     const mods=()=>[o.bays?'erker oynalar':'',o.porch?'ustunli kirish':'',o.mirror?'oyna-teskari reja':''].filter(Boolean).join(', ');
-    if(fam==='darvoza'){ v=sized(A,k=>genPassage(A,mw,{k:k*J})); nm='Darvozaxonali'; ds="Mashina uy ostidan o'tadi"; }
-    else if(fam==='ixcham'){ v=sized(A,k=>genCompact(A,mw,{mirror:o.mirror,porch:o.porch,backAyvon:o.backAyvon,ayvon:o.frontAyvon,shallow:o.shallow,k:k*J})); nm=({kub:'Ixcham kub',porch:'Ustunli kirish',ayvon:'Old ayvonli',garaj:'Yon garajli'})[A.massing]||'Ixcham'; ds=mods()||"To'g'ri to'rtburchak, tejamkor"; }
-    else if(fam==='erker'){ v=sized(A,k=>genCompact(A,mw,{bays:true,porch:o.porch,mirror:o.mirror,k:k*J,extraDepth:4.2})); nm='Erkerli'; ds=o.porch?'Erker oynalar, ustunli kirish':'Erker oynalar, orqada ayvon'; }
-    else if(fam==='L'||fam==='U'){ v=sized(A,k=>genFront(A,mw,fam==='U',{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays})); if(v&&fam==='U'&&!v._two) v=null; nm=fam+'-shakl, old hovlili'; ds="Ko'chaga chiqqan qanot"+(fam==='U'?'lar':'')+' va galereya'; }
-    else { const two=fam==='orqaU'; v=sized(A,k=>genCourt(A,mw,two,{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,porch:o.porch})); if(v&&two&&!v._two) v=null; nm=(two?'U':'L')+'-shakl, orqa hovlili'; ds='Orqada yozgi oshxona va galereya'; }
+    if(fam==='darvoza'){ v=sized(A,k=>genPassage(A,mw,{k:k*J*(o.dk||1)})); nm='Darvozaxonali'; ds="Mashina uy ostidan o'tadi"; }
+    else if(fam==='ixcham'){ v=sized(A,k=>genCompact(A,mw,{mirror:o.mirror,porch:o.porch,backAyvon:o.backAyvon,ayvon:o.frontAyvon,shallow:o.shallow,bays:!!(MK&&MK.o.bays),extraDepth:(MK&&MK.o.bays)?4.2:undefined,k:k*J,plan:o.plan})); nm=({kub:'Ixcham kub',porch:'Ustunli kirish',ayvon:'Old ayvonli',garaj:'Yon garajli'})[A.massing]||'Ixcham'; ds=mods()||"To'g'ri to'rtburchak, tejamkor"; }
+    else if(fam==='erker'){ v=sized(A,k=>genCompact(A,mw,{bays:true,porch:o.porch,mirror:o.mirror,k:k*J,extraDepth:4.2,plan:o.plan})); nm='Erkerli'; ds=o.porch?'Erker oynalar, ustunli kirish':'Erker oynalar, orqada ayvon'; }
+    else if(fam==='L'||fam==='U'){ v=sized(A,k=>genFront(A,mw,fam==='U',{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,plan:o.plan})); if(v&&fam==='U'&&!v._two) v=null; nm=fam+'-shakl, old hovlili'; ds="Ko'chaga chiqqan qanot"+(fam==='U'?'lar':'')+' va galereya'; }
+    else { const two=fam==='orqaU'; v=sized(A,k=>genCourt(A,mw,two,{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,porch:o.porch,plan:o.plan})); if(v&&two&&!v._two) v=null; nm=(two?'U':'L')+'-shakl, orqa hovlili'; ds='Orqada yozgi oshxona va galereya'; }
     if(!v) { if(fams.length===1 && t>6){ fams=['ixcham','erker','L','orqaL']; out.fallback=LAYOUTS[A.layout]; } continue; }
-    const key=fam+Math.round(v.W*2)+'x'+Math.round(v.D*2)+(o.bays?1:0); if(seen.has(key)&&t<10) continue; seen.add(key);
+    const key=fam+Math.round(v.W*2)+'x'+Math.round(v.D*2)+(o.bays?1:0)+o.plan; if(seen.has(key)&&t<10) continue; seen.add(key);
+    if(MK){ nm=MK.n; ds=MK.d; } const pd=planD(v.plan=o.plan); if(pd&&!MK) ds+=', '+pd;
     v.name=nm; v.desc=ds; out.push(v);
   }
   const ROOFP={zamonaviy:[['tekis',0.6],['ikki',0.25],['tort',0.15]],klassik:[['tort',0.6],['ikki',0.4]],milliy:[['tort',0.7],['ikki',0.3]]};
@@ -1045,10 +1085,11 @@ function buildVariants(A){
   const mw = depth => Math.max(7.5, widthAt(A,SB+depth)-1.2);
   const out=[];
   const nm=(v,name,desc)=>v?Object.assign(v,{name,desc}):null;
-  const bays=()=>nm(sized(A,k=>genCompact(A,mw,{bays:true,porch:true,k,extraDepth:4.2})),'Erkerli',"Old tomonda erker oynalar, ustunli kirish, orqada ayvon");
-  const fl=()=>{ const v=sized(A,k=>genFront(A,mw,false,{k})); return v?nm(v,'L-shakl, old hovlili',"Ko'chaga chiqqan qanot va galereya-ayvon"):nm(sized(A,k=>genCourt(A,mw,false,{k})),'Orqa L-shakl',"Orqada yozgi oshxona va galereya"); };
-  const fu=()=>{ const v=sized(A,k=>genFront(A,mw,true,{k})); if(v&&v._two) return nm(v,'U-shakl, yopiq hovli',"Ikki qanot oldida hovli hosil qiladi"); const c=sized(A,k=>genCourt(A,mw,true,{k})); return c._two?nm(c,'Orqa U-shakl',"Orqada ikki qanotli hovli"):nm(sized(A,k=>genCompact(A,mw,{mirror:true,backAyvon:true,k})),'Ixcham',"Bitta to'g'ri to'rtburchak, eng tejamkor"); };
+  const bays=()=>nm(sized(A,k=>genCompact(A,mw,{bays:true,porch:true,k,extraDepth:4.2,plan:'klassik'})),'Erkerli',"Old tomonda erker oynalar, ustunli kirish, orqada ayvon");
+  const fl=()=>{ const v=sized(A,k=>genFront(A,mw,false,{k,plan:'markaz'})); return v?nm(v,'L-shakl, old hovlili',"Ko'chaga chiqqan qanot va galereya-ayvon"):nm(sized(A,k=>genCourtL(k)),'Orqa L-shakl',"Orqada yozgi oshxona va galereya"); };
+  const fu=()=>{ const v=sized(A,k=>genFront(A,mw,true,{k})); if(v&&v._two) return nm(v,'U-shakl, yopiq hovli',"Ikki qanot oldida hovli hosil qiladi"); const c=sized(A,k=>genCourt(A,mw,true,{k,plan:'orqa'})); return c._two?nm(c,'Orqa U-shakl',"Orqada ikki qanotli hovli"):nm(sized(A,k=>genCompact(A,mw,{mirror:true,backAyvon:true,k,plan:'orqa'})),'Ixcham',"Bitta to'g'ri to'rtburchak, eng tejamkor"); };
   let pv = A.darvoza ? sized(A,k=>genPassage(A,mw,{k})) : null;
+  const genCourtL=(k)=>genCourt(A,mw,false,{k,plan:'orqa'});
   if(pv && A.targetArea>=40 && calcArea(pv)>A.targetArea*1.15) pv=null;
   if(pv) out.push(nm(pv,'Darvozaxonali',"Mashina uy ostidan o'tadi, ikki qanot"));
   out.push(bays()); out.push(fl()); if(out.length<3) out.push(fu());
@@ -1267,8 +1308,113 @@ function money(n){ return '$'+fmt(Math.round(n/100)*100); }
 /* ================== 2D plan (SVG) ================== */
 const PCOL={zal:'#EAF0F4',kitchen:'#F4ECDF',bed:'#EDF1E6',wet:'#E2EEF4',circ:'#FFFFFF',stair:'#F2F2F2',util:'#F1EFEA',garage:'#ECECEC'};
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function planSVG(v,k){
-  const f=v.floors[k];
+/* ===== MEBEL JOYLASHUVI REJASI: har bir mebel joyida, o'lchamlari (mm) bilan ===== */
+function mebelPieces(v,k,A){
+  const f=v.floors[k], out=[], Z=[]; const g=0.03;
+  const hit=(a,b)=>a.x<b.x+b.w-1e-3&&a.x+a.w>b.x+1e-3&&a.y<b.y+b.h-1e-3&&a.y+a.h>b.y+1e-3;
+  // eshik oldidagi bo'sh joylar (mebel qo'yilmaydi)
+  (f.doors||[]).concat((f.opens||[]).map(e=>Object.assign({},e,{c:(e.a0+e.a1)/2,w:e.a1-e.a0}))).forEach(d=>{ const a=d.c-d.w/2-0.08, L=d.w+0.16, cl=0.95;
+    Z.push(d.o==='v'?{x:d.line-cl,y:a,w:cl*2,h:L}:{x:a,y:d.line-cl,w:L,h:cl*2}); });
+  (f.openings||[]).filter(op=>op.kind!=='win').forEach(op=>{ const s=f.segs[op.si]; if(!s) return; const hz=Math.abs(s.y0-s.y1)<1e-6, a=op.c-op.w/2-0.1, L=op.w+0.2;
+    Z.push(hz?{x:a,y:s.y0-1.1,w:L,h:2.2}:{x:s.x0-1.1,y:a,w:2.2,h:L}); });
+  const rooms=mainRooms(f);
+  rooms.forEach(r=>{ if(r.t==='stair') return; const F=(typeof furnOf==='function'?furnOf(r,A):[])||[]; const B=Z.slice(); const nm=r.n.toLowerCase();
+    const inR=p=>p.x>=r.x-1e-3&&p.y>=r.y-1e-3&&p.x+p.w<=r.x+r.w+1e-3&&p.y+p.h<=r.y+r.h+1e-3;
+    const ok=(p,m)=>{ if(!inR(p)) return false; const q=m?{x:p.x-m,y:p.y-m,w:p.w+2*m,h:p.h+2*m}:p; return !B.some(b=>hit(q,b)); };
+    const add=(p,kind,o)=>{ const pc=Object.assign({kind},p,o||{}); out.push(pc); B.push(p); return pc; };
+    const edges=['N','S','W','E'].map(s=>({s,len:(s==='N'||s==='S')?r.w:r.h})).sort((a,b)=>b.len-a.len);
+    const rectAt=(s,t,len,dep)=>s==='S'?{x:r.x+t,y:r.y+g,w:len,h:dep}:s==='N'?{x:r.x+t,y:r.y+r.h-g-dep,w:len,h:dep}:s==='W'?{x:r.x+g,y:r.y+t,w:dep,h:len}:{x:r.x+r.w-g-dep,y:r.y+t,w:dep,h:len};
+    // devor bo'ylab joy qidirish: avval o'rtasi, keyin burchaklar
+    const wall=(len,dep,pref,mode)=>{ const es=pref?pref.map(s=>edges.find(e=>e.s===s)).filter(Boolean).concat(edges.filter(e=>!pref.includes(e.s))):edges;
+      for(const e of es){ if(e.len<len+2*g) continue; const span=e.len-len-2*g; const ts=[];
+        if(mode==='corner') { ts.push(g, span+g); } ts.push(g+span/2); for(let t=g;t<=span+g+1e-6;t+=0.1){ ts.push(t); }
+        for(const t of ts){ const p=rectAt(e.s,t,len,dep); if(ok(p)) return Object.assign(p,{wall:e.s}); } }
+      return null; };
+    const free=(w,h,m)=>{ let best=null,bd=1e9; const cx=r.x+r.w/2, cy=r.y+r.h/2; for(let x=r.x+m;x<=r.x+r.w-w-m+1e-6;x+=0.1) for(let y=r.y+m;y<=r.y+r.h-h-m+1e-6;y+=0.1){ const p={x,y,w,h}; if(!ok(p,m)) continue; const d=Math.hypot(x+w/2-cx,y+h/2-cy); if(d<bd){bd=d;best=p;} } return best; };
+    const opp={N:'S',S:'N',W:'E',E:'W'};
+    const front=(p,gap,len,dep)=>{ const s=p.wall; const c=(s==='N'||s==='S')?p.x+p.w/2:p.y+p.h/2;
+      const q=s==='S'?{x:c-len/2,y:p.y+p.h+gap,w:len,h:dep}:s==='N'?{x:c-len/2,y:p.y-gap-dep,w:len,h:dep}:s==='W'?{x:p.x+p.w+gap,y:c-len/2,w:dep,h:len}:{x:p.x-gap-dep,y:c-len/2,w:dep,h:len}; return ok(q)?q:null; };
+    if(r.t==='bed'){
+      if(/ish xona/.test(nm)){ const d=wall(1.4,0.65); if(d){ add(d,'desk',{dim:1}); const c=front(d,0.05,0.5,0.5); if(c) add(c,'chair'); } const sh=wall(1.6,0.4); if(sh) add(sh,'shelf',{dim:1}); return; }
+      const md=Math.min(r.w,r.h); const kids=/yotoqxona [2-9]/.test(nm)&&md<3.6;
+      if(kids && Math.max(r.w,r.h)>=3.6 && md>=2.9){ // ikki kishilik bolalar xonasi: 2 ta bir kishilik krovat
+        for(let i=0;i<2;i++){ const b=wall(0.9,2.0,null,'corner'); if(b) add(b,'bed',{dim:1,bw:0.9}); }
+      } else { const bw=md>=3.6?1.8:md>=3.1?1.6:md>=2.8?1.4:0.9; let b=wall(bw+1.0,2.05);
+        if(b){ const s=b.wall, hor=(s==='N'||s==='S'); const bed=hor?{x:b.x+0.5,y:b.y,w:bw,h:b.h}:{x:b.x,y:b.y+0.5,w:b.w,h:bw}; add(bed,'bed',{dim:1,wall:s,bw});
+          const n1=hor?{x:b.x+0.02,y:s==='S'?b.y:b.y+b.h-0.4,w:0.45,h:0.4}:{x:s==='W'?b.x:b.x+b.w-0.4,y:b.y+0.02,w:0.4,h:0.45}; const n2=hor?{x:b.x+b.w-0.47,y:n1.y,w:0.45,h:0.4}:{x:n1.x,y:b.y+b.h-0.47,w:0.4,h:0.45}; [n1,n2].forEach(n=>{ if(ok(n)) add(n,'night'); }); }
+        else { b=wall(bw,2.05); if(b) add(b,'bed',{dim:1,bw}); } }
+      for(const L of [2.4,2.0,1.6,1.2]){ const w=wall(L,0.6); if(w){ add(w,'wardrobe',{dim:1}); break; } }
+      if(r.w*r.h>=11||F.includes('ishstol')){ const d=wall(1.0,0.6); if(d){ add(d,'desk',{dim:1}); const c=front(d,0.05,0.45,0.45); if(c) add(c,'chair'); } }
+      if(F.includes('tv')){ const t=wall(1.4,0.35); if(t) add(t,'tv',{dim:1}); }
+    }
+    else if(r.t==='zal'){
+      const sl=Math.min(3.0,Math.max(2.0,Math.max(r.w,r.h)-1.6)); let so=null; for(const L of [sl,2.6,2.2,1.8]){ so=wall(L,0.95); if(so) break; }
+      if(so){ add(so,'sofa',{dim:1}); const ct=front(so,0.45,1.1,0.55); if(ct) add(ct,'ctable',{dim:1}); const pref=[opp[so.wall]]; for(const L of [2.0,1.8,1.4]){ const t=wall(L,0.45,pref); if(t&&t.wall===opp[so.wall]){ add(t,'tv',{dim:1}); break; } } }
+      if(r.w*r.h>=26||F.includes('stol')){ const vert=r.h>r.w; const tw=vert?1.0:1.9, th=vert?1.9:1.0; const t=free(tw,th,0.6); if(t){ add({x:t.x-0.55,y:t.y-0.55,w:t.w+1.1,h:t.h+1.1},'zone'); out.pop(); add(t,'dtable',{dim:1,seats:6}); } }
+      if(F.includes('kreslo')){ for(let i=0;i<2;i++){ const a=free(0.8,0.8,0.15); if(a) add(a,'armchair'); } }
+    }
+    else if(r.t==='kitchen'){
+      let ct=null; for(const L of [Math.min(3.6,Math.max(r.w,r.h)-0.4),3.0,2.4,1.8]){ ct=wall(L,0.6,null,'corner'); if(ct) break; }
+      if(ct){ add(ct,'counter',{dim:1}); const fr=wall(0.65,0.65,[ct.wall],'corner'); if(fr) add(fr,'fridge',{dim:1}); }
+      const vert=r.h>r.w; const tw=vert?0.9:1.6, th=vert?1.6:0.9; const t=free(tw,th,0.55); if(t) add(t,'dtable',{dim:1,seats:6});
+      else { const t2=free(0.8,0.8,0.5); if(t2) add(t2,'dtable',{dim:1,seats:2}); }
+    }
+    else if(r.t==='wet'){
+      const big=/vanna|hammom/.test(nm)&&!/sauna/.test(nm);
+      if(/sauna/.test(nm)){ const b=wall(Math.min(2.0,Math.max(r.w,r.h)-0.3),0.6); if(b) add(b,'bench',{dim:1}); const s=wall(0.6,0.6,null,'corner'); if(s) add(s,'stove'); return; }
+      if(big){ let b=null; const bl=Math.min(1.7,Math.max(r.w,r.h)-0.1); if(bl>=1.4) b=wall(bl,0.75,null,'corner'); if(b) add(b,'bath',{dim:1}); else { const sh=wall(0.9,0.9,null,'corner'); if(sh) add(sh,'shower',{dim:1}); } }
+      const w=wall(0.4,0.65,null,'corner'); if(w) add(w,'wc',{dim:1}); const s=wall(big?0.6:0.45,big?0.45:0.35); if(s) add(s,'sink',{dim:1});
+    }
+    else if(r.t==='util'){
+      if(/kir/.test(nm)){ const m=wall(0.6,0.6,null,'corner'); if(m) add(m,'washer',{dim:1}); const d=wall(0.6,0.6); if(d) add(d,'washer'); }
+      else { for(let i=0;i<2;i++){ const L=Math.min(2.4,Math.max(r.w,r.h)-0.2); const sh=wall(L,0.5); if(sh) add(sh,'shelf',{dim:1}); } }
+    }
+    else if(r.t==='circ' && /dahliz|hol/.test(nm) && r.w*r.h>3){ const c=wall(1.2,0.4); if(c) add(c,'shoe',{dim:1}); }
+    else if(r.t==='garage'){ const c=free(r.w>r.h?4.6:1.9,r.w>r.h?1.9:4.6,0.2); if(c) add(c,'car',{dim:1}); }
+  });
+  return out;
+}
+function mebelSVG(p){ const o=[], Y=y=>-y, S='#3A3F46', sw=0.03; const {x,w,kind}=p; const y=p.y, h=p.h; const R=(xx,yy,ww,hh,fill,rx)=>`<rect x="${xx}" y="${Y(yy+hh)}" width="${ww}" height="${hh}" rx="${rx||0.04}" fill="${fill||'#FFF'}" stroke="${S}" stroke-width="${sw}"></rect>`;
+  const C=(cx,cy,rr,fill)=>`<circle cx="${cx}" cy="${Y(cy)}" r="${rr}" fill="${fill||'#FFF'}" stroke="${S}" stroke-width="${sw}"></circle>`;
+  const hor=w>=h, wl=p.wall;
+  if(kind==='bed'){ o.push(R(x,y,w,h,'#F4EFE7')); const pl=0.5; // yostiqlar devor tomonda
+    const head=wl||(hor?'W':'N'); const pil=(n)=>{ const q=[]; for(let i=0;i<n;i++){ if(head==='N'||head==='S'){ const pw=(w-0.2)/n; q.push(R(x+0.1+i*pw+0.03,head==='N'?y+h-0.45:y+0.08,pw-0.06,0.35,'#FFF',0.08)); } else { const ph=(h-0.2)/n; q.push(R(head==='E'?x+w-0.45:x+0.08,y+0.1+i*ph+0.03,0.35,ph-0.06,'#FFF',0.08)); } } return q; };
+    o.push(...pil((p.bw||1)>=1.3?2:1)); const blank=(head==='N'||head==='S')?R(x+0.04,head==='N'?y+0.05:y+h-0.75,w-0.08,0.7,'#E6DCCB'):R(head==='E'?x+0.05:x+w-0.75,y+0.04,0.7,h-0.08,'#E6DCCB'); o.push(blank); }
+  else if(kind==='night'){ o.push(R(x,y,w,h,'#D9C7A8')); o.push(C(x+w/2,y+h/2,0.1,'#FFF')); }
+  else if(kind==='wardrobe'||kind==='shelf'||kind==='shoe'){ o.push(R(x,y,w,h,kind==='wardrobe'?'#E3D6C2':'#ECE3D3')); if(kind==='wardrobe'){ const n=Math.max(2,Math.round((hor?w:h)/0.6)); for(let i=1;i<n;i++){ o.push(hor?`<line x1="${x+w*i/n}" y1="${Y(y)}" x2="${x+w*i/n}" y2="${Y(y+h)}" stroke="${S}" stroke-width="0.02"></line>`:`<line x1="${x}" y1="${Y(y+h*i/n)}" x2="${x+w}" y2="${Y(y+h*i/n)}" stroke="${S}" stroke-width="0.02"></line>`); } o.push(hor?`<line x1="${x+0.05}" y1="${Y(y+h/2)}" x2="${x+w-0.05}" y2="${Y(y+h/2)}" stroke="${S}" stroke-width="0.015" stroke-dasharray="0.08 0.06"></line>`:`<line x1="${x+w/2}" y1="${Y(y+0.05)}" x2="${x+w/2}" y2="${Y(y+h-0.05)}" stroke="${S}" stroke-width="0.015" stroke-dasharray="0.08 0.06"></line>`); } }
+  else if(kind==='desk'){ o.push(R(x,y,w,h,'#E3D6C2')); }
+  else if(kind==='chair'){ o.push(R(x+0.05,y+0.05,w-0.1,h-0.1,'#FFF',0.1)); }
+  else if(kind==='tv'){ o.push(R(x,y,w,h,'#D9D2C6')); o.push(hor?R(x+w*0.15,y+h*0.35,w*0.7,0.06,'#2E2E2E',0.01):R(x+w*0.35,y+h*0.15,0.06,h*0.7,'#2E2E2E',0.01)); }
+  else if(kind==='sofa'){ o.push(R(x,y,w,h,'#E8DFD1',0.1)); const t=0.22; const back=wl==='N'?R(x,y+h-t,w,t,'#D8CCB8'):wl==='S'?R(x,y,w,t,'#D8CCB8'):wl==='W'?R(x,y,t,h,'#D8CCB8'):R(x+w-t,y,t,h,'#D8CCB8'); o.push(back); const n=Math.max(2,Math.round((hor?w:h)/0.9)); for(let i=1;i<n;i++) o.push(hor?`<line x1="${x+w*i/n}" y1="${Y(y+0.05)}" x2="${x+w*i/n}" y2="${Y(y+h-0.05)}" stroke="${S}" stroke-width="0.015"></line>`:`<line x1="${x+0.05}" y1="${Y(y+h*i/n)}" x2="${x+w-0.05}" y2="${Y(y+h*i/n)}" stroke="${S}" stroke-width="0.015"></line>`); }
+  else if(kind==='ctable'){ o.push(R(x,y,w,h,'#D9C7A8',0.06)); }
+  else if(kind==='armchair'){ o.push(R(x,y,w,h,'#E8DFD1',0.12)); o.push(R(x+0.12,y+0.12,w-0.24,h-0.24,'#F3EDE3',0.08)); }
+  else if(kind==='dtable'){ const n=p.seats||6, cs=0.42; const long=hor?w:h; const per=n>2?Math.floor((n-2)/2):1, ends=n>2;
+    for(let i=0;i<per;i++){ const t=(i+0.5)/per; if(hor){ o.push(R(x+w*t-cs/2,y+h+0.05,cs,cs,'#FFF',0.08), R(x+w*t-cs/2,y-0.05-cs,cs,cs,'#FFF',0.08)); } else { o.push(R(x-0.05-cs,y+h*t-cs/2,cs,cs,'#FFF',0.08), R(x+w+0.05,y+h*t-cs/2,cs,cs,'#FFF',0.08)); } }
+    if(ends){ if(hor){ o.push(R(x-0.05-cs,y+h/2-cs/2,cs,cs,'#FFF',0.08), R(x+w+0.05,y+h/2-cs/2,cs,cs,'#FFF',0.08)); } else { o.push(R(x+w/2-cs/2,y+h+0.05,cs,cs,'#FFF',0.08), R(x+w/2-cs/2,y-0.05-cs,cs,cs,'#FFF',0.08)); } }
+    o.push(R(x,y,w,h,'#E3D6C2',0.06)); }
+  else if(kind==='counter'){ o.push(R(x,y,w,h,'#E4E8EC')); const L=hor?w:h; const sx=hor?x+L*0.3:x+w/2, sy=hor?y+h/2:y+L*0.3; o.push(hor?R(sx-0.3,sy-0.2,0.6,0.4,'#FFF',0.08):R(sx-0.2,sy-0.3,0.4,0.6,'#FFF',0.08)); const bx=hor?x+L*0.72:x+w/2, by=hor?y+h/2:y+L*0.72; [[-0.14,-0.12],[0.14,-0.12],[-0.14,0.12],[0.14,0.12]].forEach(([a,b])=>o.push(C(bx+a,by+b,0.08))); }
+  else if(kind==='fridge'){ o.push(R(x,y,w,h,'#F2F4F6')); o.push(`<text x="${x+w/2}" y="${Y(y+h/2)+0.06}" font-size="0.16" text-anchor="middle" fill="${S}">X</text>`); }
+  else if(kind==='bath'){ o.push(R(x,y,w,h,'#FFF',0.1)); o.push(R(x+0.08,y+0.08,w-0.16,h-0.16,'#E2EEF4',0.25)); }
+  else if(kind==='shower'){ o.push(R(x,y,w,h,'#E2EEF4')); o.push(`<path d="M${x} ${Y(y)}L${x+w} ${Y(y+h)}M${x+w} ${Y(y)}L${x} ${Y(y+h)}" stroke="${S}" stroke-width="0.015"></path>`); }
+  else if(kind==='wc'){ o.push(R(x,y,w,h,'#FFF',0.05)); const cx=x+w/2, cy=y+h/2; o.push(`<ellipse cx="${cx}" cy="${Y(cy)}" rx="${(hor?w:w)*0.4}" ry="${(hor?h:h)*0.32}" fill="#FFF" stroke="${S}" stroke-width="${sw}"></ellipse>`); }
+  else if(kind==='sink'){ o.push(R(x,y,w,h,'#FFF')); o.push(`<ellipse cx="${x+w/2}" cy="${Y(y+h/2)}" rx="${w*0.35}" ry="${h*0.32}" fill="#E2EEF4" stroke="${S}" stroke-width="0.02"></ellipse>`); }
+  else if(kind==='washer'){ o.push(R(x,y,w,h,'#FFF')); o.push(C(x+w/2,y+h/2,Math.min(w,h)*0.32,'#E2EEF4')); }
+  else if(kind==='bench'||kind==='stove'){ o.push(R(x,y,w,h,'#D9C7A8')); }
+  else if(kind==='car'){ o.push(R(x,y,w,h,'#C9CED6',0.45)); o.push(hor?R(x+w*0.3,y+0.15,w*0.38,h-0.3,'#9FB4C8',0.2):R(x+0.15,y+h*0.3,w-0.3,h*0.38,'#9FB4C8',0.2)); }
+  return o.join(''); }
+function mebelDims(p){ if(!p.dim) return ''; const c='#2E45D8', fs=0.15, o=[], Y=y=>-y; const mm=v=>String(Math.round(v*1000/5)*5);
+  const {x,y,w,h}=p; if(w<0.35||h<0.3) return '';
+  const yy=y+h-0.14, xx=x+0.14;
+  o.push(`<line x1="${x+0.04}" y1="${Y(yy)}" x2="${x+w-0.04}" y2="${Y(yy)}" stroke="${c}" stroke-width="0.012"></line><line x1="${x+0.04}" y1="${Y(yy)-0.05}" x2="${x+0.04}" y2="${Y(yy)+0.05}" stroke="${c}" stroke-width="0.012"></line><line x1="${x+w-0.04}" y1="${Y(yy)-0.05}" x2="${x+w-0.04}" y2="${Y(yy)+0.05}" stroke="${c}" stroke-width="0.012"></line>`);
+  o.push(`<text x="${x+w/2}" y="${Y(yy)-0.035}" font-size="${fs}" text-anchor="middle" fill="${c}" font-family="JetBrains Mono, monospace" paint-order="stroke" stroke="#fff" stroke-width="0.04">${mm(w)}</text>`);
+  if(h>=0.55){ o.push(`<line x1="${xx}" y1="${Y(y+0.04)}" x2="${xx}" y2="${Y(y+h-0.04)}" stroke="${c}" stroke-width="0.012"></line><line x1="${xx-0.05}" y1="${Y(y+0.04)}" x2="${xx+0.05}" y2="${Y(y+0.04)}" stroke="${c}" stroke-width="0.012"></line><line x1="${xx-0.05}" y1="${Y(y+h-0.04)}" x2="${xx+0.05}" y2="${Y(y+h-0.04)}" stroke="${c}" stroke-width="0.012"></line>`);
+    o.push(`<text x="${xx-0.035}" y="${Y(y+h/2)}" font-size="${fs}" text-anchor="middle" fill="${c}" font-family="JetBrains Mono, monospace" transform="rotate(-90 ${xx-0.035} ${Y(y+h/2)})" paint-order="stroke" stroke="#fff" stroke-width="0.04">${mm(h)}</text>`); }
+  return o.join(''); }
+const MEBEL_NAME={bed:'Krovat',night:'Tumba',wardrobe:'Shkaf-kupe',shelf:'Javon',shoe:'Poyabzal shkafi',desk:'Ish stoli',chair:'Stul',tv:'TV tumba',sofa:'Divan',ctable:'Jurnal stoli',armchair:'Kreslo',dtable:'Ovqat stoli',counter:'Oshxona mebeli',fridge:'Muzlatkich',bath:'Vanna',shower:'Dush',wc:'Unitaz',sink:'Rakovina',washer:'Kir yuvish mashinasi',bench:'Sauna polog',stove:'Pech',car:'Avtomobil'};
+function mebelList(v,A){ const m={}; v.floors.forEach((f,k)=>mebelPieces(v,k,A).forEach(p=>{ if(p.kind==='chair'||p.kind==='zone') return; const key=p.kind+'|'+Math.round(Math.max(p.w,p.h)*1000)+'×'+Math.round(Math.min(p.w,p.h)*1000); m[key]=(m[key]||0)+1; })); return Object.entries(m).map(([k,n])=>{ const [kind,sz]=k.split('|'); return [MEBEL_NAME[kind]||kind,sz+' mm',String(n)]; }); }
+
+function planSVG(v,k,opt){
+  opt=opt||{}; const f=v.floors[k];
   let x0=0,x1=v.W,y0=0,y1=v.D;
   f.blocks.concat(f.open).forEach(b=>{ x0=Math.min(x0,b.x);x1=Math.max(x1,b.x+b.w);y0=Math.min(y0,b.y);y1=Math.max(y1,b.y+b.h); });
   const pad=2.6, vx=x0-pad, vy=-(y1)-pad, vw=(x1-x0)+pad*2, vh=(y1-y0)+pad*2+0.4;
@@ -1317,8 +1463,12 @@ function planSVG(v,k){
     if(d.o==='v'){ o.push(`<line x1="${d.line}" y1="${Y(a)}" x2="${d.line}" y2="${Y(b)}" stroke="#FFFFFF" stroke-width="0.16"></line>`); const H=[d.line,a],L=[d.line+d.side*d.w,a],C=[d.line,b]; o.push(arcDoor(H,L,C,d.w,Y)); }
     else { o.push(`<line x1="${a}" y1="${Y(d.line)}" x2="${b}" y2="${Y(d.line)}" stroke="#FFFFFF" stroke-width="0.16"></line>`); const H=[a,d.line],L=[a,d.line+d.side*d.w],C=[b,d.line]; o.push(arcDoor(H,L,C,d.w,Y)); }
   });
+  if(opt.furn){ const ps=mebelPieces(v,k,opt.A||S.A); o.push(ps.map(mebelSVG).join('')); o.push(ps.map(mebelDims).join(''));
+    mainRooms(f).forEach(r=>{ if(r.t==='stair') return; const room=r.w-0.3; let fs=0.22; let t=r.n+' · '+fmtA(roomA(r,f))+' m²'; const fit=(x,z)=>x.length*z*0.56<=room;
+      if(!fit(t,fs)) t=r.n; if(!fit(t,fs)) t=r.n.split(/[ ,(]/)[0]; while(!fit(t,fs)&&fs>0.14) fs-=0.02; if(!fit(t,fs)) return;
+      const tx=r.x+r.w/2, ty=Y(r.y+r.h)+0.12+fs; o.push(`<text x="${tx}" y="${ty}" font-size="${fs.toFixed(2)}" text-anchor="middle" fill="#1F5F8B" font-weight="600" paint-order="stroke" stroke="#fff" stroke-width="0.06">${esc(t)}</text>`); }); }
   // labels
-  mainRooms(f).forEach(r=>{
+  if(!opt.furn) mainRooms(f).forEach(r=>{
     const small=r.w<2.3||r.h<2.0; const ra=roomA(r,f); const fs=small?0.3:0.42, fa=small?0.27:0.34;
     let nm=r.n; if(small && nm.length>10) nm=nm.split(/[ ,]/)[0];
     const cx=r.x+r.w/2, cy=Y(r.y+r.h/2);
@@ -2410,7 +2560,7 @@ function buildHouse(v,A){
 /* ================== Usta (builder) package ================== */
 const ART_URL='https://claude.ai/artifact/B8zyx7ev9s3vKLu8QknXbn';
 const FLAG_KEYS=['bigZal','darvoza','garage','ayvon','sauna','pool','gulzor','gazebo','tandir','playground','fountain','supa','podval'];
-function encProject(A,vi,st){ return ['q',{rect:'r',trap:'z',tri:'t'}[A.plotShape]||'r',A.plotW,A.plotL,A.plotBackW||0,A.floors,A.family,A.beds,A.targetArea||0,FLAG_KEYS.map(k=>A[k]?1:0).join(''),A.trees|0,({auto:'a',oddiy:'d',orta:'o',hashamatli:'h'})[A.lux||'auto']||'a',A.style[0],(/^#/.test(A.wall)?'x'+A.wall.slice(1):A.wall),Math.round(A.budget/1000),A.rateManual?A.rate:0,vi,(st||A.style)[0]+({auto:'a',tekis:'t',ikki:'i',tort:'r',mansard:'s'}[A.roofShape]||'a')+({metall:'m',keramik:'k',yumshoq:'y',profnastil:'p'}[A.roofMat]||'a')+({auto:'a',grafit:'g',jigar:'j',qizil:'q',yashil:'y',kok:'k'}[A.roofCol]||(/^#/.test(A.roofCol||'')?'x':'a'))+'.'+(A.seed|0).toString(36)+'.'+(/^#/.test(A.roofCol||'')?A.roofCol.slice(1):'')+'.'+({auto:'a',ixcham:'c',erker:'e',L:'l',U:'u',orqaL:'m',orqaU:'n',darvoza:'d'}[A.layout||'auto']||'a')+(A.styleFixed?1:0)+(A.wallFixed?1:0)+(['auto','kub','porch','ayvon','erker','garaj','L','U','orqaL','orqaU','darvoza'].indexOf(A.massing||'auto')).toString(36)+Math.max(0,SUB_K.indexOf(A.sub||'')).toString(36)+Math.max(0,GATE_PAT_K.indexOf(A.gatePat||'oddiy')).toString(36)+Math.max(0,GATE_COL_K.indexOf(A.gateCol||'qora')).toString(36)+Math.max(0,['gisht','panjara','yaxlit','yoq'].indexOf(A.fence||'gisht'))+Math.max(0,Object.keys(REGK).indexOf(regOf(A))).toString(36)+'.'+encOpen(A)].join('-')+(hasEdits(A)?'-'+b64u(JSON.stringify(A.rooms)):''); }
+function encProject(A,vi,st){ return ['q',{rect:'r',trap:'z',tri:'t'}[A.plotShape]||'r',A.plotW,A.plotL,A.plotBackW||0,A.floors,A.family,A.beds,A.targetArea||0,FLAG_KEYS.map(k=>A[k]?1:0).join(''),A.trees|0,({auto:'a',oddiy:'d',orta:'o',hashamatli:'h'})[A.lux||'auto']||'a',A.style[0],(/^#/.test(A.wall)?'x'+A.wall.slice(1):A.wall),Math.round(A.budget/1000),A.rateManual?A.rate:0,vi,(st||A.style)[0]+({auto:'a',tekis:'t',ikki:'i',tort:'r',mansard:'s'}[A.roofShape]||'a')+({metall:'m',keramik:'k',yumshoq:'y',profnastil:'p'}[A.roofMat]||'a')+({auto:'a',grafit:'g',jigar:'j',qizil:'q',yashil:'y',kok:'k'}[A.roofCol]||(/^#/.test(A.roofCol||'')?'x':'a'))+'.'+(A.seed|0).toString(36)+'.'+(/^#/.test(A.roofCol||'')?A.roofCol.slice(1):'')+'.'+({auto:'a',ixcham:'c',erker:'e',L:'l',U:'u',orqaL:'m',orqaU:'n',darvoza:'d'}[A.layout||'auto']||'a')+(A.styleFixed?1:0)+(A.wallFixed?1:0)+(MK_ALPH[Math.max(0,MK_IDS().indexOf(A.massing||'auto'))]||'0')+Math.max(0,SUB_K.indexOf(A.sub||'')).toString(36)+Math.max(0,GATE_PAT_K.indexOf(A.gatePat||'oddiy')).toString(36)+Math.max(0,GATE_COL_K.indexOf(A.gateCol||'qora')).toString(36)+Math.max(0,['gisht','panjara','yaxlit','yoq'].indexOf(A.fence||'gisht'))+Math.max(0,Object.keys(REGK).indexOf(regOf(A))).toString(36)+Math.max(0,['auto','klassik','markaz','orqa'].indexOf(A.plan||'auto'))+'.'+encOpen(A)].join('-')+(hasEdits(A)?'-'+b64u(JSON.stringify(A.rooms)):''); }
 const GATE_PAT={oddiy:"Oddiy panjara",yaxlit:"Yaxlit list",panjara:"Kovka (bezakli)",kvadrat:"Katakli",shamol:"Quyosh nurlari",arka:"Arkasimon",naqsh:"Milliy naqsh"};
 const GATE_PAT_K=Object.keys(GATE_PAT), GATE_COL={qora:'#1E2023',grafit:'#3E4349',jigar:'#5A3A26',oq:'#EEEDE8',yashil:'#2F4A3A',kok:'#2A3F5E',oltin:'#9C7A3C',qizil:'#7A2E24'}, GATE_COL_K=Object.keys(GATE_COL);
 const GATE_COLN={qora:'Qora',grafit:'Grafit',jigar:'Jigarrang',oq:'Oq',yashil:"To'q yashil",kok:"To'q ko'k",oltin:'Oltin (bronza)',qizil:"To'q qizil"};
@@ -2438,7 +2588,7 @@ function decProject(s){ const p=s.split('-'); if(p[0]!=='q'||p.length<18) return
   FLAG_KEYS.forEach((k,i)=>{ A[k]=(p[9]||'')[i]==='1'; });
   if(+p[15]>0){ A.rate=+p[15]; A.rateManual=true; } else A.rateManual=false;
   { const r=p[17]||''; A.roofShape={a:'auto',t:'tekis',i:'ikki',r:'tort',s:'mansard'}[r[1]]||'auto'; A.roofMat={m:'metall',k:'keramik',y:'yumshoq',p:'profnastil'}[r[2]]||'auto'; A.roofCol={a:'auto',g:'grafit',j:'jigar',q:'qizil',y:'yashil',k:'kok'}[r[3]]||'auto';
-    const ex=r.split('.'); A.seed=parseInt(ex[1]||'0',36)||0; if(r[3]==='x'&&/^[0-9a-fA-F]{6}$/.test(ex[2]||'')) A.roofCol='#'+ex[2].toLowerCase(); const lc=ex[3]||''; A.layout={a:'auto',c:'ixcham',e:'erker',l:'L',u:'U',m:'orqaL',n:'orqaU',d:'darvoza'}[lc[0]]||'auto'; A.styleFixed=lc[1]==='1'; A.wallFixed=lc[2]==='1'; A.massing=['auto','kub','porch','ayvon','erker','garaj','L','U','orqaL','orqaU','darvoza'][parseInt(lc[3]||'0',36)]||'auto'; A.sub=SUB_K[parseInt(lc[4]||'0',36)]||''; A.gatePat=GATE_PAT_K[parseInt(lc[5]||'0',36)]||'oddiy'; A.gateCol=GATE_COL_K[parseInt(lc[6]||'0',36)]||'qora'; A.fence=['gisht','panjara','yaxlit','yoq'][+(lc[7]||0)]||'gisht'; if(lc[8]) A.region=Object.keys(REGK)[parseInt(lc[8],36)]||undefined; if(A.sub&&SUBS[A.sub]) A.style=SUBS[A.sub].b; decOpen(A,ex[4]); decFurn(A,ex[5]); }
+    const ex=r.split('.'); A.seed=parseInt(ex[1]||'0',36)||0; if(r[3]==='x'&&/^[0-9a-fA-F]{6}$/.test(ex[2]||'')) A.roofCol='#'+ex[2].toLowerCase(); const lc=ex[3]||''; A.layout={a:'auto',c:'ixcham',e:'erker',l:'L',u:'U',m:'orqaL',n:'orqaU',d:'darvoza'}[lc[0]]||'auto'; A.styleFixed=lc[1]==='1'; A.wallFixed=lc[2]==='1'; A.massing=MK_IDS()[Math.max(0,MK_ALPH.indexOf(lc[3]||'0'))]||'auto'; A.plan=['auto','klassik','markaz','orqa'][+(lc[9]||0)]||'auto'; A.sub=SUB_K[parseInt(lc[4]||'0',36)]||''; A.gatePat=GATE_PAT_K[parseInt(lc[5]||'0',36)]||'oddiy'; A.gateCol=GATE_COL_K[parseInt(lc[6]||'0',36)]||'qora'; A.fence=['gisht','panjara','yaxlit','yoq'][+(lc[7]||0)]||'gisht'; if(lc[8]) A.region=Object.keys(REGK)[parseInt(lc[8],36)]||undefined; if(A.sub&&SUBS[A.sub]) A.style=SUBS[A.sub].b; decOpen(A,ex[4]); decFurn(A,ex[5]); }
   if(p[18]){ try{ const R=JSON.parse(ub64(p.slice(18).join('-'))); if(R&&typeof R==='object') A.rooms={adj:R.adj||{},base:R.base||{},del:Array.isArray(R.del)?R.del:[],add:Array.isArray(R.add)?R.add.filter(r=>r&&typeof r.n==='string'&&r.a>0).slice(0,12):[]}; }catch(e){} }
   if(!(A.plotW>=9&&A.plotW<=60&&A.plotL>=15&&A.plotL<=80)) return null; return {A,vi:Math.min(2,Math.max(0,+p[16]||0)),st:sty((p[17]||'')[0])}; }
 function shareUrl(){ const base=/claude/.test(location.hostname)||location.protocol==='about:'||!location.hostname ? ART_URL : location.origin+location.pathname; const v=S.variants[S.active]; return base+'#'+encProject(S.A,S.active,v&&v.style); }
@@ -2590,6 +2740,8 @@ async function makePdf(){
     for(let k=0;k<v.floors.length;k++){ frame(`${k+1}-qavat rejasi`,k===0?'5. Qavat rejalari':null); const img=await svgToPng(planSVG(v,k),2400); const mw=170, mh=H-46; let w=mw,h=w*img.ar; if(h>mh){h=mh;w=h/img.ar;} doc.addImage(img.data,'JPEG',12,24,w,h);
       const f=v.floors[k]; const rows=mainRooms(f).map((r,i)=>[String(i+1),r.n,`${fmt2(r.w)} × ${fmt2(r.h)}`,fmtA(roomA(r,f))]); rows.push(['','Jami','',fmtA(sum(f.rooms.filter(r=>r.t!=='garage'),r=>r.w*r.h))]);
       table(188,28,['No','Xona','O\'lcham, m','m2'],rows,[8,44,26,16]); }
+    for(let k=0;k<v.floors.length;k++){ frame(`${k+1}-qavat - mebel joylashuvi`,k===0?'5.1 Mebel joylashuvi rejasi (o\'lchamlar mm)':null); const img=await svgToPng(planSVG(v,k,{furn:1,A}),2600); const mw=170, mh=H-46; let w=mw,h=w*img.ar; if(h>mh){h=mh;w=h/img.ar;} doc.addImage(img.data,'JPEG',12,24,w,h);
+      if(k===v.floors.length-1){ const ml=mebelList(v,A).slice(0,26); table(188,28,['Mebel','O\'lcham','Soni'],ml,[40,34,12]); } }
     { const rl=roomList(v); for(let i=0;i<rl.length;i++){ const {k,r,f}=rl[i]; frame(`${i+1}. ${r.n} - chizma`,i===0?'6. Xonalar (har biri: chizma + ko\'rinish)':null); const img=await svgToPng(roomSVG(v,k,r,A),1800); let w=170,h=w*img.ar; if(h>H-46){h=H-46;w=h/img.ar;} doc.addImage(img.data,'JPEG',14,24,w,h);
         table(194,30,['Xona','Qiymat'],[['Qavat',String(k+1)],["O'lcham",`${fmt2(r.w)} x ${fmt2(r.h)} m`],['Maydon',fmtA(roomA(r,f))+' m2'],['Devor rangi',A.paint||''],['Pol',floorOf(r,v,A)],['Shift',CEIL_N[A.ceiling]||CEIL_N.oddiy]],[30,60]);
         const im=S.roomImgs[`${v.key}|${k}|${r.n}|${i}`]; if(im){ frame(`${i+1}. ${r.n} - ko'rinish`); doc.addImage(im.url,im.url.startsWith('data:image/png')?'PNG':'JPEG',14,24,W-28,(W-28)*9/16); } } }
@@ -2819,6 +2971,123 @@ const MAKETS=[
   {id:'orqaL',n:'Orqa L',d:'Orqada yozgi oshxona qanoti',layout:'orqaL',b:[[0,0,12,10,6.6],[0,10,4.5,8,3.3]]},
   {id:'orqaU',n:'Orqa U (atrium)',d:'Orqada ikki qanotli hovli',layout:'orqaU',b:[[0,0,14,10,6.6],[0,10,4.5,8,3.3],[9.5,10,4.5,8,3.3]]},
   {id:'darvoza',n:'Darvozaxonali',d:"Mashina uy ostidan o'tadi",layout:'darvoza',b:[[0,0,6,12,3.3],[10.5,0,6,12,3.3],[0,0,16.5,12,3.3,3.3]]}];
+function genMB(fam,f){ const H=f.one?3.3:6.6, b=[]; const W=f.w||12, D=f.d||10;
+  if(fam==='darvoza'){ const s=f.dk||1, ww=6*s, P=4.5; b.push([0,0,ww,12,3.3],[ww+P,0,ww,12,3.3],[0,0,2*ww+P,12,3.3,3.3]); if(f.ba) b.push([ww+P,12,ww,3.6,0.25,3.1]); return b; }
+  b.push([0,0,W,D,H]);
+  if(f.bays) b.push([1.6,-1.2,3,1.2,H],[W-4.6,-1.2,3,1.2,H]);
+  if(f.porch){ const cx=W/2; b.push([cx-1.6,-2,3.2,2,0.3,3.1],[cx-1.5,-1.9,0.3,0.3,3.1],[cx+1.2,-1.9,0.3,0.3,3.1]); }
+  if(f.fa){ b.push([0,-2.6,W,2.6,0.25,3.1]); for(let i=0;i<4;i++) b.push([0.2+i*(W-0.7)/3,-2.4,0.3,0.3,3.1]); }
+  if(f.ba) b.push([0,D,W,2.4,0.25,3.1]);
+  if(f.markaz) b.push([W/2-1.1,-0.7,2.2,0.7,H+0.7]);
+  if(f.orqa) b.push([1,D,W-2,3.2,0.25,3.1],[1.1,D+2.9,0.3,0.3,3.1],[W-1.4,D+2.9,0.3,0.3,3.1]);
+  if(f.gar) b.push([W,0,4.5,7,3.3]);
+  const ww=f.ww||4.5, L=9*(f.Lk||1), gal=f.gal||2;
+  if(fam==='L'||fam==='U'){ (fam==='U'?[0,W-ww]:[f.mir?W-ww:0]).forEach(x=>{ b.push([x,-L,ww,L,3.3]); b.push([x===0?ww:x-gal,-L,gal,L,0.25,3.1]); }); }
+  if(fam==='orqaL'||fam==='orqaU'){ const L2=8*(f.Lk||1); (fam==='orqaU'?[0,W-ww]:[f.mir?W-ww:0]).forEach(x=>b.push([x,D,ww,L2,3.3])); }
+  return b; }
+[
+ ['kubkeng','Keng ixcham',"Keng va sayoz, hamma xona yorug'",'ixcham',{shallow:true},null,{w:15,d:8.5}],
+ ['kubmarkaz','Markaziy holli kub',"O'rtada uzun hol, ikki tomonda xonalar",'ixcham',{porch:false,backAyvon:true},'markaz',{markaz:1}],
+ ['kubbog','Bog\'ga qaragan kub',"Zal va oshxona orqa hovliga qaraydi",'ixcham',{porch:false,backAyvon:true},'orqa',{orqa:1}],
+ ['kubbir','Bir qavatli kub',"Zinasiz, hamma xona bir qavatda",'ixcham',{porch:false,backAyvon:true},null,{one:1,w:14,d:11},{fl:1}],
+ ['porchayvon','Ustun + orqa ayvon',"Old tomonda ustunli kirish, orqada ayvon",'ixcham',{porch:true,backAyvon:true},null,{porch:1,ba:1}],
+ ['porchmarkaz','Ustunli, markaziy hol',"Ustunli kirishdan to'g'ri uzun holga",'ixcham',{porch:true},'markaz',{porch:1,markaz:1}],
+ ['porchbog','Ustunli, zal bog\'da',"Ustunli kirish, zal orqa hovli tomonda",'ixcham',{porch:true},'orqa',{porch:1,orqa:1}],
+ ['porchbir','Bir qavatli ustunli',"Bir qavat, old tomonda ustunli kirish",'ixcham',{porch:true},null,{one:1,porch:1,w:14,d:11},{fl:1}],
+ ['ayvonmarkaz','Ayvonli, markaziy hol',"Old ayvon va uzun markaziy hol",'ixcham',{backAyvon:false,frontAyvon:true},'markaz',{fa:1,markaz:1},{ayvon:1}],
+ ['ayvonbir','Bir qavatli ayvonli',"Butun old tomonda ayvon, bir qavat",'ixcham',{backAyvon:false,frontAyvon:true},null,{one:1,fa:1,w:14,d:11},{fl:1,ayvon:1}],
+ ['ayvonbog','Ayvonli, zal bog\'da',"Old ayvon, zal orqa hovliga qaraydi",'ixcham',{backAyvon:false,frontAyvon:true},'orqa',{fa:1,orqa:1},{ayvon:1}],
+ ['garajporch','Garaj + ustunli kirish',"Yon garaj va ustunli kirish",'ixcham',{porch:true},null,{gar:1,porch:1},{gar:1}],
+ ['garajayvon','Garaj + old ayvon',"Yon garaj, old tomonda ayvon",'ixcham',{backAyvon:false,frontAyvon:true},null,{gar:1,fa:1},{gar:1,ayvon:1}],
+ ['garajmarkaz','Garajli, markaziy hol',"Yon garaj, ichkarida uzun hol",'ixcham',{porch:false,backAyvon:true},'markaz',{gar:1,markaz:1},{gar:1}],
+ ['garajbir','Bir qavatli garajli',"Bir qavat va yon garaj",'ixcham',{porch:false,backAyvon:true},null,{one:1,gar:1,w:14,d:11},{gar:1,fl:1}],
+ ['erkerporch','Erker + ustunli kirish',"Erker oynalar orasida ustunli kirish",'erker',{porch:true},null,{bays:1,porch:1}],
+ ['erkermarkaz','Erkerli, markaziy hol',"Erker oynalar, o'rtada uzun hol",'erker',{porch:false},'markaz',{bays:1,markaz:1}],
+ ['erkerbog','Erkerli, zal bog\'da',"Erker oynalar, zal orqa tomonda",'erker',{porch:false},'orqa',{bays:1,orqa:1}],
+ ['erkerbir','Bir qavatli erkerli',"Bir qavat, old tomonda erker oynalar",'erker',{porch:false},null,{one:1,bays:1,w:14,d:11},{fl:1}],
+ ['erkergaraj','Erker + garaj',"Erker oynalar va yon garaj",'erker',{porch:false},null,{bays:1,gar:1},{gar:1}],
+ ['Loyng','L-shakl (o\'ng qanot)',"Qanot o'ng tomonda ko'chaga chiqqan",'L',{mirror:false},null,{mir:1}],
+ ['Luzun','Uzun qanotli L',"Qanot uzun, katta old hovli",'L',{Lk:1.1},null,{Lk:1.15}],
+ ['Lqisqa','Qisqa qanotli L',"Qanot qisqa, ixcham hovli",'L',{Lk:0.75},null,{Lk:0.7}],
+ ['Lgaraj','L-shakl, garaj qanotda',"Qanotda garaj va yozgi oshxona",'L',{},null,{gar:0},{gar:1}],
+ ['Lerker','L-shakl + erker',"Qanot va old tomonda erker oynalar",'L',{bays:true},null,{bays:1}],
+ ['Lkeng','Keng galereyali L',"Qanot oldida keng galereya-ayvon",'L',{gal:2.6},null,{gal:2.6}],
+ ['Lmarkaz','L-shakl, markaziy hol',"Ko'chaga qanot, ichkarida uzun hol",'L',{},'markaz',{markaz:1}],
+ ['Ukeng','Keng hovlili U',"Ikki qanot orasida katta hovli",'U',{gal:2.6,ww:4.0},null,{gal:2.6,ww:4}],
+ ['Ugaraj','U-shakl + garaj',"Bir qanotda garaj",'U',{},null,{},{gar:1}],
+ ['Uerker','U-shakl + erker',"Ikki qanot va erker oynalar",'U',{bays:true},null,{bays:1}],
+ ['Umarkaz','U-shakl, markaziy hol',"Ikki qanot, ichkarida uzun hol",'U',{},'markaz',{markaz:1}],
+ ['orqaLgaraj','Orqa L + garaj',"Orqa qanotda garaj va yozgi oshxona",'orqaL',{},null,{gar:0},{gar:1}],
+ ['orqaLporch','Orqa L + ustunli kirish',"Old tomonda ustunlar, orqada qanot",'orqaL',{porch:true},null,{porch:1}],
+ ['orqaLerker','Orqa L + erker',"Erker oynalar, orqada qanot",'orqaL',{bays:true},null,{bays:1}],
+ ['orqaLuzun','Uzun orqa qanotli L',"Orqada uzun qanot, katta hovli",'orqaL',{Lk:1.15},null,{Lk:1.2}],
+ ['orqaLbir','Bir qavatli orqa L',"Bir qavat, orqada qanot",'orqaL',{},null,{one:1,w:14,d:11},{fl:1}],
+ ['orqaUporch','Orqa U + ustunli kirish',"Ustunli kirish, orqada atrium",'orqaU',{porch:true},null,{porch:1}],
+ ['orqaUerker','Orqa U + erker',"Erker oynalar, orqada atrium",'orqaU',{bays:true},null,{bays:1}],
+ ['orqaUmarkaz','Orqa U, markaziy hol',"Orqada atrium, ichkarida uzun hol",'orqaU',{},'markaz',{markaz:1}],
+ ['darvozakeng','Keng darvozaxonali',"Kattaroq ikki qanot, darvozaxona",'darvoza',{dk:1.15},null,{dk:1.15,ba:1},{ayvon:1}]
+].forEach(([id,n,d,layout,o,plan,mf,fx])=>MAKETS.push({id,n,d,layout,o,plan,fx:fx||{},b:genMB(layout,mf||{})}));
+[["x1", "Ixcham + erker oynalar, bir qavatli", "Erker oynalar, bir qavatli", "ixcham", {"bays": true, "porch": false, "backAyvon": true}, null, {"bays": 1, "one": 1, "w": 14, "d": 11}, {"fl": 1}],
+["x2", "Ixcham + ustunli kirish, erker oynalar", "Ustunli kirish, erker oynalar", "ixcham", {"porch": true, "bays": true}, null, {"porch": 1, "bays": 1}, {}],
+["x3", "Ixcham + garaj, old ayvon, zal bog'da", "Garaj, old ayvon; zal va oshxona orqa hovliga qaraydi", "ixcham", {"frontAyvon": true, "backAyvon": false}, "orqa", {"gar": 1, "fa": 1, "orqa": 1}, {"gar": 1, "ayvon": 1}],
+["x4", "Ixcham + erker oynalar, old ayvon, zal bog'da", "Erker oynalar, old ayvon; zal va oshxona orqa hovliga qaraydi", "ixcham", {"bays": true, "frontAyvon": true, "backAyvon": false}, "orqa", {"bays": 1, "fa": 1, "orqa": 1}, {"ayvon": 1}],
+["x5", "Ixcham + ustunli kirish, bir qavatli, zal bog'da", "Ustunli kirish, bir qavatli; zal va oshxona orqa hovliga qaraydi", "ixcham", {"porch": true}, "orqa", {"porch": 1, "one": 1, "w": 14, "d": 11, "orqa": 1}, {"fl": 1}],
+["x6", "Ixcham + bir qavatli, markaziy hol", "Bir qavatli; ichkarida o'rtada uzun hol", "ixcham", {"porch": false, "backAyvon": true}, "markaz", {"one": 1, "w": 14, "d": 11, "markaz": 1}, {"fl": 1}],
+["x7", "Ixcham + ustunli kirish, bir qavatli, markaziy hol", "Ustunli kirish, bir qavatli; ichkarida o'rtada uzun hol", "ixcham", {"porch": true}, "markaz", {"porch": 1, "one": 1, "w": 14, "d": 11, "markaz": 1}, {"fl": 1}],
+["x8", "Ixcham + garaj, erker oynalar, markaziy hol", "Garaj, erker oynalar; ichkarida o'rtada uzun hol", "ixcham", {"bays": true, "porch": false, "backAyvon": true}, "markaz", {"gar": 1, "bays": 1, "markaz": 1}, {"gar": 1}],
+["x9", "Ixcham + erker oynalar, old ayvon, markaziy hol", "Erker oynalar, old ayvon; ichkarida o'rtada uzun hol", "ixcham", {"bays": true, "frontAyvon": true, "backAyvon": false}, "markaz", {"bays": 1, "fa": 1, "markaz": 1}, {"ayvon": 1}],
+["x10", "Erkerli + garaj, bir qavatli", "Garaj, bir qavatli", "erker", {"porch": false}, null, {"gar": 1, "one": 1, "w": 14, "d": 11, "bays": 1}, {"gar": 1, "fl": 1}],
+["x11", "Erkerli + ustunli kirish, bir qavatli", "Ustunli kirish, bir qavatli", "erker", {"porch": true}, null, {"porch": 1, "one": 1, "w": 14, "d": 11, "bays": 1}, {"fl": 1}],
+["x12", "Erkerli + ustunli kirish, zal bog'da", "Ustunli kirish; zal va oshxona orqa hovliga qaraydi", "erker", {"porch": true}, "orqa", {"porch": 1, "bays": 1, "orqa": 1}, {}],
+["x13", "Erkerli + garaj, bir qavatli, markaziy hol", "Garaj, bir qavatli; ichkarida o'rtada uzun hol", "erker", {"porch": false}, "markaz", {"gar": 1, "one": 1, "w": 14, "d": 11, "bays": 1, "markaz": 1}, {"gar": 1, "fl": 1}],
+["x14", "L-shakl + erker oynalar, qisqa qanot", "Erker oynalar, qisqa qanot", "L", {"bays": true, "Lk": 0.75}, null, {"bays": 1, "Lk": 0.7}, {}],
+["x15", "L-shakl + o'ng tomonda qanot, qisqa qanot", "O'ng tomonda qanot, qisqa qanot", "L", {"mirror": false, "Lk": 0.75}, null, {"mir": 1, "Lk": 0.7}, {}],
+["x16", "L-shakl + uzun qanot, keng galereya", "Uzun qanot, keng galereya", "L", {"Lk": 1.15, "gal": 2.6}, null, {"Lk": 1.2, "gal": 2.6}, {}],
+["x17", "L-shakl + garaj, qisqa qanot", "Garaj, qisqa qanot", "L", {"Lk": 0.75}, null, {"gar": 1, "Lk": 0.7}, {"gar": 1}],
+["x18", "L-shakl + keng galereya, zal bog'da", "Keng galereya; zal va oshxona orqa hovliga qaraydi", "L", {"gal": 2.6}, "orqa", {"gal": 2.6, "orqa": 1}, {}],
+["x19", "L-shakl + erker oynalar, qisqa qanot, zal bog'da", "Erker oynalar, qisqa qanot; zal va oshxona orqa hovliga qaraydi", "L", {"bays": true, "Lk": 0.75}, "orqa", {"bays": 1, "Lk": 0.7, "orqa": 1}, {}],
+["x20", "L-shakl + ustunli kirish, erker oynalar, zal bog'da", "Ustunli kirish, erker oynalar; zal va oshxona orqa hovliga qaraydi", "L", {"porch": true, "bays": true}, "orqa", {"porch": 1, "bays": 1, "orqa": 1}, {}],
+["x21", "L-shakl + bir qavatli, qisqa qanot, zal bog'da", "Bir qavatli, qisqa qanot; zal va oshxona orqa hovliga qaraydi", "L", {"Lk": 0.75}, "orqa", {"one": 1, "w": 14, "d": 11, "Lk": 0.7, "orqa": 1}, {"fl": 1}],
+["x22", "L-shakl + bir qavatli, keng galereya, markaziy hol", "Bir qavatli, keng galereya; ichkarida o'rtada uzun hol", "L", {"gal": 2.6}, "markaz", {"one": 1, "w": 14, "d": 11, "gal": 2.6, "markaz": 1}, {"fl": 1}],
+["x23", "L-shakl + garaj, o'ng tomonda qanot, markaziy hol", "Garaj, o'ng tomonda qanot; ichkarida o'rtada uzun hol", "L", {"mirror": false}, "markaz", {"gar": 1, "mir": 1, "markaz": 1}, {"gar": 1}],
+["x24", "L-shakl + ustunli kirish, keng galereya, markaziy hol", "Ustunli kirish, keng galereya; ichkarida o'rtada uzun hol", "L", {"porch": true, "gal": 2.6}, "markaz", {"porch": 1, "gal": 2.6, "markaz": 1}, {}],
+["x25", "L-shakl + erker oynalar, qisqa qanot, markaziy hol", "Erker oynalar, qisqa qanot; ichkarida o'rtada uzun hol", "L", {"bays": true, "Lk": 0.75}, "markaz", {"bays": 1, "Lk": 0.7, "markaz": 1}, {}],
+["x26", "U-shakl + uzun qanot", "Uzun qanot", "U", {"Lk": 1.15}, null, {"Lk": 1.2}, {}],
+["x27", "U-shakl + garaj, erker oynalar", "Garaj, erker oynalar", "U", {"bays": true}, null, {"gar": 1, "bays": 1}, {"gar": 1}],
+["x28", "U-shakl + uzun qanot, keng galereya", "Uzun qanot, keng galereya", "U", {"Lk": 1.15, "gal": 2.6}, null, {"Lk": 1.2, "gal": 2.6}, {}],
+["x29", "U-shakl + garaj, keng galereya", "Garaj, keng galereya", "U", {"gal": 2.6}, null, {"gar": 1, "gal": 2.6}, {"gar": 1}],
+["x30", "U-shakl + erker oynalar, uzun qanot, zal bog'da", "Erker oynalar, uzun qanot; zal va oshxona orqa hovliga qaraydi", "U", {"bays": true, "Lk": 1.15}, "orqa", {"bays": 1, "Lk": 1.2, "orqa": 1}, {}],
+["x31", "U-shakl + erker oynalar, qisqa qanot, zal bog'da", "Erker oynalar, qisqa qanot; zal va oshxona orqa hovliga qaraydi", "U", {"bays": true, "Lk": 0.75}, "orqa", {"bays": 1, "Lk": 0.7, "orqa": 1}, {}],
+["x32", "U-shakl + garaj, uzun qanot, zal bog'da", "Garaj, uzun qanot; zal va oshxona orqa hovliga qaraydi", "U", {"Lk": 1.15}, "orqa", {"gar": 1, "Lk": 1.2, "orqa": 1}, {"gar": 1}],
+["x33", "U-shakl + garaj, qisqa qanot, zal bog'da", "Garaj, qisqa qanot; zal va oshxona orqa hovliga qaraydi", "U", {"Lk": 0.75}, "orqa", {"gar": 1, "Lk": 0.7, "orqa": 1}, {"gar": 1}],
+["x34", "U-shakl + qisqa qanot, markaziy hol", "Qisqa qanot; ichkarida o'rtada uzun hol", "U", {"Lk": 0.75}, "markaz", {"Lk": 0.7, "markaz": 1}, {}],
+["x35", "U-shakl + erker oynalar, keng galereya, markaziy hol", "Erker oynalar, keng galereya; ichkarida o'rtada uzun hol", "U", {"bays": true, "gal": 2.6}, "markaz", {"bays": 1, "gal": 2.6, "markaz": 1}, {}],
+["x36", "U-shakl + garaj, erker oynalar, markaziy hol", "Garaj, erker oynalar; ichkarida o'rtada uzun hol", "U", {"bays": true}, "markaz", {"gar": 1, "bays": 1, "markaz": 1}, {"gar": 1}],
+["x37", "U-shakl + erker oynalar, uzun qanot, markaziy hol", "Erker oynalar, uzun qanot; ichkarida o'rtada uzun hol", "U", {"bays": true, "Lk": 1.15}, "markaz", {"bays": 1, "Lk": 1.2, "markaz": 1}, {}],
+["x38", "Orqa L + o'ng tomonda qanot", "O'ng tomonda qanot", "orqaL", {"mirror": false}, null, {"mir": 1}, {}],
+["x39", "Orqa L + qisqa qanot", "Qisqa qanot", "orqaL", {"Lk": 0.75}, null, {"Lk": 0.7}, {}],
+["x40", "Orqa L + o'ng tomonda qanot, uzun qanot", "O'ng tomonda qanot, uzun qanot", "orqaL", {"mirror": false, "Lk": 1.15}, null, {"mir": 1, "Lk": 1.2}, {}],
+["x41", "Orqa L + bir qavatli, uzun qanot", "Bir qavatli, uzun qanot", "orqaL", {"Lk": 1.15}, null, {"one": 1, "w": 14, "d": 11, "Lk": 1.2}, {"fl": 1}],
+["x42", "Orqa L + bir qavatli, o'ng tomonda qanot, zal bog'da", "Bir qavatli, o'ng tomonda qanot; zal va oshxona orqa hovliga qaraydi", "orqaL", {"mirror": false}, "orqa", {"one": 1, "w": 14, "d": 11, "mir": 1, "orqa": 1}, {"fl": 1}],
+["x43", "Orqa L + ustunli kirish, o'ng tomonda qanot, zal bog'da", "Ustunli kirish, o'ng tomonda qanot; zal va oshxona orqa hovliga qaraydi", "orqaL", {"porch": true, "mirror": false}, "orqa", {"porch": 1, "mir": 1, "orqa": 1}, {}],
+["x44", "Orqa L + erker oynalar, bir qavatli, zal bog'da", "Erker oynalar, bir qavatli; zal va oshxona orqa hovliga qaraydi", "orqaL", {"bays": true}, "orqa", {"bays": 1, "one": 1, "w": 14, "d": 11, "orqa": 1}, {"fl": 1}],
+["x45", "Orqa L + o'ng tomonda qanot, uzun qanot, zal bog'da", "O'ng tomonda qanot, uzun qanot; zal va oshxona orqa hovliga qaraydi", "orqaL", {"mirror": false, "Lk": 1.15}, "orqa", {"mir": 1, "Lk": 1.2, "orqa": 1}, {}],
+["x46", "Orqa L + garaj, o'ng tomonda qanot, markaziy hol", "Garaj, o'ng tomonda qanot; ichkarida o'rtada uzun hol", "orqaL", {"mirror": false}, "markaz", {"gar": 1, "mir": 1, "markaz": 1}, {"gar": 1}],
+["x47", "Orqa L + bir qavatli, o'ng tomonda qanot, markaziy hol", "Bir qavatli, o'ng tomonda qanot; ichkarida o'rtada uzun hol", "orqaL", {"mirror": false}, "markaz", {"one": 1, "w": 14, "d": 11, "mir": 1, "markaz": 1}, {"fl": 1}],
+["x48", "Orqa L + ustunli kirish, uzun qanot, markaziy hol", "Ustunli kirish, uzun qanot; ichkarida o'rtada uzun hol", "orqaL", {"porch": true, "Lk": 1.15}, "markaz", {"porch": 1, "Lk": 1.2, "markaz": 1}, {}],
+["x49", "Orqa L + ustunli kirish, erker oynalar, markaziy hol", "Ustunli kirish, erker oynalar; ichkarida o'rtada uzun hol", "orqaL", {"porch": true, "bays": true}, "markaz", {"porch": 1, "bays": 1, "markaz": 1}, {}],
+["x50", "Orqa U + ustunli kirish, erker oynalar", "Ustunli kirish, erker oynalar", "orqaU", {"porch": true, "bays": true}, null, {"porch": 1, "bays": 1}, {}],
+["x51", "Orqa U + garaj, erker oynalar", "Garaj, erker oynalar", "orqaU", {"bays": true}, null, {"gar": 1, "bays": 1}, {"gar": 1}],
+["x52", "Orqa U + ustunli kirish, qisqa qanot", "Ustunli kirish, qisqa qanot", "orqaU", {"porch": true, "Lk": 0.75}, null, {"porch": 1, "Lk": 0.7}, {}],
+["x53", "Orqa U + ustunli kirish, garaj", "Ustunli kirish, garaj", "orqaU", {"porch": true}, null, {"porch": 1, "gar": 1}, {"gar": 1}],
+["x54", "Orqa U + uzun qanot, zal bog'da", "Uzun qanot; zal va oshxona orqa hovliga qaraydi", "orqaU", {"Lk": 1.15}, "orqa", {"Lk": 1.2, "orqa": 1}, {}],
+["x55", "Orqa U + ustunli kirish, uzun qanot, zal bog'da", "Ustunli kirish, uzun qanot; zal va oshxona orqa hovliga qaraydi", "orqaU", {"porch": true, "Lk": 1.15}, "orqa", {"porch": 1, "Lk": 1.2, "orqa": 1}, {}],
+["x56", "Orqa U + erker oynalar, qisqa qanot, zal bog'da", "Erker oynalar, qisqa qanot; zal va oshxona orqa hovliga qaraydi", "orqaU", {"bays": true, "Lk": 0.75}, "orqa", {"bays": 1, "Lk": 0.7, "orqa": 1}, {}],
+["x57", "Orqa U + ustunli kirish, garaj, zal bog'da", "Ustunli kirish, garaj; zal va oshxona orqa hovliga qaraydi", "orqaU", {"porch": true}, "orqa", {"porch": 1, "gar": 1, "orqa": 1}, {"gar": 1}],
+["x58", "Orqa U + ustunli kirish, markaziy hol", "Ustunli kirish; ichkarida o'rtada uzun hol", "orqaU", {"porch": true}, "markaz", {"porch": 1, "markaz": 1}, {}],
+["x59", "Orqa U + ustunli kirish, qisqa qanot, markaziy hol", "Ustunli kirish, qisqa qanot; ichkarida o'rtada uzun hol", "orqaU", {"porch": true, "Lk": 0.75}, "markaz", {"porch": 1, "Lk": 0.7, "markaz": 1}, {}],
+["x60", "Orqa U + garaj, uzun qanot, markaziy hol", "Garaj, uzun qanot; ichkarida o'rtada uzun hol", "orqaU", {"Lk": 1.15}, "markaz", {"gar": 1, "Lk": 1.2, "markaz": 1}, {"gar": 1}]].forEach(([id,n,d,layout,o,plan,mf,fx])=>MAKETS.push({id,n,d,layout,o,plan,fx:fx||{},b:genMB(layout,mf||{})}));
+
 function maketSVG(m){ const k=6.2, ix=(x,y,z)=>[(x-y)*0.866*k/6, ((x+y)*0.5-z)*k/6]; const polys=[];
   const bs=m.b.map(b=>({x:b[0],y:-b[1]-b[3],w:b[2],d:b[3],h:b[4],z:b[5]||0})).sort((a,b)=>(a.x+a.y+a.z*0.01)-(b.x+b.y+b.z*0.01));
   let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9; const P=(x,y,z)=>{ const p=ix(x,y,z); mnx=Math.min(mnx,p[0]); mxx=Math.max(mxx,p[0]); mny=Math.min(mny,p[1]); mxy=Math.max(mxy,p[1]); return p.map(n=>n.toFixed(2)).join(','); };
@@ -2827,10 +3096,12 @@ function maketSVG(m){ const k=6.2, ix=(x,y,z)=>[(x-y)*0.866*k/6, ((x+y)*0.5-z)*k
     polys.push(`<polygon points="${P(x+w,y,z)} ${P(x+w,y+d,z)} ${P(x+w,y+d,t)} ${P(x+w,y,t)}" fill="#C9CED6" stroke="#9AA3AF" stroke-width="0.06"/>`);
     polys.push(`<polygon points="${P(x,y,t)} ${P(x+w,y,t)} ${P(x+w,y+d,t)} ${P(x,y+d,t)}" fill="#FFFFFF" stroke="#9AA3AF" stroke-width="0.06"/>`); });
   const pad=1; return `<svg viewBox="${(mnx-pad).toFixed(1)} ${(mny-pad).toFixed(1)} ${(mxx-mnx+pad*2).toFixed(1)} ${(mxy-mny+pad*2).toFixed(1)}" aria-hidden="true"><ellipse cx="${((mnx+mxx)/2).toFixed(1)}" cy="${(mxy-0.6).toFixed(1)}" rx="${((mxx-mnx)/2).toFixed(1)}" ry="1.2" fill="rgba(10,17,32,.10)"/>${polys.join('')}</svg>`; }
-function renderMakets(){ const g=$('#maketGrid'); if(!g) return; g.innerHTML=`<button type="button" class="maket" data-id="auto"><div class="mk-svg mk-auto">🎲</div><b>Har xil</b><small>Sayt o'zi har xil shakllar beradi</small></button>`+MAKETS.map(m=>`<button type="button" class="maket" data-id="${m.id}"><div class="mk-svg">${maketSVG(m)}</div><b>${m.n}</b><small>${m.d}</small></button>`).join(''); syncMakets(); }
-function syncMakets(){ const cur=S.A.massing||'auto'; $$('#maketGrid .maket').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===cur))); }
-document.addEventListener('click',e=>{ const b=e.target.closest('#maketGrid .maket'); if(!b) return; const id=b.dataset.id; const m=MAKETS.find(x=>x.id===id); const A=S.A;
-  A.massing=id; A.layout=m?m.layout:'auto'; if(id==='auto') A.massing='auto'; if(id==='garaj') A.garage=true; if(id==='ayvon') A.ayvon=true; if(id==='darvoza'){ A.darvoza=true; A.floors=2; } syncInputs(); syncMakets(); });
+function renderMakets(){ ['#maketGrid','#qMaketGrid'].forEach(sel=>renderMaketsIn(sel)); syncMakets(); }
+function renderMaketsIn(sel){ const g=$(sel); if(!g) return; const all=S['mkAll'+sel], lim=sel==='#qMaketGrid'?5:11; g.innerHTML=`<button type="button" class="maket" data-id="auto"><div class="mk-svg mk-auto">🎲</div><b>Har xil</b><small>Sayt o'zi har xil shakllar beradi</small></button>`+MAKETS.map((m,i)=>`<button type="button" class="maket${i>=lim?' mk-more':''}" data-id="${m.id}"${i>=lim&&!all?' hidden':''}><div class="mk-svg">${maketSVG(m)}</div><b>${m.n}</b><small>${m.d}</small></button>`).join('')+(all?'':`<button type="button" class="btn back mkmore" style="grid-column:1/-1">➕ Yana ${MAKETS.length-lim} ta maket ko'rsatish (jami ${MAKETS.length} ta)</button>`);
+  const mb=g.querySelector('.mkmore'); if(mb) mb.onclick=()=>{ S['mkAll'+sel]=1; g.querySelectorAll('.mk-more').forEach(x=>x.hidden=false); mb.remove(); try{ renderMakets3D(); }catch(e){} }; }
+function syncMakets(){ const cur=S.A.massing||'auto'; $$('#maketGrid .maket,#qMaketGrid .maket').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===cur))); }
+document.addEventListener('click',e=>{ const b=e.target.closest('#maketGrid .maket,#qMaketGrid .maket'); if(!b) return; const id=b.dataset.id; const m=MAKETS.find(x=>x.id===id); const A=S.A;
+  A.massing=id; A.layout=m?m.layout:'auto'; if(id==='auto') A.massing='auto'; if(id==='garaj') A.garage=true; if(id==='ayvon') A.ayvon=true; if(id==='darvoza'||(m&&m.layout==='darvoza')){ A.darvoza=true; A.floors=2; } if(m&&m.fx){ if(m.fx.gar) A.garage=true; if(m.fx.ayvon) A.ayvon=true; if(m.fx.fl) A.floors=m.fx.fl; else if(m.o&&A.floors===1&&m.layout!=='darvoza') A.floors=2; } syncInputs(); syncMakets(); });
 renderMakets();
 
 /* ===== Katalog: 100 ta tayyor model ===== */
@@ -2958,8 +3229,8 @@ function styMaket(m,st,sub){ st=st||S.A.style; sub=sub===undefined?(S.A.sub||'')
     if(sub==='sharq'&&mi>=0) out.push([x+w/2-1.3,y+d/2-1.3,2.6,2.6,1.4,hh,'tort']);
   }
   return {id:m.id,b:b.concat(out)}; }
-function renderMakets3D(){ const g=$('#maketGrid'); if(!g) return; const roof=mkRoof(); const ids=MAKETS.map(m=>m.id); let i=0;
-  const step=()=>{ if(i>=ids.length) return; const m=MAKETS[i++]; const box2=g.querySelector(`.maket[data-id="${m.id}"] .mk-svg`); const url=mkImage(styMaket(m),roof,mkWall(),m.id,{st:S.A.style,sub:S.A.sub||''}); if(box2&&url){ box2.innerHTML=`<img alt="" src="${url}">`; box2.classList.add('mk3d'); } setTimeout(step,15); }; step();
+function renderMakets3D(){ const g=$('#maketGrid'); if(!g) return; const roof=mkRoof(); const vis=new Set([...document.querySelectorAll('#maketGrid .maket:not([hidden]),#qMaketGrid .maket:not([hidden])')].filter(b=>b.offsetParent!==null||!b.closest('[hidden]')).map(b=>b.dataset.id)); const ids=MAKETS.map(m=>m.id).filter(id=>vis.has(id)); const tok=S.mk3dTok=(S.mk3dTok||0)+1; let i=0;
+  const step=()=>{ if(tok!==S.mk3dTok||i>=ids.length) return; const mid=ids[i++], m=MAKETS.find(x=>x.id===mid); const url=mkImage(styMaket(m),roof,mkWall(),m.id,{st:S.A.style,sub:S.A.sub||''}); document.querySelectorAll(`#maketGrid .maket[data-id="${m.id}"] .mk-svg,#qMaketGrid .maket[data-id="${m.id}"] .mk-svg`).forEach(box2=>{ if(url){ box2.innerHTML=`<img alt="" src="${url}">`; box2.classList.add('mk3d'); } }); setTimeout(step,15); }; step();
   const rs=$('#roofShapeSeg'); if(rs&&!rs.dataset.pics){ rs.dataset.pics='1'; }
   renderRoofPics(); }
 function renderRoofPics(){ const host=$('#roofPics'); if(!host) return; const base=MAKETS[0]; const cur=S.A.roofShape||'auto';
@@ -3074,6 +3345,7 @@ function renderVariant(){
   const rows=[['Gabarit (eni × chuqurligi)',`${fmt1(v.W)} × ${fmt1(v.D)} m`],['Qavatlar',String(v.floors.length)]].concat(v.floors.map((f,k)=>[`${k+1}-qavat maydoni`,fmtA(sum(f.rooms.filter(r=>r.t!=='garage'),r=>r.w*r.h))+' m²'])).concat([['Umumiy maydon',fmtA(v.area)+' m²'],['Yotoqxonalar',String(v.bedCount)],['Daraja',LUX_NAME[v.lux]],['Hudud',`${v.region||regOf(S.A)}`],['1 m² narxi',`${v.rate} $`],['Uy qurilishi',money(v.cost)],['Hovli obodonchiligi',money(v.yard.cost)]].concat(v.podA?[["Podval (yerto'la)",`${fmtA(v.podA)} m² · ${money(v.podCost)}`]]:[]).concat([['Jami taxminiy narx',`${money(v.total)} <small style="font-weight:500;color:var(--muted,#6b7280)">≈ ${somFmt(v.total)}</small>`]]));
   $('#summary').innerHTML=`<div class="eyebrow">Variant ${v.key}</div><h2 style="font-size:20px">${esc(v.name)}</h2>
     <div class="field" style="gap:6px"><span class="flabel" style="font-size:13px">Uslubni almashtirish</span><div class="stylesw" id="styleSw">${['klassik','zamonaviy','milliy',...Object.keys(SUBS)].map(s=>`<button type="button" data-s="${s}" aria-pressed="${SUBS[s]?v.sub===s:(s===v.style&&!v.sub)}">${SUBS[s]?SUBS[s].n:STYLE_NAME[s]}</button>`).join('')}</div></div>`+
+    `<div class="field" style="gap:6px"><span class="flabel" style="font-size:13px">Xonalar joylashuvi</span><div class="stylesw" id="planSw">${[['klassik','Klassik'],['markaz','Markaziy hol'],['orqa',"Zal bog' tomonda"]].map(([p,t])=>`<button type="button" data-p="${p}" aria-pressed="${(S.A.plan||'auto')===p||(!S.A.plan||S.A.plan==='auto')&&v.plan===p}">${t}</button>`).join('')}</div></div>`+
     `<div class="field" style="gap:6px"><span class="flabel" style="font-size:13px">Tom</span><div class="stylesw" id="roofSw">${['tekis','ikki','tort','mansard'].map(s=>`<button type="button" data-r="${s}" aria-pressed="${s===v.roof.shape}">${ROOFSH[s]}</button>`).join('')}</div>`+
     `<div class="stylesw" id="roofMatSw" ${v.roof.shape==='tekis'?'hidden':''}>${Object.keys(ROOFM).map(s=>`<button type="button" data-m="${s}" aria-pressed="${s===v.roof.mat}">${ROOFM[s].n.replace(' (bitumli)','')}</button>`).join('')}</div></div>`+
     rows.map(([k,x],i)=>`<div class="kv"${i===rows.length-1?' style="font-size:15px"':''}><span>${k}</span><b>${x}</b></div>`).join('')+
@@ -3083,6 +3355,7 @@ function renderVariant(){
     `<p class="note">Uy: ${fmt(v.rate)} $/m² × ${fmtA(v.area)} m² (${LUX_NAME[v.lux].toLowerCase()} daraja, ${stN(v).toLowerCase()} uslub).</p>`;
   const reroof=()=>{ S.variants.forEach(x=>{ x.forceRoof=false; restyle(x,S.A,x.sub||x.style); }); const t=S.tabEls&&S.tabEls[S.active]; if(t) t.querySelector('.num').textContent=`${fmtA(v.area)} m² · ${money(v.total)}`; syncInputs(); renderVariant(); };
   $('#roofSw').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.A.roofShape=b.dataset.r; (S.variants||[]).forEach(x=>x.forceRoof=false); reroof(); });
+  $('#planSw').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.A.plan=b.dataset.p; try{ saveDraft(); }catch(er){} generate(S.active); toast('Xonalar: '+b.textContent); });
   $('#roofMatSw').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.A.roofMat=b.dataset.m; reroof(); });
   $('#styleSw').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.dataset.s===(v.sub||v.style)) return; const nv=restyleNew(v,S.A,b.dataset.s); S.variants[S.active]=nv; const t=S.tabEls&&S.tabEls[S.active]; if(t) t.querySelector('b').textContent=`Variant ${nv.key}: ${nv.name}`, t.querySelector('span').textContent=`${stN(nv)} uslub · ${nv.desc}`, t.querySelector('.num').textContent=`${fmtA(nv.area)} m² · ${money(nv.total)}`; toast(`${stN(nv)} · ${nv.name} · ${ROOFSH[nv.roof.shape]}`); renderVariant(); });
   const sh=$('#sheets'); sh.innerHTML='';
@@ -3097,6 +3370,9 @@ function renderVariant(){
     el.innerHTML=`<h3>${k+1}-QAVAT REJASI <span>M 1:100 · m²</span></h3><div class="svgbox">${planSVG(v,k)}</div>
       <table class="expl"><tbody>${rs.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.n)}</td><td style="color:#666">${fmt2(r.w)}×${fmt2(r.h)}</td><td>${fmtA(roomA(r,f))}</td></tr>`).join('')}<tr class="tot"><td></td><td>Jami ${k+1}-qavat</td><td></td><td>${fmtA(tot)}</td></tr>${f.open.filter(o=>['ayvon','balcony','passage'].includes(o.type)).map(o=>`<tr><td></td><td style="color:#666">${{ayvon:'Ayvon',balcony:'Balkon',passage:'Darvozaxona'}[o.type]}</td><td></td><td style="color:#666">${fmtA(o.w*o.h)}</td></tr>`).join('')}</tbody></table>`;
     sh.appendChild(el);
+    const em=document.createElement('div'); em.className='sheet';
+    em.innerHTML=`<h3>${k+1}-QAVAT · MEBEL JOYLASHUVI <span>M 1:60 · o'lchamlar mm</span></h3><div class="svgbox">${planSVG(v,k,{furn:1})}</div><p class="note" style="margin:6px 0 0">Ko'k raqamlar — har bir mebelning o'lchami (mm). Rejani bosing — to'liq ekranda ochiladi, barmoq bilan kattalashtiring.</p>`;
+    sh.appendChild(em);
   });
   renderUsta(v); renderRoomEditor();
   clearTimeout(S._ph); S._ph=setTimeout(()=>{ if(!$('section[data-screen="result"]').hidden) makePhotos(); },700);
@@ -3127,11 +3403,13 @@ function renderRoomEditor(){
     rows.push({key,k,n:r.n,a:E.base[key]||roomA(r,f),dv,gone,fixed:FIXED_ROOMS.includes(r.n)}); }));
   E.add.forEach((r,i)=>rows.push({key:'add|'+i,k:r.f,n:r.n,a:r.a,dv:0,added:true,idx:i}));
   $('#reFloor').hidden=S.A.floors===1; $('#reFloor').closest('.field').hidden=S.A.floors===1;
-  box.innerHTML=rows.map(r=>`<div class="rerow${r.gone?' gone':''}${r.added?' added':''}" data-key="${esc(r.key)}" data-area="${r.a}"><span class="nm">${esc(r.n)}<small>${r.k+1}-qavat${r.added?' · yangi':''}</small></span>${r.fixed?'':`<button type="button" data-a="-" aria-label="${esc(r.n)} maydonini kamaytirish">−</button>`}<b class="${r.dv?'ch':''}">${fmt1(Math.max(4,r.a+r.dv))}</b>${r.fixed?'':`<button type="button" data-a="+" aria-label="${esc(r.n)} maydonini oshirish">+</button><button type="button" class="del" data-a="x" aria-label="${esc(r.n)} xonasini ${r.gone?'qaytarish':'o\'chirish'}">${r.gone?'↺':'✕'}</button>`}</div>`).join('');
+  box.innerHTML=rows.map(r=>`<div class="rerow${r.gone?' gone':''}${r.added?' added':''}" data-key="${esc(r.key)}" data-area="${r.a}"><span class="nm">${esc(r.n)}<small>${r.k+1}-qavat${r.added?' · yangi':''}</small></span>${(r.fixed||r.added||r.gone)?'':(()=>{ const q=r.dv/(r.a||1), cur=q<=-0.12?'k':q>=0.12?'t':'o'; return `<span class="rsz">${[['k','Kichik'],['o',"O'rta"],['t','Katta']].map(([z,t])=>`<button type="button" data-a="s" data-sz="${z}" aria-pressed="${cur===z}">${t}</button>`).join('')}</span>`; })()}${r.fixed?'':`<button type="button" data-a="-" aria-label="${esc(r.n)} maydonini kamaytirish">−</button>`}<b class="${r.dv?'ch':''}">${fmt1(Math.max(4,r.a+r.dv))}</b>${r.fixed?'':`<button type="button" data-a="+" aria-label="${esc(r.n)} maydonini oshirish">+</button><button type="button" class="del" data-a="x" aria-label="${esc(r.n)} xonasini ${r.gone?'qaytarish':'o\'chirish'}">${r.gone?'↺':'✕'}</button>`}</div>`).join('');
 }
 $('#reList').addEventListener('click',e=>{ const b=e.target.closest('button[data-a]'); if(!b) return; const key=b.closest('.rerow').dataset.key, E=S.edit, a=b.dataset.a;
   if(key.startsWith('add|')){ const i=+key.split('|')[1]; if(a==='x') E.add.splice(i,1); else E.add[i].a=Math.max(4,E.add[i].a+(a==='+'?2:-2)); }
   else if(a==='x'){ const i=E.del.indexOf(key); if(i>=0) E.del.splice(i,1); else E.del.push(key); }
+  else if(a==='s'){ if(!E.base[key]) E.base[key]=Math.round(+b.closest('.rerow').dataset.area*10)/10; const base=E.base[key], z=b.dataset.sz; const dv=z==='k'?-Math.round(base*0.25):z==='t'?Math.round(base*0.3):0; if(dv) E.adj[key]=dv; else delete E.adj[key];
+    renderRoomEditor(); clearTimeout(S._rsz); S._rsz=setTimeout(()=>{ S.A.rooms=cloneEdits(S.edit); try{ saveDraft(); }catch(er){} generate(S.active); toast("Xona o'lchami o'zgardi, uy qayta chizildi"); },700); return; }
   else { if(!E.base[key]) E.base[key]=Math.round(+b.closest('.rerow').dataset.area*10)/10; E.adj[key]=(E.adj[key]||0)+(a==='+'?2:-2); if(!E.adj[key]) delete E.adj[key]; }
   renderRoomEditor(); });
 $('#reAdd').onclick=()=>{ const [n,t,a0]=$('#reType').value.split('|'); const f=S.A.floors===1?0:+$('#reFloor').value; const a=Math.max(4,Math.min(80,+$('#reArea').value||+a0));
@@ -3211,7 +3489,7 @@ async function figmaFile(mcp,fresh){ let fk=null; try{ fk=fresh?null:localStorag
 function renderThumbs(){ const th=$('#photoThumbs'); th.innerHTML=''; S.photos.forEach((p,i)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-pressed',String(i===S.photoIdx)); b.setAttribute('aria-label',p.cap); b.innerHTML=`<img alt="" src="${p.url}">`+(p.ai?'<span class="aitag">AI</span>':''); b.onclick=()=>showPhoto(i); th.appendChild(b); }); }
 async function aiPhoto(night,int){
   const msg=$('#photoMsg'), bs=[$('#aiPhoto'),$('#aiPhotoN'),$('#aiPhotoI'),$('#aiPhotoC')]; if(!(await aiAvail())){ msg.textContent="AI foto bu yerda ishlamaydi."; return; }
-  const v=S.variants[S.active], A=S.A; bs.forEach(b=>b&&(b.disabled=true)); msg.textContent='AI haqiqiy fotoni chizmoqda… (20–60 soniya)'; const PR=int==='cut'?aiPromptCut(v,A):(int?aiPromptInt(v,A):aiPrompt(v,A,night));
+  const v=S.variants[S.active], A=S.A; bs.forEach(b=>b&&(b.disabled=true)); msg.textContent='AI haqiqiy fotoni chizmoqda… (5–60 soniya)'; const PR=int==='cut'?aiPromptCut(v,A):(int?aiPromptInt(v,A):aiPrompt(v,A,night));
   try{ const url=await aiGen(PR);
     S.photos=S.photos||[]; S.photos.unshift({url,cap:`Haqiqiy foto (AI) · ${int==='cut'?'kesim (dollhouse)':(int?'ichki: mehmonxona':(night?'kechqurun':'kunduzi'))} · Variant ${v.key}`,ai:true}); S.photoIdx=0; renderThumbs(); showPhoto(0);
     msg.textContent="Tayyor. Bu rasm sun'iy intellekt chizgan: uslub, fasad, tom, deraza, darvoza va atrof sizning javoblaringizdan olindi. Mayda detallar 3D rejadan farq qilishi mumkin.";
@@ -3229,8 +3507,14 @@ async function freeAi(PR,w,h,tries){ w=w||1280; h=h||720; tries=tries||0; const 
     if(window.__aiWait) try{ window.__aiWait(wait); }catch(e){} await new Promise(res=>setTimeout(res,wait*1000)); return freeAi(PR,w,h,tries+1); }
   if(!r.ok) throw {code:'free_http',status:r.status}; const b=await r.blob(); if(!/^image\//.test(b.type)||b.size<5000) throw {code:'free_type'};
   return await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej({code:'free_read'}); fr.readAsDataURL(b); }); }
+/* Asosiy bepul AI: Cloudflare Workers AI (Flux) — tez (3–5 soniya); limit tugasa Pollinations'ga o'tadi */
+const CF_AI='https://uychizma-ai.macbookmmacbook.workers.dev/';
+async function cfAi(PR){ const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),45000); let r;
+  try{ r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:String(PR).replace(/\s+/g,' ').slice(0,1800),steps:6,seed:Math.floor(Math.random()*1e6)}),signal:ctl?ctl.signal:undefined}); } finally{ clearTimeout(tm); }
+  if(!r.ok) throw {code:'cf_http',status:r.status}; const b=await r.blob(); if(!/^image\//.test(b.type)||b.size<5000) throw {code:'cf_type'};
+  return await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej({code:'cf_read'}); fr.readAsDataURL(b); }); }
 const aiAvail=async()=>!!(await getMcp())||FREE_AI;
-async function aiGen(PR){ const mcp=await getMcp(); if(!mcp){ if(FREE_AI) return await freeAi(PR); throw {code:'no_mcp'}; }
+async function aiGen(PR){ const mcp=await getMcp(); if(!mcp){ if(FREE_AI){ try{ return await cfAi(PR); }catch(e){ console.warn('cf ai',e); return await freeAi(PR); } } throw {code:'no_mcp'}; }
   let fk=await figmaFile(mcp), gen; const inp=fk2=>({fileKey:fk2,prompt:PR,width:1920,height:1080,model:'gemini-3.1-flash-image'});
   try{ gen=await mcp.callTool('Figma','generate_image',inp(fk)); }catch(e){ if(e&&e.code==='tool_error'){ fk=await figmaFile(mcp,true); gen=await mcp.callTool('Figma','generate_image',inp(fk)); } else throw e; }
   const g=plOf(gen)||{}; const nodeId=g.nodeId||g.node_id; if(!nodeId) throw {code:'no_node'};
@@ -3255,7 +3539,7 @@ async function aiAuto(force){
   redo.hidden=false; AILAST[vid]=key;
   AIK.forEach(([k,n])=>{ const u=!force&&AIC[key+'#'+k]; const box=document.querySelector(`.aig-card[data-k="${k}"] .aig-img`); if(u) aiCard(k,'ok',u); else if(box&&box.querySelector('img')){ const tg=box.dataset.ai==='1'?'AI':'3D'; box.dataset.ai='0'; const img=box.querySelector('img').src; aiCard(k,'ok',img,'Yangi rasm chizilmoqda…',tg); box.dataset.ai='0'; } else aiCard(k,'load',null,`${n} chizilmoqda…`); });
   if(AIK.every(([k])=>!force&&AIC[key+'#'+k])){ msg.textContent=''; return; }
-  msg.textContent=(mcp?'Figma AI chizmoqda, har bir rasm 20–60 soniya…':'AI chizmoqda… Bepul xizmat har 45 soniyada 1 ta rasm chizadi, 3 ta rasm ~2–3 daqiqa.'); aiBusyKey=key; let aiFails=0; window.__aiWait=s=>{ if(aiCur===key) msg.textContent=`AI navbatda: keyingi rasm ~${s} soniyada chiziladi…`; };
+  msg.textContent=(mcp?'Figma AI chizmoqda, har bir rasm 20–60 soniya…':'AI chizmoqda… har bir rasm ~5 soniya.'); aiBusyKey=key; let aiFails=0; window.__aiWait=s=>{ if(aiCur===key) msg.textContent=`AI navbatda: keyingi rasm ~${s} soniyada chiziladi…`; };
   aiQ=aiQ.then(async()=>{ for(const [k,n] of AIK){ if(aiCur!==key) return; if(!force&&AIC[key+'#'+k]) continue;
       try{ const url=await aiGen(aiPromptK(k,v,A)); AIC[key+'#'+k]=url; if(aiCur===key) aiCard(k,'ok',url); }
       catch(e){ aiFails++; const c=e&&e.code; if(!mcp){ if(aiCur===key) aiCard(k,'idle',null,"AI xizmati javob bermadi, «Qayta chizish»ni bosing."); console.error(e); continue; } const t=c==='not_granted'||c==='denied'||c==='server_not_connected'?"Figma'ga ruxsat berilmadi.":(c==='no_ai'?"Figma akkauntida AI yoqilmagan.":"Chizib bo'lmadi, «Qayta chizish»ni bosing."); if(aiCur===key) aiCard(k,'idle',null,t); console.error(e); if(c==='not_granted'||c==='denied'||c==='no_ai') break; } }
@@ -3426,4 +3710,14 @@ setTimeout(()=>{ makePromoImages(); },2600);
 
 </script>
 
+<div id="fsView" hidden style="position:fixed;inset:0;z-index:200;background:#fff;overflow:auto;touch-action:pan-x pan-y pinch-zoom"><button type="button" id="fsClose" aria-label="Yopish" style="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:2;border:0;border-radius:999px;width:44px;height:44px;font-size:20px;background:#0A1120;color:#fff">✕</button><div id="fsBody" style="min-width:100%;padding:56px 8px 16px"></div></div>
+<script>
+(function(){ const fv=document.getElementById('fsView'), fb=document.getElementById('fsBody');
+  const close=()=>{ fv.hidden=true; fb.innerHTML=''; document.body.style.overflow=''; };
+  document.getElementById('fsClose').onclick=close; document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!fv.hidden) close(); });
+  document.addEventListener('click',e=>{ const box=e.target.closest('#sheets .svgbox'); if(!box) return; const svg=box.querySelector('svg'); if(!svg) return;
+    fb.innerHTML=''; const c=svg.cloneNode(true); const wide=innerWidth<700; c.style.width=wide?'200%':'100%'; c.style.height='auto'; c.style.maxWidth='none'; fb.appendChild(c);
+    fv.hidden=false; document.body.style.overflow='hidden'; fv.scrollTop=0; fv.scrollLeft=wide?(fb.scrollWidth-innerWidth)/2:0; });
+})();
+</script>
 </body></html>
