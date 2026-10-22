@@ -3751,7 +3751,7 @@ setTimeout(()=>{ makePromoImages(); },2600);
     </div>
     <div id="admBody" hidden>
       <div class="note" id="admWho" style="margin-bottom:10px"></div>
-      <div class="stylesw" id="admTabs" style="margin-bottom:10px"><button type="button" data-t="regs" aria-pressed="true">Ro'yxatdan o'tganlar</button><button type="button" data-t="orders">Arxitektor buyurtmalari</button><button type="button" data-t="feedback">Fikrlar</button><button type="button" data-t="reviews">Ochiq fikrlar</button></div>
+      <div class="stylesw" id="admTabs" style="margin-bottom:10px"><button type="button" data-t="visits">Saytga kirganlar</button><button type="button" data-t="regs" aria-pressed="true">Ro'yxatdan o'tganlar</button><button type="button" data-t="orders">Arxitektor buyurtmalari</button><button type="button" data-t="feedback">Fikrlar</button><button type="button" data-t="reviews">Ochiq fikrlar</button></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><b id="admCount"></b><input id="admQ" placeholder="Qidirish: ism, telefon, shahar…" style="flex:1;min-width:180px"><button type="button" class="btn back small" id="admCsv">⬇️ Excel (CSV)</button><button type="button" class="btn back small" id="admRe">↻ Yangilash</button></div>
       <div id="admTable" style="overflow:auto;background:var(--card,#fff);border:1px solid var(--line,#D6DEEA);border-radius:12px"></div>
     </div>
@@ -3768,7 +3768,8 @@ setTimeout(()=>{ makePromoImages(); },2600);
   const COLS={regs:[['name','Ism'],['phone','Telefon'],['city','Hudud'],['email','Email'],['via','Qanday'],['at','Sana']],
     orders:[['name','Ism'],['phone','Telefon'],['city','Hudud'],['pkgName','Xizmat'],['note','Izoh'],['variant','Loyiha'],['link','Havola'],['at','Sana']],
     feedback:[['name','Ism'],['phone','Telefon'],['rating','Baho'],['text','Fikr'],['screen','Sahifa'],['at','Sana']],
-    reviews:[['name','Ism'],['rating','Baho'],['text','Fikr'],['at','Sana']]};
+    reviews:[['name','Ism'],['rating','Baho'],['text','Fikr'],['at','Sana']],
+    visits:[['name','Ism (bo\'lsa)'],['phone','Telefon'],['dev','Qurilma'],['ref','Qayerdan kelgan'],['lang','Til'],['at','Sana']]};
   function open(){ P.hidden=false; document.body.style.overflow='hidden'; if(pwOk&&CLOUD.user&&CLOUD.user.email===ADMIN_EMAIL) load(); }
   function close(){ P.hidden=true; document.body.style.overflow=''; if(location.hash==='#admin') history.replaceState(null,'',location.pathname+location.search); }
   $a('admClose').onclick=close;
@@ -3784,7 +3785,7 @@ setTimeout(()=>{ makePromoImages(); },2600);
     try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>d.data()); render(); }
     catch(x){ rows=[]; $a('admTable').innerHTML='<p class="err" style="padding:12px">Ma\'lumotni o\'qib bo\'lmadi: '+e((x&&x.code)||x)+'</p>'; $a('admCount').textContent=''; } }
   function filtered(){ const q=$a('admQ').value.trim().toLowerCase(); return q?rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q)):rows; }
-  function render(){ const cols=COLS[tab], list=filtered(); $a('admCount').textContent=list.length+' ta';
+  function render(){ const cols=COLS[tab], list=filtered(); const d0=new Date(); d0.setHours(0,0,0,0); const today=list.filter(r=>(r.at||0)>=d0.getTime()).length; $a('admCount').textContent=list.length+' ta'+(tab==='visits'?' (bugun: '+today+')':'');
     $a('admTable').innerHTML=list.length?`<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line,#ddd)">#</th>${cols.map(c=>`<th style="text-align:left;padding:8px;border-bottom:1px solid var(--line,#ddd);white-space:nowrap">${c[1]}</th>`).join('')}</tr></thead><tbody>${list.map((r,i)=>`<tr><td style="padding:7px 8px;border-bottom:1px solid var(--line,#eee);color:var(--muted,#666)">${i+1}</td>${cols.map(([k])=>{ let v=r[k]; if(k==='at') v=dt(v); else if(k==='rating') v=v?'★'.repeat(+v):''; else if(k==='phone'&&v) v=`<a href="tel:${e(String(v).replace(/[^\d+]/g,''))}">${e(v)}</a>`; else if(typeof v==='object'&&v) v=JSON.stringify(v); return `<td style="padding:7px 8px;border-bottom:1px solid var(--line,#eee);max-width:320px;word-break:break-word">${k==='phone'?(v||''):e(v)}</td>`; }).join('')}</tr>`).join('')}</tbody></table>`:'<p class="note" style="padding:12px">Hozircha bo\'sh.</p>'; }
   $a('admQ').addEventListener('input',render); $a('admRe').onclick=load;
   $a('admTabs').addEventListener('click',ev=>{ const b=ev.target.closest('button'); if(!b) return; tab=b.dataset.t; $a('admTabs').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); $a('admQ').value=''; load(); });
@@ -3794,6 +3795,11 @@ setTimeout(()=>{ makePromoImages(); },2600);
   window.openAdmin=open; addEventListener('hashchange',()=>{ if(location.hash==='#admin') open(); }); if(location.hash==='#admin') setTimeout(open,800);
   const bar=document.getElementById('ctBar'); if(bar){ const w=bar.querySelector('.wrap')||bar; const l=document.createElement('a'); l.href='#admin'; l.textContent='⚙️ Admin'; l.style.cssText='font-size:12px;opacity:.55;margin-left:8px'; w.appendChild(l); }
 })();
+/* Saytga har bir kirishni yozish (bir sessiyada 1 marta; faqat admin o'qiy oladi) */
+async function logVisit(){ try{ if(sessionStorage.getItem('uvis')) return; sessionStorage.setItem('uvis','1'); }catch(_){}
+  try{ if(location.protocol==='file:'||!(await cloudReady())) return; const u=S.user||{};
+    await CLOUD.db.collection('visits').add({at:Date.now(),dev:matchMedia('(max-width:640px)').matches?'telefon':'kompyuter',ref:String(document.referrer||'to\'g\'ridan-to\'g\'ri').slice(0,120),lang:String(navigator.language||'').slice(0,10),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20)}); }catch(x){ console.warn('visit',x); } }
+setTimeout(logVisit,2500);
 /* Ro'yxatdan o'tganlarni serverga yozish (faqat admin o'qiy oladi) */
 async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user||{}; const sig=(u.name||'')+'|'+(u.phone||'')+'|'+(u.email||''); if(LS.get('regSent','')===sig) return;
   await CLOUD.db.collection('regs').add({name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),city:String(u.city||'').slice(0,40),email:String(u.email||'').slice(0,80),via:u.via==='google'?'google':'form',at:Date.now()}); LS.set('regSent',sig); }catch(x){ console.warn('reg',x); } }
