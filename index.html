@@ -3751,7 +3751,7 @@ setTimeout(()=>{ makePromoImages(); },2600);
     </div>
     <div id="admBody" hidden>
       <div class="note" id="admWho" style="margin-bottom:10px"></div>
-      <div class="stylesw" id="admTabs" style="margin-bottom:10px"><button type="button" data-t="visits">Saytga kirganlar</button><button type="button" data-t="regs" aria-pressed="true">Ro'yxatdan o'tganlar</button><button type="button" data-t="orders">Arxitektor buyurtmalari</button><button type="button" data-t="feedback">Fikrlar</button><button type="button" data-t="reviews">Ochiq fikrlar</button></div>
+      <div class="stylesw" id="admTabs" style="margin-bottom:10px"><button type="button" data-t="regs" aria-pressed="true">Ro'yxatdan o'tganlar</button><button type="button" data-t="orders">Arxitektor buyurtmalari</button><button type="button" data-t="feedback">Fikrlar</button><button type="button" data-t="reviews">Ochiq fikrlar</button></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><b id="admCount"></b><input id="admQ" placeholder="Qidirish: ism, telefon, shahar…" style="flex:1;min-width:180px"><button type="button" class="btn back small" id="admCsv">⬇️ Excel (CSV)</button><button type="button" class="btn back small" id="admRe">↻ Yangilash</button></div>
       <div id="admTable" style="overflow:auto;background:var(--card,#fff);border:1px solid var(--line,#D6DEEA);border-radius:12px"></div>
     </div>
@@ -3799,7 +3799,6 @@ setTimeout(()=>{ makePromoImages(); },2600);
 async function logVisit(){ try{ if(sessionStorage.getItem('uvis')) return; sessionStorage.setItem('uvis','1'); }catch(_){}
   try{ if(location.protocol==='file:'||!(await cloudReady())) return; const u=S.user||{};
     await CLOUD.db.collection('visits').add({at:Date.now(),dev:matchMedia('(max-width:640px)').matches?'telefon':'kompyuter',ref:String(document.referrer||'to\'g\'ridan-to\'g\'ri').slice(0,120),lang:String(navigator.language||'').slice(0,10),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20)}); }catch(x){ console.warn('visit',x); } }
-setTimeout(logVisit,2500);
 /* Ro'yxatdan o'tganlarni serverga yozish (faqat admin o'qiy oladi) */
 async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user||{}; const sig=(u.name||'')+'|'+(u.phone||'')+'|'+(u.email||''); if(LS.get('regSent','')===sig) return;
   await CLOUD.db.collection('regs').add({name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),city:String(u.city||'').slice(0,40),email:String(u.email||'').slice(0,80),via:u.via==='google'?'google':'form',at:Date.now()}); LS.set('regSent',sig); }catch(x){ console.warn('reg',x); } }
