@@ -2809,7 +2809,7 @@ const FIREBASE_CONFIG = {apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDo
 const CLOUD={ok:false,user:null,db:null};
 async function cloudInit(){ if(!FIREBASE_CONFIG) return false; try{ const V='10.12.2'; for(const f of ['app','auth','firestore']) await loadScript(`https://cdn.jsdelivr.net/npm/firebase@${V}/firebase-${f}-compat.js`);
   firebase.initializeApp(FIREBASE_CONFIG); CLOUD.db=firebase.firestore(); CLOUD.ok=true;
-  firebase.auth().onAuthStateChanged(u=>{ CLOUD.user=u||null; if(u){ S.user=Object.assign({},S.user||{},{name:(S.user&&S.user.name)||u.displayName||u.email,email:u.email||'',uid:u.uid,via:'google'}); LS.set('user',S.user); renderUser(); cloudSyncUser();
+  firebase.auth().onAuthStateChanged(u=>{ if(u&&u.email==='admin@uychizma.app'){ CLOUD.user=u; return; } CLOUD.user=u||null; if(u){ S.user=Object.assign({},S.user||{},{name:(S.user&&S.user.name)||u.displayName||u.email,email:u.email||'',uid:u.uid,via:'google'}); LS.set('user',S.user); renderUser(); cloudSyncUser();
       $('#gNote').textContent=(u.email||'Google')+" orqali kirdingiz. Loyihalaringiz serverda saqlanadi."; if(!$('#regName').value) $('#regName').value=u.displayName||''; cloudPull(); } });
   return true; }catch(e){ console.warn('firebase',e); CLOUD.failed=true; return false; } }
 async function cloudLogin(){ if(!CLOUD.ok) return; const p=new firebase.auth.GoogleAuthProvider(); try{ await firebase.auth().signInWithPopup(p); }catch(e){ try{ await firebase.auth().signInWithRedirect(p); }catch(e2){ $('#gNote').textContent="Google orqali kirib bo'lmadi. Ism va telefon bilan davom eting."; } } }
@@ -3744,8 +3744,8 @@ setTimeout(()=>{ makePromoImages(); },2600);
   <div style="max-width:1000px;margin:0 auto">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h2 style="margin:0;font-size:22px">⚙️ Admin panel</h2><button type="button" class="btn back small" id="admClose" style="margin-left:auto">✕ Yopish</button></div>
     <div id="admLogin" style="max-width:360px">
-      <p class="note" style="margin:0 0 8px">Faqat sayt egasi uchun. Parolni kiriting, keyin o'z Google hisobingiz bilan tasdiqlang.</p>
-      <input id="admPw" type="password" inputmode="numeric" placeholder="Parol" style="width:100%;margin-bottom:8px" autocomplete="off">
+      <p class="note" style="margin:0 0 8px">Faqat sayt egasi uchun. Kodni kiriting.</p>
+      <input id="admPw" type="password" inputmode="numeric" placeholder="Kod" style="width:100%;margin-bottom:8px" autocomplete="off">
       <button type="button" class="btn primary" id="admGo" style="width:100%">Kirish</button>
       <p class="err" id="admErr" role="alert" style="margin-top:8px"></p>
     </div>
@@ -3760,7 +3760,7 @@ setTimeout(()=>{ makePromoImages(); },2600);
 <script>
 /* ===== ADMIN PANEL: ro'yxatdan o'tganlar, buyurtmalar, fikrlar — faqat sayt egasi ko'radi ===== */
 (function(){
-  const ADMIN_EMAIL='macbookmmacbook@gmail.com', PW_HASH='182217fabbb6ecdaa667c8b6625cfa7be651fe3f76de042c6f7396d4fcf2bbdf';
+  const ADMIN_EMAIL='admin@uychizma.app', PW_HASH='182217fabbb6ecdaa667c8b6625cfa7be651fe3f76de042c6f7396d4fcf2bbdf';
   const $a=s=>document.getElementById(s), P=$a('admPanel'); let tab='regs', rows=[], pwOk=false;
   const sha=async t=>{ try{ return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join(''); }catch(e){ return ''; } };
   const e=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -3771,17 +3771,17 @@ setTimeout(()=>{ makePromoImages(); },2600);
     reviews:[['name','Ism'],['rating','Baho'],['text','Fikr'],['at','Sana']],
     visits:[['name','Ism (bo\'lsa)'],['phone','Telefon'],['dev','Qurilma'],['ref','Qayerdan kelgan'],['lang','Til'],['at','Sana']]};
   function open(){ P.hidden=false; document.body.style.overflow='hidden'; if(pwOk&&CLOUD.user&&CLOUD.user.email===ADMIN_EMAIL) load(); }
-  function close(){ P.hidden=true; document.body.style.overflow=''; if(location.hash==='#admin') history.replaceState(null,'',location.pathname+location.search); }
+  function close(){ P.hidden=true; document.body.style.overflow=''; try{ const cu=firebase.auth().currentUser; if(cu&&cu.email===ADMIN_EMAIL){ firebase.auth().signOut(); pwOk=false; $a('admLogin').hidden=false; $a('admBody').hidden=true; $a('admPw').value=''; } }catch(_){} if(location.hash==='#admin') history.replaceState(null,'',location.pathname+location.search); }
   $a('admClose').onclick=close;
-  async function login(){ const err=$a('admErr'); err.textContent='';
-    if(await sha('uychizma-admin:'+$a('admPw').value.trim())!==PW_HASH){ err.textContent="Parol noto'g'ri."; return; } pwOk=true;
+  async function login(){ const err=$a('admErr'); err.textContent=''; const code=$a('admPw').value.trim();
+    if(await sha('uychizma-admin:'+code)!==PW_HASH){ err.textContent="Kod noto'g'ri."; return; } pwOk=true;
     if(!(await cloudReady())){ err.textContent="Server bilan bog'lanib bo'lmadi. Internetni tekshiring."; return; }
-    let u=firebase.auth().currentUser;
-    if(!u||u.email!==ADMIN_EMAIL){ err.textContent='Google oynasida '+ADMIN_EMAIL+' ni tanlang…'; try{ const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:'select_account',login_hint:ADMIN_EMAIL}); const r=await firebase.auth().signInWithPopup(p); u=r.user; }catch(x){ err.textContent="Google orqali kirib bo'lmadi: "+((x&&x.code)||''); return; } }
-    if(!u||u.email!==ADMIN_EMAIL){ err.textContent="Bu hisobga ruxsat yo'q. "+ADMIN_EMAIL+" bilan kiring."; return; }
+    const pw='UyChizma-admin-'+code+'-panel'; err.textContent='Kirilmoqda…';
+    try{ await firebase.auth().signInWithEmailAndPassword(ADMIN_EMAIL,pw); }
+    catch(x){ const c=(x&&x.code)||''; if(/user-not-found|invalid-credential|invalid-login/.test(c)){ try{ await firebase.auth().createUserWithEmailAndPassword(ADMIN_EMAIL,pw); }catch(y){ err.textContent="Kirib bo'lmadi: "+((y&&y.code)||''); return; } } else { err.textContent="Kirib bo'lmadi: "+c; return; } }
     err.textContent=''; load(); }
   $a('admGo').onclick=login; $a('admPw').addEventListener('keydown',ev=>{ if(ev.key==='Enter') login(); });
-  async function load(){ $a('admLogin').hidden=true; $a('admBody').hidden=false; $a('admWho').textContent='Kirdingiz: '+ADMIN_EMAIL; $a('admTable').innerHTML='<p class="note" style="padding:12px">Yuklanmoqda…</p>';
+  async function load(){ $a('admLogin').hidden=true; $a('admBody').hidden=false; $a('admWho').textContent='Admin sifatida kirdingiz'; $a('admTable').innerHTML='<p class="note" style="padding:12px">Yuklanmoqda…</p>';
     try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>d.data()); render(); }
     catch(x){ rows=[]; $a('admTable').innerHTML='<p class="err" style="padding:12px">Ma\'lumotni o\'qib bo\'lmadi: '+e((x&&x.code)||x)+'</p>'; $a('admCount').textContent=''; } }
   function filtered(){ const q=$a('admQ').value.trim().toLowerCase(); return q?rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q)):rows; }
