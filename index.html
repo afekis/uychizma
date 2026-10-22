@@ -2834,7 +2834,7 @@ function regSubmit(){
   const digits=phone.replace(/\D/g,'');
   if(name.length<2){ $('#regErr').textContent="Ismingizni yozing."; return; }
   if(digits.length<9){ $('#regErr').textContent="Telefon raqamni to'liq yozing, masalan +998 90 123 45 67."; return; }
-  $('#regErr').textContent=''; S.user=Object.assign({},S.user&&S.user.uid?S.user:{},{name,phone,city,email:(S.user&&S.user.email)||S.gEmail||'',via:(S.user&&S.user.uid)||S.gEmail?'google':'form',at:Date.now()}); if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; cloudSyncUser(); LS.set('user',S.user); renderUser(); toast("Ro'yxatdan o'tdingiz"); go('start');
+  $('#regErr').textContent=''; S.user=Object.assign({},S.user&&S.user.uid?S.user:{},{name,phone,city,email:(S.user&&S.user.email)||S.gEmail||'',via:(S.user&&S.user.uid)||S.gEmail?'google':'form',at:Date.now()}); if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; cloudSyncUser(); LS.set('user',S.user); try{ cloudReg(); }catch(e){} renderUser(); toast("Ro'yxatdan o'tdingiz"); go('start');
 }
 $('#regGo').addEventListener('click',regSubmit); $('#regForm').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); regSubmit(); } });
 
@@ -3739,6 +3739,64 @@ setTimeout(()=>{ makePromoImages(); },2600);
   try{ const p=JSON.parse(localStorage.getItem('fab_'+key)||'null'); if(p) setTimeout(()=>place(p.x,p.y),300); }catch(_){}
   addEventListener('resize',()=>{ if(el.style.left){ const r=el.getBoundingClientRect(); place(r.left,r.top); } }); }
   drag(document.getElementById('callFab'),'tg'); drag(document.getElementById('fbFab'),'fb'); })();
+</script>
+<div id="admPanel" hidden style="position:fixed;inset:0;z-index:300;background:var(--paper,#F3F6FB);overflow:auto;padding:16px 16px 40px">
+  <div style="max-width:1000px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h2 style="margin:0;font-size:22px">⚙️ Admin panel</h2><button type="button" class="btn back small" id="admClose" style="margin-left:auto">✕ Yopish</button></div>
+    <div id="admLogin" style="max-width:360px">
+      <p class="note" style="margin:0 0 8px">Faqat sayt egasi uchun. Parolni kiriting, keyin o'z Google hisobingiz bilan tasdiqlang.</p>
+      <input id="admPw" type="password" inputmode="numeric" placeholder="Parol" style="width:100%;margin-bottom:8px" autocomplete="off">
+      <button type="button" class="btn primary" id="admGo" style="width:100%">Kirish</button>
+      <p class="err" id="admErr" role="alert" style="margin-top:8px"></p>
+    </div>
+    <div id="admBody" hidden>
+      <div class="note" id="admWho" style="margin-bottom:10px"></div>
+      <div class="stylesw" id="admTabs" style="margin-bottom:10px"><button type="button" data-t="regs" aria-pressed="true">Ro'yxatdan o'tganlar</button><button type="button" data-t="orders">Arxitektor buyurtmalari</button><button type="button" data-t="feedback">Fikrlar</button><button type="button" data-t="reviews">Ochiq fikrlar</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><b id="admCount"></b><input id="admQ" placeholder="Qidirish: ism, telefon, shahar…" style="flex:1;min-width:180px"><button type="button" class="btn back small" id="admCsv">⬇️ Excel (CSV)</button><button type="button" class="btn back small" id="admRe">↻ Yangilash</button></div>
+      <div id="admTable" style="overflow:auto;background:var(--card,#fff);border:1px solid var(--line,#D6DEEA);border-radius:12px"></div>
+    </div>
+  </div>
+</div>
+<script>
+/* ===== ADMIN PANEL: ro'yxatdan o'tganlar, buyurtmalar, fikrlar — faqat sayt egasi ko'radi ===== */
+(function(){
+  const ADMIN_EMAIL='macbookmmacbook@gmail.com', PW_HASH='182217fabbb6ecdaa667c8b6625cfa7be651fe3f76de042c6f7396d4fcf2bbdf';
+  const $a=s=>document.getElementById(s), P=$a('admPanel'); let tab='regs', rows=[], pwOk=false;
+  const sha=async t=>{ try{ return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join(''); }catch(e){ return ''; } };
+  const e=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const dt=ms=>{ try{ return new Date(ms).toLocaleString('uz-UZ',{dateStyle:'short',timeStyle:'short'}); }catch(_){ return ''; } };
+  const COLS={regs:[['name','Ism'],['phone','Telefon'],['city','Hudud'],['email','Email'],['via','Qanday'],['at','Sana']],
+    orders:[['name','Ism'],['phone','Telefon'],['city','Hudud'],['pkgName','Xizmat'],['note','Izoh'],['variant','Loyiha'],['link','Havola'],['at','Sana']],
+    feedback:[['name','Ism'],['phone','Telefon'],['rating','Baho'],['text','Fikr'],['screen','Sahifa'],['at','Sana']],
+    reviews:[['name','Ism'],['rating','Baho'],['text','Fikr'],['at','Sana']]};
+  function open(){ P.hidden=false; document.body.style.overflow='hidden'; if(pwOk&&CLOUD.user&&CLOUD.user.email===ADMIN_EMAIL) load(); }
+  function close(){ P.hidden=true; document.body.style.overflow=''; if(location.hash==='#admin') history.replaceState(null,'',location.pathname+location.search); }
+  $a('admClose').onclick=close;
+  async function login(){ const err=$a('admErr'); err.textContent='';
+    if(await sha('uychizma-admin:'+$a('admPw').value.trim())!==PW_HASH){ err.textContent="Parol noto'g'ri."; return; } pwOk=true;
+    if(!(await cloudReady())){ err.textContent="Server bilan bog'lanib bo'lmadi. Internetni tekshiring."; return; }
+    let u=firebase.auth().currentUser;
+    if(!u||u.email!==ADMIN_EMAIL){ err.textContent='Google oynasida '+ADMIN_EMAIL+' ni tanlang…'; try{ const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:'select_account',login_hint:ADMIN_EMAIL}); const r=await firebase.auth().signInWithPopup(p); u=r.user; }catch(x){ err.textContent="Google orqali kirib bo'lmadi: "+((x&&x.code)||''); return; } }
+    if(!u||u.email!==ADMIN_EMAIL){ err.textContent="Bu hisobga ruxsat yo'q. "+ADMIN_EMAIL+" bilan kiring."; return; }
+    err.textContent=''; load(); }
+  $a('admGo').onclick=login; $a('admPw').addEventListener('keydown',ev=>{ if(ev.key==='Enter') login(); });
+  async function load(){ $a('admLogin').hidden=true; $a('admBody').hidden=false; $a('admWho').textContent='Kirdingiz: '+ADMIN_EMAIL; $a('admTable').innerHTML='<p class="note" style="padding:12px">Yuklanmoqda…</p>';
+    try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>d.data()); render(); }
+    catch(x){ rows=[]; $a('admTable').innerHTML='<p class="err" style="padding:12px">Ma\'lumotni o\'qib bo\'lmadi: '+e((x&&x.code)||x)+'</p>'; $a('admCount').textContent=''; } }
+  function filtered(){ const q=$a('admQ').value.trim().toLowerCase(); return q?rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q)):rows; }
+  function render(){ const cols=COLS[tab], list=filtered(); $a('admCount').textContent=list.length+' ta';
+    $a('admTable').innerHTML=list.length?`<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line,#ddd)">#</th>${cols.map(c=>`<th style="text-align:left;padding:8px;border-bottom:1px solid var(--line,#ddd);white-space:nowrap">${c[1]}</th>`).join('')}</tr></thead><tbody>${list.map((r,i)=>`<tr><td style="padding:7px 8px;border-bottom:1px solid var(--line,#eee);color:var(--muted,#666)">${i+1}</td>${cols.map(([k])=>{ let v=r[k]; if(k==='at') v=dt(v); else if(k==='rating') v=v?'★'.repeat(+v):''; else if(k==='phone'&&v) v=`<a href="tel:${e(String(v).replace(/[^\d+]/g,''))}">${e(v)}</a>`; else if(typeof v==='object'&&v) v=JSON.stringify(v); return `<td style="padding:7px 8px;border-bottom:1px solid var(--line,#eee);max-width:320px;word-break:break-word">${k==='phone'?(v||''):e(v)}</td>`; }).join('')}</tr>`).join('')}</tbody></table>`:'<p class="note" style="padding:12px">Hozircha bo\'sh.</p>'; }
+  $a('admQ').addEventListener('input',render); $a('admRe').onclick=load;
+  $a('admTabs').addEventListener('click',ev=>{ const b=ev.target.closest('button'); if(!b) return; tab=b.dataset.t; $a('admTabs').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); $a('admQ').value=''; load(); });
+  $a('admCsv').onclick=()=>{ const cols=COLS[tab], list=filtered(); const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+    const csv='﻿'+[cols.map(c=>q(c[1])).join(';')].concat(list.map(r=>cols.map(([k])=>q(k==='at'?dt(r[k]):(typeof r[k]==='object'&&r[k]?JSON.stringify(r[k]):r[k]))).join(';'))).join('\r\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='uychizma-'+tab+'.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); };
+  window.openAdmin=open; addEventListener('hashchange',()=>{ if(location.hash==='#admin') open(); }); if(location.hash==='#admin') setTimeout(open,800);
+  const bar=document.getElementById('ctBar'); if(bar){ const w=bar.querySelector('.wrap')||bar; const l=document.createElement('a'); l.href='#admin'; l.textContent='⚙️ Admin'; l.style.cssText='font-size:12px;opacity:.55;margin-left:8px'; w.appendChild(l); }
+})();
+/* Ro'yxatdan o'tganlarni serverga yozish (faqat admin o'qiy oladi) */
+async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user||{}; const sig=(u.name||'')+'|'+(u.phone||'')+'|'+(u.email||''); if(LS.get('regSent','')===sig) return;
+  await CLOUD.db.collection('regs').add({name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),city:String(u.city||'').slice(0,40),email:String(u.email||'').slice(0,80),via:u.via==='google'?'google':'form',at:Date.now()}); LS.set('regSent',sig); }catch(x){ console.warn('reg',x); } }
 </script>
 <div id="fsView" hidden style="position:fixed;inset:0;z-index:200;background:#fff;overflow:auto;touch-action:pan-x pan-y pinch-zoom"><button type="button" id="fsClose" aria-label="Yopish" style="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:2;border:0;border-radius:999px;width:44px;height:44px;font-size:20px;background:#0A1120;color:#fff">✕</button><div id="fsBody" style="min-width:100%;padding:56px 8px 16px"></div></div>
 <script>
