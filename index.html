@@ -831,11 +831,14 @@ function inPoly(p,x,y){ let c=false; for(let i=0,j=p.length-1;i<p.length;j=i++){
 function room(n,t,x,y,w,h,extra){ return Object.assign({n,t,x,y,w,h}, extra||{}); }
 function rowW(items,d){ return items.reduce((s,i)=>s+(i.m||i.a/d),0); }
 function seg(x0,x1,y,h,items){
-  const fixed = items.filter(i=>i.m).reduce((s,i)=>s+i.m,0);
-  const flex = items.filter(i=>!i.m).reduce((s,i)=>s+i.a,0);
-  const free = Math.max(0,(x1-x0)-fixed);
+  // tor yerda: qat'iy o'lchamli xonalar (zina, hojatxona) biroz toraytiriladi, oddiy xonalar 0 ga tushib qolmasin
+  const span=x1-x0, MINF={zal:3.0,kitchen:2.4,bed:2.4,util:1.2,wet:1.4}, fl=items.filter(i=>!i.m);
+  const fixed0 = items.filter(i=>i.m).reduce((s,i)=>s+i.m,0), need=fl.reduce((s,i)=>s+(MINF[i.t]||1.6),0);
+  const sc = (fixed0>0 && fixed0+need>span) ? Math.max(0.55,(span-need)/fixed0) : 1;
+  const flex = fl.reduce((s,i)=>s+i.a,0);
+  const free = Math.max(0,span-fixed0*sc);
   let x=x0; const out=[];
-  items.forEach(i=>{ const w = i.m ? i.m : (flex ? free*i.a/flex : 0); out.push(room(i.n,i.t,x,y,w,h,i.entry?{entry:i.entry}:null)); x+=w; });
+  items.forEach(i=>{ const w = i.m ? i.m*sc : (flex ? free*i.a/flex : 0); out.push(room(i.n,i.t,x,y,w,h,i.entry?{entry:i.entry}:null)); x+=w; });
   return out;
 }
 function greedy(rows,list){ list.forEach(it=>{ let k=0; rows.forEach((r,i)=>{ if(rowW(r.items,r.d)<rowW(rows[k].items,rows[k].d)) k=i; }); rows[k].items.push(it); }); }
@@ -889,6 +892,8 @@ function genCompact(A,mw,opt){
   W=Math.round(need*2)/2;
   maxW=mw(D+(opt.extraDepth||4)); if(opt.minW) W=Math.max(W,Math.min(opt.minW,Math.floor(maxW*2)/2));
   if(W>maxW){ notes.push("Yer eni yetmadi: xonalar biroz kichraytirildi."); W=Math.max(8,Math.floor(maxW*10)/10); }
+  { const MF={zal:3.0,kitchen:2.4,bed:2.4,util:1.2,wet:1.4}, rowMin=it=>it.reduce((t,i)=>t+(i.m?i.m*0.55:(MF[i.t]||1.6)),0); let wmin=0; floorsSpec.forEach(f=>{ wmin=Math.max(wmin,rowMin(f.front),rowMin(f.back)); });
+    if(W<wmin-0.05){ W=Math.ceil(wmin*2)/2; notes.push("Yer bu xonalar soni uchun tor: uy yer chegarasidan chiqib ketishi mumkin. Yotoqxonalarni kamaytiring yoki 2 qavat tanlang."); } }
   floors = floorsSpec.map((f,k)=>{
     const rooms = seg(0,W,0,dF,f.front).concat([room("Yo'lak",'circ',0,dF,W,C)]).concat(seg(0,W,dF+C,dB,f.back));
     return {rooms, blocks:[{x:0,y:0,w:W,h:D,roof:k===floorsSpec.length-1}], open:[]};
@@ -988,13 +993,14 @@ function genFront(A,mw,two,opt){
   const D=core.D, W=core.W, ww=opt.ww||4.2, gal=opt.gal||2.0;
   const G=core.floors[0];
   const left=A.garage ? [['Garaj','garage',Math.min(6.2,L*0.62),{nx:0,ny:-1}],['Yozgi oshxona','kitchen',0,{nx:1,ny:0}]] : [['Mehmonxona (katta)','zal',L*0.6,{nx:1,ny:0}],['Yozgi oshxona','kitchen',0,{nx:1,ny:0}]];
+  const fitW=arr=>{ const fx=arr.slice(0,-1).reduce((s,a)=>s+a[2],0); if(fx>0&&L-fx<2.2){ const k2=Math.max(0.3,(L-2.2)/fx); arr.forEach((a,i)=>{ if(i<arr.length-1) a[2]*=k2; }); } return arr; }; fitW(left);
   let y=-L; left.forEach(([n,t,l,e],i)=>{ const hh=i===left.length-1?(0-y):l; G.rooms.push(room(n,t,0,y,ww,hh,{entry:e})); y+=hh; });
   G.blocks.push({x:0,y:-L,w:ww,h:L,roof:true,low:true});
   G.open.push({type:'ayvon',x:ww,y:-L,w:gal,h:L,roofed:true,low:true,cols:colsAlongY(-L,L,ww+gal-0.3)});
   let x1=W;
   if(two && W>=2*(ww+gal)+3){
     const right=[['Mehmon xonasi','bed',L*0.55],['Hojatxona','wet',2.2],[A.sauna?'Sauna-hammom':"Hammom (bug')",'wet',0]];
-    let y2=-L; right.forEach(([n,t,l],i)=>{ const hh=i===right.length-1?(0-y2):l; G.rooms.push(room(n,t,W-ww,y2,ww,hh,{entry:{nx:-1,ny:0}})); y2+=hh; });
+    fitW(right); let y2=-L; right.forEach(([n,t,l],i)=>{ const hh=i===right.length-1?(0-y2):l; G.rooms.push(room(n,t,W-ww,y2,ww,hh,{entry:{nx:-1,ny:0}})); y2+=hh; });
     G.blocks.push({x:W-ww,y:-L,w:ww,h:L,roof:true,low:true});
     G.open.push({type:'ayvon',x:W-ww-gal,y:-L,w:gal,h:L,roofed:true,low:true,cols:colsAlongY(-L,L,W-ww-gal+0.3)});
     x1=W-ww-gal; core._two=true;
@@ -1012,12 +1018,14 @@ function genCourt(A,mw,two,opt){
   const D=core.D, W=core.W, ww=opt.ww||4.2, gal=opt.gal||2.0;
   const G=core.floors[0];
   const items=[]; if(A.garage) items.push(['Garaj','garage',6.2]); items.push(['Yozgi oshxona','kitchen',4.6]); items.push(['Omborxona','util',2.6]);
+  while(items.length>1 && L/items.reduce((s,i)=>s+i[2],0)<0.6) items.pop();
   let y=D; const tot=items.reduce((s,i)=>s+i[2],0); const k=Math.min(1,L/tot);
   items.forEach(([n,t,l])=>{ const h=l*k; G.rooms.push(room(n,t,0,y,ww,h,{entry:{nx:1,ny:0}})); y+=h; });
   G.blocks.push({x:0,y:D,w:ww,h:y-D,roof:true,low:true});
   G.open.push({type:'ayvon',x:ww,y:D,w:gal,h:y-D,roofed:true,low:true,cols:colsAlongY(D,y-D,ww+gal-0.3)});
   if(two && W>=ww*2+4){
     const r2=[['Mehmon xonasi','bed',4.4],[A.sauna?'Sauna-hammom':"Hammom (bug')",'wet',3.0],['Hojatxona','wet',2.2]];
+    while(r2.length>1 && L/r2.reduce((s,i)=>s+i[2],0)<0.6) r2.pop();
     let y2=D; const t2=r2.reduce((s,i)=>s+i[2],0); const k2=Math.min(1,L/t2);
     r2.forEach(([n,t,l])=>{ const h=l*k2; G.rooms.push(room(n,t,W-ww,y2,ww,h,{entry:{nx:-1,ny:0}})); y2+=h; });
     G.blocks.push({x:W-ww,y:D,w:ww,h:y2-D,roof:true,low:true});
@@ -2699,7 +2707,7 @@ async function makePdf(){
     const v=S.variants[S.active], A=S.A; const doc=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
     const W=297,H=210; let page=0; const toc=[];
     // make sure every room has its picture before building the book
-    try{ const rl=roomList(v); for(let i=0;i<rl.length;i++){ const {k,r}=rl[i], key=`${v.key}|${k}|${r.n}|${i}`; if(S.roomImgs[key]||!resV||!resV.ok) continue; msg.textContent=`Xona rasmlari tayyorlanmoqda: ${i+1}/${rl.length}…`; await new Promise(rs=>setTimeout(rs,30)); const u=resV.shot({kind:'int',k,r,w:1280,h:720}); if(u) S.roomImgs[key]={url:await postPhoto(u),ai:false}; } }catch(e){ console.error(e); }
+    try{ const rl=roomList(v); for(let i=0;i<rl.length;i++){ const {k,r}=rl[i], key=roomKey(v,k,r,i); if(S.roomImgs[key]||!resV||!resV.ok) continue; msg.textContent=`Xona rasmlari tayyorlanmoqda: ${i+1}/${rl.length}…`; await new Promise(rs=>setTimeout(rs,30)); const u=resV.shot({kind:'int',k,r,w:1280,h:720}); if(u) S.roomImgs[key]={url:await postPhoto(u),ai:false}; } }catch(e){ console.error(e); }
     if(!(S.photos&&S.photos.length)&&resV&&resV.ok){ S.photos=[]; for(const s of SHOTS){ try{ msg.textContent='Rasmlar chizilmoqda…'; await new Promise(rs=>setTimeout(rs,30)); const u=resV.shot(Object.assign({w:1920,h:1080},s)); if(u) S.photos.push({url:await postPhoto(u,s.kind==='night'),cap:s.cap,kind:s.kind}); }catch(e){} } }
     msg.textContent='Loyiha kitobi yig\'ilmoqda…';
     // cover
@@ -2744,7 +2752,7 @@ async function makePdf(){
       if(k===v.floors.length-1){ const ml=mebelList(v,A).slice(0,26); table(188,28,['Mebel','O\'lcham','Soni'],ml,[40,34,12]); } }
     { const rl=roomList(v); for(let i=0;i<rl.length;i++){ const {k,r,f}=rl[i]; frame(`${i+1}. ${r.n} - chizma`,i===0?'6. Xonalar (har biri: chizma + ko\'rinish)':null); const img=await svgToPng(roomSVG(v,k,r,A),1800); let w=170,h=w*img.ar; if(h>H-46){h=H-46;w=h/img.ar;} doc.addImage(img.data,'JPEG',14,24,w,h);
         table(194,30,['Xona','Qiymat'],[['Qavat',String(k+1)],["O'lcham",`${fmt2(r.w)} x ${fmt2(r.h)} m`],['Maydon',fmtA(roomA(r,f))+' m2'],['Devor rangi',A.paint||''],['Pol',floorOf(r,v,A)],['Shift',CEIL_N[A.ceiling]||CEIL_N.oddiy]],[30,60]);
-        const im=S.roomImgs[`${v.key}|${k}|${r.n}|${i}`]; if(im){ frame(`${i+1}. ${r.n} - ko'rinish`); doc.addImage(im.url,im.url.startsWith('data:image/png')?'PNG':'JPEG',14,24,W-28,(W-28)*9/16); } } }
+        const im=S.roomImgs[roomKey(v,k,r,i)]; if(im){ frame(`${i+1}. ${r.n} - ko'rinish`); doc.addImage(im.url,im.url.startsWith('data:image/png')?'PNG':'JPEG',14,24,W-28,(W-28)*9/16); } } }
     frame('Poydevor rejasi va kesim 1-1','7. Poydevor va kesim'); { const a=await svgToPng(foundSVG(v),2000); let w=135,h=w*a.ar; if(h>150){h=150;w=h/a.ar;} doc.addImage(a.data,'JPEG',12,26,w,h); const b=await svgToPng(sectionSVG(v,A),2000); let w2=135,h2=w2*b.ar; if(h2>120){h2=120;w2=h2/b.ar;} doc.addImage(b.data,'JPEG',152,26,w2,h2); }
     if(v.podA){ frame("Podval (yerto'la)","7.1 Podval"); table(14,30,['Podval','Qiymat'],[['Maydoni',fmtA(v.podA)+' m2'],['Chuqurligi','2,8 m (shift balandligi 2,6 m)'],['Devorlar','Monolit temir-beton, 40 sm'],['Pol','Beton plita 25 sm, gidroizolyatsiya bilan'],['Gidroizolyatsiya','Tashqaridan bitumli membrana + drenaj'],['Yoritish','Priyamok derazalar 90x50 sm'],['Xonalar',(v.podA>60?'3':'2')+" ta bo'sh xona (o'zingiz xohlagancha foydalanasiz)"],['Taxminiy narx',money(v.podCost)]],[50,140]);
       doc.setFontSize(8); doc.text(pt("Podval uchun tuproq va yer osti suvi tekshiruvi (geologiya) majburiy."),14,H-14); }
@@ -3597,10 +3605,12 @@ function roomPrompt(v,A,k,r){ const ist=intStyleOf(v,A), f=v.floors[k];
   const wins=f.openings.filter(o=>o.room===r&&o.kind==='win').length;
   return `Photorealistic interior design render of a ${T} in a private house in Uzbekistan, ${fmt1(r.w)} × ${fmt1(r.h)} m (${Math.round(roomA(r,f))} m²), ceiling 3.0 m. ${SD}. Walls painted in color ${A.paint||'#EFE8DC'}, ${r.t==='wet'?'large format wall tiles':fl}, ${ceil}. ${wins?wins+' window'+(wins>1?'s':'')+' with sheer curtains':'no windows, warm artificial light'}. ${fu?'Furniture: '+fu+'.':''} ${extra?extra+'. ':''}Professional V-Ray / Corona interior visualization, ultra realistic materials, warm evening lighting (3000K) with soft shadows, wide angle 24mm, eye level, high detail, no people, no text, no watermark.`; }
 S.roomImgs={}; let roomJob=0;
+/* Xona rasmi kaliti: uy, uslub, xona o'lchami va interyer sozlamalari o'zgarsa — rasm ham yangidan chiziladi */
+function roomKey(v,k,r,i){ const A=S.A||{}; return [v.key,v.name,v.style,v.sub||'',(+v.W||0).toFixed(1),(+v.D||0).toFixed(1),v.plan||'',k,r.n,(+r.x).toFixed(2),(+r.y).toFixed(2),(+r.w).toFixed(2),(+r.h).toFixed(2),A.intStyle||'',A.paint||'',A.floorType||'',A.ceiling||'',A.furnZal||'',A.furnBed||'',A.furnKit||'',i].join('|'); }
 function renderRooms(){
   const v=S.variants&&S.variants[S.active], el=$('#roomCards'); if(!v||!el) return; const A=S.A, list=roomList(v), ist=intStyleOf(v,A);
   $('#roomsInfo').textContent=`${list.length} ta xona · interyer: ${INT_STYLE[ist]} · shift: ${CEIL_N[A.ceiling]||CEIL_N.oddiy}`;
-  el.innerHTML=list.map(({k,r,f},i)=>{ const key=`${v.key}|${k}|${r.n}|${i}`; const im=S.roomImgs[key]; const fu=furnOf(r,A).map(x=>FURN_N[x]).filter(Boolean).join(', ');
+  el.innerHTML=list.map(({k,r,f},i)=>{ const key=roomKey(v,k,r,i); const im=S.roomImgs[key]; const fu=furnOf(r,A).map(x=>FURN_N[x]).filter(Boolean).join(', ');
     return `<article class="room" data-i="${i}"><header><b>${i+1}. ${esc(r.n)}</b><span>${k+1}-qavat · ${fmt2(r.w)} × ${fmt2(r.h)} m · ${fmtA(roomA(r,f))} m²</span></header>
     <div class="room-pages"><figure class="rp"><figcaption>1-varaq · Chizma</figcaption><div class="rp-svg">${roomSVG(v,k,r,A)}</div></figure>
     <figure class="rp"><figcaption>2-varaq · Ko'rinish ${im&&im.ai?'<span class="aitag">AI</span>':''}</figcaption><div class="rp-img" data-key="${esc(key)}">${im?`<img alt="${esc(r.n)}" src="${im.url}">`:'<div class="aig-sk"><i></i><span>Chizilmoqda…</span></div>'}</div>
@@ -3608,11 +3618,11 @@ function renderRooms(){
     <button class="btn ghost small rp-ai" type="button" data-i="${i}" hidden>🤖 AI bilan chizish</button></figure></div></article>`; }).join('');
   aiAvail().then(m=>{ if(m){ el.querySelectorAll('.rp-ai').forEach(b=>b.hidden=false); $('#roomsAllAi').hidden=false; } });
   const job=++roomJob;
-  (async()=>{ for(let i=0;i<list.length;i++){ if(job!==roomJob) return; const {k,r}=list[i]; const key=`${v.key}|${k}|${r.n}|${i}`; if(S.roomImgs[key]) continue;
+  (async()=>{ for(let i=0;i<list.length;i++){ if(job!==roomJob) return; const {k,r}=list[i]; const key=roomKey(v,k,r,i); if(S.roomImgs[key]) continue;
       await new Promise(rs=>setTimeout(rs,80)); if(job!==roomJob||!resV||!resV.ok) return; let url=null; try{ url=resV.shot({kind:'int',k,r,w:1280,h:720}); }catch(e){ console.error(e); } if(!url) continue; url=await postPhoto(url); S.roomImgs[key]={url,ai:false};
       const box=el.querySelector(`.rp-img[data-key="${CSS.escape(key)}"]`); if(box) box.innerHTML=`<img alt="${esc(r.n)}" src="${url}">`; } })();
 }
-async function roomAi(i){ const v=S.variants[S.active], A=S.A, list=roomList(v), it=list[i]; if(!it) return; const key=`${v.key}|${it.k}|${it.r.n}|${i}`;
+async function roomAi(i){ const v=S.variants[S.active], A=S.A, list=roomList(v), it=list[i]; if(!it) return; const key=roomKey(v,it.k,it.r,i);
   const box=document.querySelector(`.rp-img[data-key="${CSS.escape(key)}"]`); const prev=box&&box.innerHTML; if(box) box.insertAdjacentHTML('beforeend','<div class="aig-over"><i></i>AI chizmoqda…</div>');
   try{ const url=await aiGen(roomPrompt(v,A,it.k,it.r)); S.roomImgs[key]={url,ai:true}; if(box){ box.innerHTML=`<img alt="${esc(it.r.n)}" src="${url}">`; const cap=box.parentElement.querySelector('figcaption'); if(cap&&!cap.querySelector('.aitag')) cap.insertAdjacentHTML('beforeend','<span class="aitag">AI</span>'); } }
   catch(e){ console.error(e); if(box){ box.innerHTML=prev; box.insertAdjacentHTML('beforeend','<div class="aig-over">AI chizib bo\'lmadi</div>'); } } }
@@ -3710,6 +3720,20 @@ setTimeout(()=>{ makePromoImages(); },2600);
 
 </script>
 
+<script>
+/* Telegram va Fikr tugmalarini barmoq/sichqoncha bilan istalgan joyga surish (joyi eslab qolinadi) */
+(function(){ function drag(el,key){ if(!el) return; let sx=0,sy=0,ox=0,oy=0,moved=false,id=null;
+  const place=(x,y)=>{ const w=el.offsetWidth||110,h=el.offsetHeight||44; x=Math.max(6,Math.min(innerWidth-w-6,x)); y=Math.max(6,Math.min(innerHeight-h-6,y)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.right='auto'; el.style.bottom='auto'; };
+  el.style.touchAction='none'; el.title="Bosib turib surishingiz mumkin";
+  el.addEventListener('pointerdown',e=>{ id=e.pointerId; moved=false; const r=el.getBoundingClientRect(); sx=e.clientX; sy=e.clientY; ox=r.left; oy=r.top; try{ el.setPointerCapture(id); }catch(_){} });
+  el.addEventListener('pointermove',e=>{ if(id!==e.pointerId) return; const dx=e.clientX-sx, dy=e.clientY-sy; if(!moved&&Math.hypot(dx,dy)<8) return; moved=true; place(ox+dx,oy+dy); e.preventDefault(); });
+  const up=e=>{ if(id!==e.pointerId) return; id=null; if(moved){ const r=el.getBoundingClientRect(); try{ localStorage.setItem('fab_'+key,JSON.stringify({x:r.left,y:r.top})); }catch(_){} } };
+  el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+  el.addEventListener('click',e=>{ if(moved){ e.preventDefault(); e.stopImmediatePropagation(); moved=false; } },true);
+  try{ const p=JSON.parse(localStorage.getItem('fab_'+key)||'null'); if(p) setTimeout(()=>place(p.x,p.y),300); }catch(_){}
+  addEventListener('resize',()=>{ if(el.style.left){ const r=el.getBoundingClientRect(); place(r.left,r.top); } }); }
+  drag(document.getElementById('callFab'),'tg'); drag(document.getElementById('fbFab'),'fb'); })();
+</script>
 <div id="fsView" hidden style="position:fixed;inset:0;z-index:200;background:#fff;overflow:auto;touch-action:pan-x pan-y pinch-zoom"><button type="button" id="fsClose" aria-label="Yopish" style="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:2;border:0;border-radius:999px;width:44px;height:44px;font-size:20px;background:#0A1120;color:#fff">✕</button><div id="fsBody" style="min-width:100%;padding:56px 8px 16px"></div></div>
 <script>
 (function(){ const fv=document.getElementById('fsView'), fb=document.getElementById('fsBody');
