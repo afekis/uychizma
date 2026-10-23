@@ -3871,11 +3871,10 @@ async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user
   <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line,#D6DEEA);font-size:14px;line-height:1.5">
    <b>Qanday ishlaydi?</b>
    <ol style="margin:6px 0 0;padding-left:20px">
-    <li>Birinchi uy loyihasi — <b>tekin</b>.</li>
-    <li>Keyingi uylar uchun «To'lash»ni bosing va ko'rsatilgan kartaga pul o'tkazing.</li>
+    <li>«To'lash»ni bosing va ko'rsatilgan kartaga pul o'tkazing.</li>
     <li>To'lov chekining rasmini (skrinshot) yuklab, «Chekni yuborish»ni bosing.</li>
     <li>Admin chekni tekshirib ruxsat beradi — odatda bir necha soat ichida.</li>
-    <li>Ruxsatdan keyin <b>yana 2 ta uy</b> loyihasini to'liq chiqarasiz: reja, 3D, mebel va PDF.</li>
+    <li>Ruxsatdan keyin <b>2 ta uy</b> loyihasini to'liq chiqarasiz: reja, 3D, mebel va PDF.</li>
    </ol>
    <p class="note" style="margin:8px 0 0">Savol bo'lsa: Telegram <a href="https://t.me/amirhonsh" target="_blank" rel="noopener">@amirhonsh</a></p>
   </div>
@@ -3883,7 +3882,7 @@ async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user
 </div>
 <script>
 /* ===== OBUNA: 1-uy tekin, keyin to'lov + chek -> admin ruxsati -> yana 2 ta uy ===== */
-const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', price:"50 000 so'm", free:1, per:2 };
+const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', price:"50 000 so'm", free:0, per:2 };
 (function(){
   const $p=id=>document.getElementById(id), box=$p('payBox'); let after=null, img='';
   const sig=()=>{ const A=S.A; return [A.plotShape,A.plotW,A.plotL,A.plotBackW||0,A.floors,A.beds,A.targetArea||0].join('|'); };
@@ -3896,7 +3895,7 @@ const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', pric
   function allowed(k){ const h=LS.get('houses',[]); if(h.includes(k)) return true; const paidUsed=Math.max(0,h.length-PAY.free); return h.length<PAY.free || paidUsed<credits(); }
   function use(k){ const h=LS.get('houses',[]); if(!h.includes(k)){ h.push(k); LS.set('houses',h); } }
   function view(){ const h=LS.get('houses',[]), pend=pays().some(x=>x.status==='pending');
-    $p('payLead').textContent=h.length&&credits()?`Siz ${credits()} ta pullik uydan hammasini ishlatdingiz. Yana 2 ta uy loyihasi uchun obunani yangilang.`:"Birinchi uyingiz tekin edi. Yangi uy loyihasini chiqarish uchun obuna oling — bir to'lovga 2 ta uy.";
+    $p('payLead').textContent=credits()?`Siz ${credits()} ta uydan hammasini ishlatdingiz. Yana 2 ta uy loyihasi uchun obunani yangilang.`:"Uyingizni ko'rish uchun obuna oling — bir to'lovga 2 ta uy loyihasi: reja, 3D, mebel va PDF.";
     $p('payStep1').hidden=pend; $p('payStep2').hidden=true; $p('payWait').hidden=!pend; $p('payErr').textContent=''; }
   function open(){ view(); box.hidden=false; document.body.style.overflow='hidden'; }
   function close(){ box.hidden=true; document.body.style.overflow=''; }
