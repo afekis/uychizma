@@ -3803,13 +3803,13 @@ setTimeout(()=>{ makePromoImages(); },2600);
     try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>Object.assign({_id:d.id},d.data())); render(); }
     catch(x){ rows=[]; $a('admTable').innerHTML='<p class="err" style="padding:12px">Ma\'lumotni o\'qib bo\'lmadi: '+e((x&&x.code)||x)+'</p>'; $a('admCount').textContent=''; } }
   function filtered(){ const q=$a('admQ').value.trim().toLowerCase(); return q?rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q)):rows; }
-  function renderPays(list){ const st={pending:['⏳ Kutilmoqda','#A8620A'],ok:['✅ Ruxsat berildi','#1F7A4D'],no:['❌ Rad etildi','#B3261E']};
-    const pend=rows.filter(r=>r.status==='pending').length; $a('admCount').textContent=list.length+' ta chek'+(pend?' · '+pend+' tasi kutilmoqda':''); $a('admPayN').textContent=pend?'('+pend+')':'';
+  function renderPays(list){ const st={pending:['⏳ Kutilmoqda','#A8620A'],auto:['🟢 Avtomatik ochildi — tekshiring','#1F5FE0'],ok:['✅ Tasdiqlandi','#1F7A4D'],no:['❌ Rad etildi','#B3261E']};
+    const pend=rows.filter(r=>r.status==='pending'||r.status==='auto').length; $a('admCount').textContent=list.length+' ta chek'+(pend?' · '+pend+' tasi tekshirilmagan':''); $a('admPayN').textContent=pend?'('+pend+')':'';
     $a('admTable').innerHTML=list.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:12px">'+list.map(r=>{ const s=st[r.status]||st.pending; return `<div style="border:1px solid var(--line,#ddd);border-radius:12px;padding:10px;background:var(--card,#fff)">
       <a href="#" data-img="${e(r._id)}" title="Kattalashtirish"><img src="${e(r.img||'')}" alt="Chek rasmi" style="width:100%;height:220px;object-fit:contain;background:#f2f2f2;border-radius:8px"></a>
       <div style="margin-top:8px;font-size:14px"><b>${e(r.name)}</b><br>${r.phone?`<a href="tel:${e(String(r.phone).replace(/[^\d+]/g,''))}">${e(r.phone)}</a>`:''}<br><span style="color:var(--muted,#666);font-size:12px">${dt(r.at)} · ${e(r.n||2)} ta uy uchun</span></div>
       <div style="margin:6px 0;font-weight:700;color:${s[1]}">${s[0]}</div>
-      ${r.status==='pending'?`<div style="display:flex;gap:6px"><button type="button" class="btn primary small" data-ok="${e(r._id)}" style="flex:1">✅ Ruxsat berish</button><button type="button" class="btn back small" data-no="${e(r._id)}">Rad etish</button></div>`:(r.status==='ok'?`<button type="button" class="btn back small" data-no="${e(r._id)}">Ruxsatni bekor qilish</button>`:`<button type="button" class="btn back small" data-ok="${e(r._id)}">Baribir ruxsat berish</button>`)}
+      ${(r.status==='pending'||r.status==='auto')?`<div style="display:flex;gap:6px"><button type="button" class="btn primary small" data-ok="${e(r._id)}" style="flex:1">✅ To'g'ri</button><button type="button" class="btn back small" data-no="${e(r._id)}">❌ Soxta</button></div>`:(r.status==='ok'?`<button type="button" class="btn back small" data-no="${e(r._id)}">Ruxsatni bekor qilish</button>`:`<button type="button" class="btn back small" data-ok="${e(r._id)}">Baribir ruxsat berish</button>`)}
     </div>`; }).join('')+'</div>':'<p class="note" style="padding:12px">Hozircha chek yo\'q.</p>'; }
   $a('admTable').addEventListener('click',async ev=>{ const im=ev.target.closest('[data-img]'); if(im){ ev.preventDefault(); const r=rows.find(x=>x._id===im.dataset.img); if(r){ const w=window.open(); if(w) w.document.write('<title>Chek</title><img src="'+r.img+'" style="max-width:100%">'); } return; }
     const b=ev.target.closest('[data-ok],[data-no]'); if(!b) return; const id=b.dataset.ok||b.dataset.no, ok=!!b.dataset.ok; b.disabled=true;
@@ -3874,8 +3874,9 @@ async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user
    <ol style="margin:6px 0 0;padding-left:20px">
     <li>«To'lash»ni bosing va ko'rsatilgan kartaga pul o'tkazing.</li>
     <li>To'lov chekining rasmini (skrinshot) yuklab, «Chekni yuborish»ni bosing.</li>
-    <li>Admin chekni tekshirib ruxsat beradi — odatda bir necha soat ichida.</li>
-    <li>Ruxsatdan keyin <b>2 ta uy</b> loyihasini to'liq chiqarasiz: reja, 3D, mebel va PDF.</li>
+    <li>Chek yuborilishi bilan <b>2 ta uy</b> loyihasi darhol ochiladi.</li>
+    <li>Admin chekni keyin tekshiradi. Soxta chek yuborilsa, qolgan uylar yopiladi.</li>
+    <li>Ochilgan uylarda loyihani to'liq chiqarasiz: reja, 3D, mebel va PDF.</li>
    </ol>
    <p class="note" style="margin:8px 0 0">Savol bo'lsa: Telegram <a href="https://t.me/amirhonsh" target="_blank" rel="noopener">@amirhonsh</a></p>
   </div>
@@ -3890,9 +3891,9 @@ const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', pric
   const sig=()=>{ const A=S.A; return [A.plotShape,A.plotW,A.plotL,A.plotBackW||0,A.floors,A.beds,A.targetArea||0].join('|'); };
   const cid=()=>{ let c=LS.get('cid',''); if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); LS.set('cid',c); } return c; };
   const pays=()=>LS.get('pays',[]);           // [{id,status}]
-  const credits=()=>pays().filter(x=>x.status==='ok').length*PAY.per;
-  async function refresh(){ const list=pays(); if(!list.some(x=>x.status==='pending')) return list; if(!(await cloudReady())) return list;
-    for(const x of list) if(x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
+  const credits=()=>pays().filter(x=>x.status==='ok'||x.status==='auto').length*PAY.per;
+  async function refresh(){ const list=pays(); if(!list.some(x=>x.status==='pending'||x.status==='auto')) return list; if(!(await cloudReady())) return list;
+    for(const x of list) if(x.status==='pending'||x.status==='auto'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
     LS.set('pays',list); return list; }
   const owner=()=>{ try{ const u=CLOUD.user||(window.firebase&&firebase.auth&&firebase.auth().currentUser); return !!(u&&u.email&&OWNER_EMAILS.includes(String(u.email).toLowerCase())); }catch(_){ return false; } };
   const left=()=>owner()?1e9:Math.max(0,credits()-Math.max(0,LS.get('houses',[]).length-PAY.free));
@@ -3921,8 +3922,8 @@ const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', pric
     catch(_){ img=''; $p('paySend').disabled=true; $p('payErr').textContent="Rasmni o'qib bo'lmadi. Boshqa rasm tanlang."; } });
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ if(!(await cloudReady())) throw new Error('net'); const u=S.user||{};
-      const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now()});
-      const l=pays(); l.push({id:ref.id,status:'pending'}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi'); }
+      const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'auto',at:Date.now()});
+      const l=pays(); l.push({id:ref.id,status:'auto'}); LS.set('pays',l); img=''; badge(); close(); toast('✅ Chek qabul qilindi — 2 ta uy ochildi'); const f=after; after=null; if(f) f(); }
     catch(x){ $p('payErr').textContent="Yuborib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."; b.disabled=false; }
     b.textContent='📤 Chekni yuborish'; };
   $p('payCheck').onclick=async()=>{ const b=$p('payCheck'); b.disabled=true; await refresh(); b.disabled=false; badge(); const k=sig();
