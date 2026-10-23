@@ -423,6 +423,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button data-go="start"><span class="ln">Loyiha boshlash</span><span class="sn">Boshlash</span></button>
       <button data-go="projects"><span class="ln">Mening loyihalarim</span><span class="sn">Loyihalarim</span></button>
     </nav>
+    <button type="button" id="premBtn" style="border:0;border-radius:999px;padding:7px 12px;font:700 13px/1 inherit;background:linear-gradient(135deg,#FFC93C,#F59E0B);color:#3A2500;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(245,158,11,.8);flex:none">⭐<span class="pl"> Premium</span></button><style>@media (max-width:480px){#premBtn{padding:7px 9px}#premBtn .pl{display:none}}</style>
     <span class="chip" id="userChip" hidden></span>
   </div>
 </header>
@@ -2812,7 +2813,7 @@ function show(name){
   if(name==='projects') renderProjects();
   if(name==='result' && resV && resV.ok) setTimeout(()=>resV._resize(),30);
 }
-function go(t){ if(t==='start'){ if(!S.user) return show('register'); S.step=0; renderStep(); return show('wizard'); } show(t); }
+function go(t){ if(t==='start'){ if(!S.user) return show('register'); const w=()=>{ S.step=0; renderStep(); show('wizard'); }; if(window.payStart&&!payStart(w)) return; return w(); } show(t); }
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(b){ go(b.dataset.go); } });
 $('#logoBtn').onclick=()=>show('home');
 function renderUser(){ const c=$('#userChip'); if(S.user){ c.hidden=false; c.textContent=S.user.name; } else c.hidden=true; }
@@ -3735,7 +3736,7 @@ async function makePromoImages(){
 $('#pdfBtn').onclick=makePdf; $('#linkBtn').onclick=copyLink; $('#dlAll').onclick=dlAllRun; $('#dlFab').onclick=dlAllRun;
 /* boot */
 renderUser(); syncInputs(); initGoogle();
-(function(){ const hs=(location.hash||'').slice(1); const pr=hs?decProject(hs):null; if(pr){ S.A=pr.A; generate(); show('result'); const v=S.variants[pr.vi]; if(v&&pr.st&&pr.st!==v.style) restyle(v,S.A,pr.st); const t=$('#vtabs').children[pr.vi]; if(t) t.click(); } })();
+(function(){ const hs=(location.hash||'').slice(1); const pr=hs?decProject(hs):null; if(pr){ S.A=pr.A; const sh=()=>{ generate(); show('result'); const v=S.variants[pr.vi]; if(v&&pr.st&&pr.st!==v.style) restyle(v,S.A,pr.st); const t=$('#vtabs').children[pr.vi]; if(t) t.click(); }; setTimeout(()=>{ if(window.payGate&&payGate(sh)) sh(); },0); return; generate(); show('result'); const v=S.variants[pr.vi]; if(v&&pr.st&&pr.st!==v.style) restyle(v,S.A,pr.st); const t=$('#vtabs').children[pr.vi]; if(t) t.click(); } })();
 buildPromo();
 try{ heroV=new Viewer($('#heroViewer'),{auto:true}); const HA=Object.assign({},DEF,{pool:true,trees:8,gazebo:true}); const hv=buildVariants(HA); heroV.load(hv[0],HA); heroV._A=HA; }catch(e){ console.error(e); }
 setTimeout(()=>{ makePromoImages(); },2600);
@@ -3892,14 +3893,19 @@ const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', pric
   async function refresh(){ const list=pays(); if(!list.some(x=>x.status==='pending')) return list; if(!(await cloudReady())) return list;
     for(const x of list) if(x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
     LS.set('pays',list); return list; }
+  const left=()=>Math.max(0,credits()-Math.max(0,LS.get('houses',[]).length-PAY.free));
+  function badge(){ const b=$p('premBtn'); if(!b) return; const n=left(), pend=pays().some(x=>x.status==='pending'); b.innerHTML=n?`⭐<span class="pl"> Premium ·</span> ${n}<span class="pl"> ta uy</span>`:(pend?'⏳<span class="pl"> Premium</span>':'⭐<span class="pl"> Premium</span>'); b.title=n?`Premium: yana ${n} ta uy`:'Premium obuna'; }
   function allowed(k){ const h=LS.get('houses',[]); if(h.includes(k)) return true; const paidUsed=Math.max(0,h.length-PAY.free); return h.length<PAY.free || paidUsed<credits(); }
-  function use(k){ const h=LS.get('houses',[]); if(!h.includes(k)){ h.push(k); LS.set('houses',h); } }
+  function use(k){ const h=LS.get('houses',[]); if(!h.includes(k)){ h.push(k); LS.set('houses',h); } badge(); }
   function view(){ const h=LS.get('houses',[]), pend=pays().some(x=>x.status==='pending');
     $p('payLead').textContent=credits()?`Siz ${credits()} ta uydan hammasini ishlatdingiz. Yana 2 ta uy loyihasi uchun obunani yangilang.`:"Uyingizni ko'rish uchun obuna oling — bir to'lovga 2 ta uy loyihasi: reja, 3D, mebel va PDF.";
     $p('payStep1').hidden=pend; $p('payStep2').hidden=true; $p('payWait').hidden=!pend; $p('payErr').textContent=''; }
   function open(){ view(); box.hidden=false; document.body.style.overflow='hidden'; }
   function close(){ box.hidden=true; document.body.style.overflow=''; }
-  window.payGate=function(fn){ const k=sig(); if(allowed(k)){ use(k); return true; } after=fn; open();
+  window.payStart=function(fn){ if(left()>0) return true; after=fn; open(); refresh().then(()=>{ badge(); if(left()>0){ close(); const f=after; after=null; if(f) f(); } else view(); }); return false; };
+  $p('premBtn').onclick=()=>{ if(left()>0){ toast(`Sizda yana ${left()} ta uy loyihasi bor`); go('start'); return; } after=()=>go('start'); open(); refresh().then(()=>{ badge(); view(); }); };
+  refresh().then(badge);
+  window.payGate=function(fn){ const k=sig(); if(allowed(k)){ use(k); return true; } after=()=>{ if(allowed(k)){ use(k); fn(); } else open(); }; open();
     refresh().then(()=>{ if(allowed(k)){ use(k); close(); toast("✅ Ruxsat berilgan — uyingiz chiqarilmoqda"); const f=after; after=null; if(f) f(); } else view(); }); return false; };
   $p('payPrice').textContent=PAY.price; $p('payPrice2').textContent=PAY.price; $p('payCard').textContent=PAY.card; $p('payHolder').textContent=PAY.holder;
   $p('payX').onclick=close; box.addEventListener('click',e=>{ if(e.target===box) close(); });
@@ -3914,11 +3920,11 @@ const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', pric
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ if(!(await cloudReady())) throw new Error('net'); const u=S.user||{};
       const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now()});
-      const l=pays(); l.push({id:ref.id,status:'pending'}); LS.set('pays',l); img=''; view(); toast('Chek yuborildi'); }
+      const l=pays(); l.push({id:ref.id,status:'pending'}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi'); }
     catch(x){ $p('payErr').textContent="Yuborib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."; b.disabled=false; }
     b.textContent='📤 Chekni yuborish'; };
-  $p('payCheck').onclick=async()=>{ const b=$p('payCheck'); b.disabled=true; await refresh(); b.disabled=false; const k=sig();
-    if(allowed(k)){ use(k); close(); toast('✅ Ruxsat berildi!'); const f=after; after=null; if(f) f(); }
+  $p('payCheck').onclick=async()=>{ const b=$p('payCheck'); b.disabled=true; await refresh(); b.disabled=false; badge(); const k=sig();
+    if(left()>0||allowed(k)){ close(); toast('✅ Ruxsat berildi!'); const f=after; after=null; if(f) f(); }
     else if(pays().some(x=>x.status==='pending')) toast("Hali tekshirilmadi, birozdan keyin qayta ko'ring");
     else { view(); const last=pays().slice(-1)[0]; if(last&&last.status==='no') $p('payErr').textContent="Chek qabul qilinmadi. To'g'ri chekni qayta yuboring yoki Telegramda yozing."; } };
 })();
