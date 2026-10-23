@@ -3883,6 +3883,7 @@ async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user
 </div>
 <script>
 /* ===== OBUNA: 1-uy tekin, keyin to'lov + chek -> admin ruxsati -> yana 2 ta uy ===== */
+const OWNER_EMAILS=['macbookmmacbook@gmail.com','amirhonjumanyozv@gmail.com']; // sayt egasi: to'lovsiz, cheksiz
 const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', price:"50 000 so'm", free:0, per:2 };
 (function(){
   const $p=id=>document.getElementById(id), box=$p('payBox'); let after=null, img='';
@@ -3893,9 +3894,10 @@ const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', pric
   async function refresh(){ const list=pays(); if(!list.some(x=>x.status==='pending')) return list; if(!(await cloudReady())) return list;
     for(const x of list) if(x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
     LS.set('pays',list); return list; }
-  const left=()=>Math.max(0,credits()-Math.max(0,LS.get('houses',[]).length-PAY.free));
-  function badge(){ const b=$p('premBtn'); if(!b) return; const n=left(), pend=pays().some(x=>x.status==='pending'); b.innerHTML=n?`⭐<span class="pl"> Premium ·</span> ${n}<span class="pl"> ta uy</span>`:(pend?'⏳<span class="pl"> Premium</span>':'⭐<span class="pl"> Premium</span>'); b.title=n?`Premium: yana ${n} ta uy`:'Premium obuna'; }
-  function allowed(k){ const h=LS.get('houses',[]); if(h.includes(k)) return true; const paidUsed=Math.max(0,h.length-PAY.free); return h.length<PAY.free || paidUsed<credits(); }
+  const owner=()=>{ try{ const u=CLOUD.user||(window.firebase&&firebase.auth&&firebase.auth().currentUser); return !!(u&&u.email&&OWNER_EMAILS.includes(String(u.email).toLowerCase())); }catch(_){ return false; } };
+  const left=()=>owner()?1e9:Math.max(0,credits()-Math.max(0,LS.get('houses',[]).length-PAY.free));
+  function badge(){ const b=$p('premBtn'); if(!b) return; if(owner()){ b.innerHTML='👑<span class="pl"> Cheksiz</span>'; b.title='Sayt egasi: cheksiz'; return; } const n=left(), pend=pays().some(x=>x.status==='pending'); b.innerHTML=n?`⭐<span class="pl"> Premium ·</span> ${n}<span class="pl"> ta uy</span>`:(pend?'⏳<span class="pl"> Premium</span>':'⭐<span class="pl"> Premium</span>'); b.title=n?`Premium: yana ${n} ta uy`:'Premium obuna'; }
+  function allowed(k){ if(owner()) return true; const h=LS.get('houses',[]); if(h.includes(k)) return true; const paidUsed=Math.max(0,h.length-PAY.free); return h.length<PAY.free || paidUsed<credits(); }
   function use(k){ const h=LS.get('houses',[]); if(!h.includes(k)){ h.push(k); LS.set('houses',h); } badge(); }
   function view(){ const h=LS.get('houses',[]), pend=pays().some(x=>x.status==='pending');
     $p('payLead').textContent=credits()?`Siz ${credits()} ta uydan hammasini ishlatdingiz. Yana 2 ta uy loyihasi uchun obunani yangilang.`:"Uyingizni ko'rish uchun obuna oling — bir to'lovga 2 ta uy loyihasi: reja, 3D, mebel va PDF.";
@@ -3903,8 +3905,8 @@ const PAY={ card:'8600 0000 0000 0000', holder:'Karta egasi: ISM FAMILIYA', pric
   function open(){ view(); box.hidden=false; document.body.style.overflow='hidden'; }
   function close(){ box.hidden=true; document.body.style.overflow=''; }
   window.payStart=function(fn){ if(left()>0) return true; after=fn; open(); refresh().then(()=>{ badge(); if(left()>0){ close(); const f=after; after=null; if(f) f(); } else view(); }); return false; };
-  $p('premBtn').onclick=()=>{ if(left()>0){ toast(`Sizda yana ${left()} ta uy loyihasi bor`); go('start'); return; } after=()=>go('start'); open(); refresh().then(()=>{ badge(); view(); }); };
-  refresh().then(badge);
+  $p('premBtn').onclick=()=>{ if(owner()){ toast('👑 Siz sayt egasisiz — cheksiz'); go('start'); return; } if(left()>0){ toast(`Sizda yana ${left()} ta uy loyihasi bor`); go('start'); return; } after=()=>go('start'); open(); refresh().then(()=>{ badge(); view(); }); };
+  refresh().then(badge); try{ const ru=renderUser; renderUser=function(){ const r=ru.apply(this,arguments); badge(); return r; }; }catch(_){}
   window.payGate=function(fn){ const k=sig(); if(allowed(k)){ use(k); return true; } after=()=>{ if(allowed(k)){ use(k); fn(); } else open(); }; open();
     refresh().then(()=>{ if(allowed(k)){ use(k); close(); toast("✅ Ruxsat berilgan — uyingiz chiqarilmoqda"); const f=after; after=null; if(f) f(); } else view(); }); return false; };
   $p('payPrice').textContent=PAY.price; $p('payPrice2').textContent=PAY.price; $p('payCard').textContent=PAY.card; $p('payHolder').textContent=PAY.holder;
