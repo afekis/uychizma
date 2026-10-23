@@ -1050,7 +1050,16 @@ function genCourt(A,mw,two,opt){
 }
 function calcArea(v){ return v.floors.reduce((s,f)=>s+f.rooms.filter(r=>r.t!=='garage').reduce((a,r)=>a+r.w*r.h,0),0); }
 function sized(A,fn){
-  if(!(A.targetArea>=40)) return fn(1);
+  if(!(A.targetArea>=40)){
+    // Maydon yozilmagan: yer katta bo'lsa uy ham yerga mos kattalashadi
+    const v1=fn(1); if(!v1||hasEdits(A)) return v1;
+    const pa=plotArea(A), fl=v1.floors.length||1, fp=Math.min(pa*0.30, 30+pa*0.2);
+    const want=Math.min(fp*fl, calcArea(v1)*2.1);
+    if(want<=calcArea(v1)*1.05) return v1;
+    let k=1, v=v1;
+    for(let i=0;i<6;i++){ const r=want/calcArea(v); if(Math.abs(r-1)<0.03) break; k=Math.min(2.3,Math.max(1,k*r)); const nv=fn(k); if(!nv) break; v=nv; }
+    return v;
+  }
   const base=hasEdits(A)?Object.assign({},A,{rooms:null}):A;
   const run=k=>{ const sv=A.rooms; A.rooms=base.rooms; try{ return fn(k); } finally { A.rooms=sv; } };
   let k=1, v=null;
