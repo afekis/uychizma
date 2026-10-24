@@ -2743,7 +2743,7 @@ function svgToPng(svg,wpx){ return new Promise((res,rej)=>{ const m=svg.match(/v
   const s2=svg.replace('<svg ',`<svg width="${wpx}" height="${hpx}" `); const url=URL.createObjectURL(new Blob([s2],{type:'image/svg+xml'})); const img=new Image();
   img.onload=()=>{ const c=document.createElement('canvas'); c.width=wpx; c.height=hpx; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,wpx,hpx); x.drawImage(img,0,0,wpx,hpx); URL.revokeObjectURL(url); res({data:c.toDataURL('image/jpeg',0.92),ar}); };
   img.onerror=e=>{ URL.revokeObjectURL(url); rej(e); }; img.src=url; }); }
-const pt=s=>String(s).replace(/≈/g,'~').replace(/[−–]/g,'-').replace(/…/g,'...').replace(/[ʻʼ‘’]/g,"'");
+const pt=s=>String(s).replace(/≈/g,'~').replace(/[−–—]/g,'-').replace(/…/g,'...').replace(/[ʻʼ‘’]/g,"'").replace(/≥/g,'>=').replace(/≤/g,'<=').replace(/→/g,'->').replace(/×/g,'x');
 async function makePdf(){
   const btn=$('#pdfBtn'), msg=$('#ustaMsg'); btn.disabled=true; msg.textContent='PDF tayyorlanmoqda…';
   try{
@@ -3870,6 +3870,73 @@ async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user
   const close=()=>{ const v=ov.querySelector('video'); try{ v.pause(); }catch(_){} ov.remove(); document.body.style.overflow=''; }; ov.querySelector('button').onclick=close; ov.addEventListener('click',ev=>{ if(ev.target===ov) close(); }); document.body.appendChild(ov); document.body.style.overflow='hidden'; }); })();
 </script>
 <script>
+/* ===== MUHANDISLIK AGENTI: dastlabki konstruktiv hisob (KR), seysmika, armatura; tarmoq sxemalari (VK, EL, OV) =====
+   Diqqat: barcha natijalar TAXMINIY. Litsenziyali konstruktor va muhandislar tekshirib tasdiqlashi shart. */
+const KG_M={8:0.395,10:0.617,12:0.888,14:1.21,16:1.58};
+function engWalls(v){ const f=v.floors[0]; const ext=(f.segs||[]).reduce((s,g)=>s+Math.hypot(g.x1-g.x0,g.y1-g.y0),0)||2*(v.W+v.D);
+  const per=mainRooms(f).reduce((s,r)=>s+2*(r.w+r.h),0); return {ext, int:Math.max(0,(per-ext)/2)}; }
+function engGrid(v,f){ const pts=new Map(), add=(x,y)=>pts.set(x.toFixed(1)+'|'+y.toFixed(1),[x,y]); const step=(a,b)=>{ const n=Math.max(1,Math.ceil((b-a)/6)); return Array.from({length:n+1},(_,i)=>a+(b-a)*i/n); };
+  f.blocks.forEach(b=>{ const xs=step(b.x,b.x+b.w), ys=step(b.y,b.y+b.h); xs.forEach(x=>{ add(x,b.y); add(x,b.y+b.h); }); ys.forEach(y=>{ add(b.x,y); add(b.x+b.w,y); }); if(b.w>6.5&&b.h>6.5) xs.slice(1,-1).forEach(x=>ys.slice(1,-1).forEach(y=>add(x,y))); });
+  return [...pts.values()]; }
+function engCalc(v,A,seis){ seis=seis||8; const g=rxGeom(v,A), nF=v.floors.length, W=engWalls(v); const flat=v.roof&&v.roof.shape==='tekis';
+  // yuklar, kN/m2 (KMK 2.01.07 taxminiy)
+  const L={slab:5.0,fin:1.2,part:1.0,live:1.5,roof:flat?6.5:1.2,snow:0.7}; const floorQ=L.slab+L.fin+L.part+L.live;
+  const wallH=FH*nF, wallG=18*0.38*wallH*W.ext + 18*0.12*wallH*W.int*0.6; // g'isht 18 kN/m3
+  const slabA=g.foot, Gtot=(floorQ*(nF-(flat?0:1))+(flat?0:L.slab*0.6))*slabA + (L.roof+L.snow)*slabA + wallG; const Gd=Gtot*1.2;
+  const cols=engGrid(v,v.floors[0]), nc=cols.length, Ntrib=Gd/Math.max(4,nc)*1.25; const colSide=seis>=8?0.4:0.3, Ab=colSide*colSide*1e6, As=seis>=8?804:452;
+  const Ncap=0.8*(14.5*Ab+350*As)/1000; // B25, A500C, kN
+  const lenF=W.ext+W.int; const q=Gd/lenF; const R=150; let bF=Math.max(0.6,Math.ceil(q/R*10)/10);
+  const Aseis={7:0.1,8:0.2,9:0.4}[seis]||0.2, Q=Aseis*2.5*0.25*Gtot; // taxminiy kesuvchi kuch (K1=0.25 karkas)
+  // armatura
+  const colH=nF*FH+1.2, colBars=4*colH*1.1, beamLen=(W.ext+W.int*0.7)*nF, d1=seis>=8?16:14, d2=seis>=8?14:12;
+  const rows=[[`Ustunlar ${colSide*100}x${colSide*100} sm (${nc} ta)`,`4Ø${d1} A500C`,colBars*nc*KG_M[d1]],['Ustun xomutlari',`Ø8 @150 (tugunlarda @100)`,nc*colH/0.13*4*colSide*KG_M[8]],
+    [`Antiseysmik belbog' / rigellar (${nF} qavat)`,`4Ø${d2} A500C`,beamLen*4*1.08*KG_M[d2]],["Belbog' xomutlari",'Ø8 @150',beamLen/0.15*1.4*KG_M[8]],
+    [`Poydevor lentasi ${bF*100} sm`,'2x3Ø12 + Ø8 @200',lenF*6*1.08*KG_M[12]+lenF/0.2*(bF*2+0.8)*KG_M[8]],[`Monolit plita 20 sm (${nF} ta)`,'Ø10 @200, 2 qatlam, 2 yo\'nalish',slabA*nF*(2*2/0.2)*1.1*KG_M[10]]];
+  const steel=rows.reduce((s,r)=>s+r[2],0);
+  const conc=nc*colSide*colSide*colH + beamLen*0.38*0.4 + lenF*bF*0.4+lenF*0.4*0.8 + slabA*nF*0.2;
+  const checks=[]; const ck=(s,t,d)=>checks.push({s,t,d}); const lenMax={7:30,8:24,9:18}[seis]||24;
+  ck(Ntrib<=Ncap?'ok':'bad',`Ustun yuki ≈${fmt(Ntrib)} kN, ko'tara oladi ≈${fmt(Ncap)} kN`,`Ustun ${colSide*100}x${colSide*100} sm, beton B25, 4Ø${d1} A500C. ${seis>=8?'8–9 ballda kamida 40x40 sm tavsiya':'7 ballda 30x30 sm yetarli'}`);
+  ck('info',`Poydevor eni ≈${fmt(bF*100)} sm, chuqurligi 1,2 m`,`Chiziqli yuk ≈${fmt(q)} kN/m, tuproq qarshiligi R=${R} kPa deb olindi. Geologik tekshiruv (tuproq tahlili) bilan aniqlanadi`);
+  ck('ok',`Seysmiklik ${seis} ball: temir-beton karkas + to'ldiruvchi g'isht`,`Karkasli uyda 2 qavat ruxsat etiladi. G'isht devor yuk ko'taradigan bo'lsa, 8–9 ballda faqat 1 qavat mumkin`);
+  ck('ok',`Har qavatda antiseysmik belbog' (rigel) 38x40 sm`,`Uzluksiz, barcha devorlar bo'ylab, ${seis>=8?'4Ø14':'4Ø12'} + Ø8@150; ustunlar bilan bikr bog'langan`);
+  ck(Math.max(v.W,v.D)<=lenMax?'ok':'warn',`Bino uzunligi ${fmt1(Math.max(v.W,v.D))} m`,`${seis} ballda bir blok uzunligi ${lenMax} m gacha tavsiya. Oshsa — antiseysmik chok bilan bloklarga bo'linadi`);
+  const shape=v.floors[0].blocks.length>1; ck(shape?'warn':'ok',shape?"Murakkab shakl (L/U/erker)":"To'g'ri to'rtburchak shakl",shape?"Burchakli uylarda bloklar orasiga antiseysmik chok (30–50 mm) qo'yish kerak bo'lishi mumkin":"Seysmik jihatdan qulay shakl");
+  ck('ok','Derazalar ustida monolit to\'sin (peremichka)','Balandligi ≥25 sm, tayanchi ≥35 sm, Ø12 bo\'ylama armatura');
+  ck('info',`Taxminiy seysmik kesuvchi kuch ≈${fmt(Q)} kN`,`A=${Aseis}, β=2,5, K1=0,25 (karkas). Aniq hisobni konstruktor dasturda bajaradi`);
+  return {seis,L,floorQ,Gtot,Gd,cols,nc,Ntrib,Ncap,colSide,bF,q,R,lenF,W,rows,steel,conc,checks,Q,d1,d2}; }
+/* ---- tarmoq sxemalari ---- */
+function engRooms(f){ return mainRooms(f); }
+function netData(v,k){ const f=v.floors[k], rooms=engRooms(f); const segP=(o)=>{ const s=f.segs[o.si]; if(!s) return null; const L=Math.hypot(s.x1-s.x0,s.y1-s.y0)||1, ux=(s.x1-s.x0)/L, uy=(s.y1-s.y0)/L; return {x:s.x0+ux*o.c-s.nx*0.3,y:s.y0+uy*o.c-s.ny*0.3,horiz:Math.abs(uy)<0.5}; };
+  const wins=(f.openings||[]).filter(o=>o.kind==='win').map(o=>Object.assign({room:o.room},segP(o))).filter(o=>o.x!=null);
+  const doors=(f.doors||[]).map(d=>({room:d.room,x:d.o==='h'?d.c:d.line,y:d.o==='h'?d.line:d.c}));
+  return {f,rooms,wins,doors}; }
+const EL_N={zal:[6,2],bed:[4,1],kitchen:[6,2],wet:[1,1],util:[3,1],circ:[1,1],stair:[0,1],garage:[2,1]};
+function netSVG(v,k,kind){ const base=planSVG(v,k), D=netData(v,k), Y=y=>-y, o=[]; const c={vk:'#1F6FE0',kn:'#8A5A2B',el:'#D9480F',ov:'#C2255C'}[kind==='vk'?'vk':kind]; const lbl=(x,y,t,col)=>o.push(`<text x="${x}" y="${Y(y)}" font-size="0.32" fill="${col||'#222'}" text-anchor="middle" font-weight="700">${t}</text>`);
+  const f=D.f, ent=f.rooms.find(r=>r.t==='circ')||f.rooms[0]; const hub={x:ent.x+0.4,y:ent.y+0.4};
+  if(kind==='el'){ if(k===0){ o.push(`<rect x="${hub.x-0.3}" y="${Y(hub.y+0.2)}" width="0.6" height="0.4" fill="${c}"></rect>`); lbl(hub.x,hub.y+0.5,'ShR',c); }
+    D.rooms.forEach(r=>{ const n=EL_N[r.t]||[2,1], cx=r.x+r.w/2, cy=r.y+r.h/2; for(let i=0;i<n[1];i++){ const lx=cx+(n[1]>1?(i-0.5)*Math.min(2,r.w*0.4):0); o.push(`<circle cx="${lx}" cy="${Y(cy)}" r="0.22" fill="none" stroke="${c}" stroke-width="0.06"></circle><path d="M${lx-0.16} ${Y(cy)-0.16}L${lx+0.16} ${Y(cy)+0.16}M${lx+0.16} ${Y(cy)-0.16}L${lx-0.16} ${Y(cy)+0.16}" stroke="${c}" stroke-width="0.05"></path>`); }
+      const per=2*(r.w+r.h); for(let i=0;i<n[0];i++){ let t=(i+0.5)/n[0]*per, x,y; if(t<r.w){ x=r.x+t; y=r.y+0.18; } else if((t-=r.w)<r.h){ x=r.x+r.w-0.18; y=r.y+t; } else if((t-=r.h)<r.w){ x=r.x+r.w-t; y=r.y+r.h-0.18; } else { t-=r.w; x=r.x+0.18; y=r.y+r.h-t; } o.push(`<path d="M${x-0.14} ${Y(y)}h0.28M${x} ${Y(y)}v0.16" stroke="${c}" stroke-width="0.06"></path>`); }
+      const d=D.doors.find(d=>d.room===r); if(d){ const sx=Math.min(r.x+r.w-0.25,Math.max(r.x+0.25,d.x+0.6)), sy=Math.min(r.y+r.h-0.25,Math.max(r.y+0.25,d.y)); o.push(`<circle cx="${sx}" cy="${Y(sy)}" r="0.1" fill="${c}"></circle>`); }
+      if(k===0) o.push(`<path d="M${hub.x} ${Y(hub.y)}L${cx} ${Y(hub.y)}L${cx} ${Y(cy)}" fill="none" stroke="${c}" stroke-width="0.04" stroke-dasharray="0.2 0.12"></path>`); });
+  }
+  if(kind==='vk'){ const wet=D.rooms.filter(r=>r.t==='wet'||r.t==='kitchen'), inX=v.W*0.25, outX=v.W*0.7, topY=Math.max(...f.rooms.map(r=>r.y+r.h));
+    if(k===0){ o.push(`<path d="M${inX} ${Y(-1)}L${inX} ${Y(0.3)}" stroke="${c}" stroke-width="0.09"></path>`); lbl(inX,-1.25,'Suv kirishi (V1)',c); o.push(`<path d="M${outX} ${Y(topY-0.3)}L${outX} ${Y(topY+1.2)}" stroke="#8A5A2B" stroke-width="0.12"></path>`); lbl(outX,topY+1.5,'K1 → septik/tarmoq','#8A5A2B'); }
+    wet.forEach(r=>{ const sx=r.x+0.3, sy=r.y+0.3; o.push(`<circle cx="${sx}" cy="${Y(sy)}" r="0.16" fill="${c}"></circle><circle cx="${sx+0.4}" cy="${Y(sy)}" r="0.2" fill="#8A5A2B"></circle>`); lbl(sx+0.2,sy+0.55,'St',c);
+      const fx=[]; if(r.t==='kitchen') fx.push(['Rakovina',r.x+r.w-0.6,r.y+0.35]); else { if(/hojat|vanna|sanuzel|hammom/i.test(r.n)) fx.push(['Unitaz',r.x+r.w-0.45,r.y+r.h-0.5]); fx.push(['Lavabo',r.x+r.w/2,r.y+0.35]); if(/vanna|hammom|dush/i.test(r.n)) fx.push(['Dush/vanna',r.x+0.7,r.y+r.h-0.7]); }
+      fx.forEach(([n,x,y])=>{ o.push(`<rect x="${x-0.22}" y="${Y(y+0.18)}" width="0.44" height="0.36" rx="0.08" fill="#fff" stroke="${c}" stroke-width="0.05"></rect><path d="M${sx} ${Y(sy)}L${x} ${Y(sy)}L${x} ${Y(y)}" fill="none" stroke="${c}" stroke-width="0.045"></path><path d="M${sx+0.4} ${Y(sy)-0.08}L${x+0.1} ${Y(sy)-0.08}L${x+0.1} ${Y(y)}" fill="none" stroke="#8A5A2B" stroke-width="0.06" stroke-dasharray="0.25 0.1"></path>`); if(r.w*r.h>4.5) o.push(`<text x="${x}" y="${Y(y-0.42)}" font-size="0.22" fill="#333" text-anchor="middle">${n}</text>`); });
+      if(k===0){ o.push(`<path d="M${inX} ${Y(0.3)}L${inX} ${Y(sy)}L${sx} ${Y(sy)}" fill="none" stroke="${c}" stroke-width="0.06"></path><path d="M${sx+0.4} ${Y(sy)}L${outX} ${Y(sy)}L${outX} ${Y(topY-0.3)}" fill="none" stroke="#8A5A2B" stroke-width="0.08"></path>`); } });
+  }
+  if(kind==='ov'){ const boil=(D.f.rooms.find(r=>r.t==='util')||D.f.rooms.find(r=>r.t==='kitchen')||ent); if(k===0){ o.push(`<rect x="${boil.x+0.15}" y="${Y(boil.y+0.75)}" width="0.6" height="0.6" fill="${c}"></rect>`); lbl(boil.x+0.45,boil.y+1.05,'Qozon',c); }
+    const bx=boil.x+0.45, by=boil.y+0.45; D.wins.forEach(w=>{ const r=w.room; if(!r||r.t==='stair') return; const rl=Math.min(1.4,Math.max(0.6,(r.w*r.h*100)/ (D.wins.filter(q=>q.room===r).length||1) /1000)); const x0=w.horiz?w.x-rl/2:w.x-0.06, y0=w.horiz?w.y-0.06:w.y-rl/2, ww=w.horiz?rl:0.12, hh=w.horiz?0.12:rl;
+      o.push(`<rect x="${x0}" y="${Y(y0+hh)}" width="${ww}" height="${hh}" fill="${c}"></rect><path d="M${bx} ${Y(by)}L${w.x} ${Y(by)}L${w.x} ${Y(w.y)}" fill="none" stroke="${c}" stroke-width="0.035" stroke-dasharray="0.15 0.1"></path>`); });
+    D.rooms.filter(r=>r.t!=='stair'&&r.t!=='circ').forEach(r=>lbl(r.x+r.w/2,r.y+r.h/2-0.35,`${fmt(r.w*r.h*100)} Vt`,c));
+  }
+  return base.replace('</svg>',o.join('')+'</svg>'); }
+function netCalc(v,A){ const all=v.floors.flatMap(f=>mainRooms(f)); let lights=0,socks=0; all.forEach(r=>{ const n=EL_N[r.t]||[2,1]; lights+=n[1]; socks+=n[0]; });
+  const elKw=lights*0.06+socks*0.25*0.4+3.5+2.0+ (A.sauna?6:0); const heatKw=v.area*0.1*1.15; const water=(A.family||4)*200;
+  return {lights,socks,elKw,input:elKw>12?'3 fazali, 15 kVt':'1 fazali, 10–12 kVt',heatKw,boiler:Math.ceil(heatKw/5)*5+(heatKw>20?0:0),water,wet:all.filter(r=>r.t==='wet').length}; }
+</script>
+<script>
 /* ===== RUXSATNOMA AGENTLARI: 1) me'yor tekshiruvchi  2) hujjat yig'uvchi  3) yo'l ko'rsatuvchi (ShNK 2.08.01-19 asosida) ===== */
 const RX_LINKS={ portal:'https://my.gov.uz/uz', loyiha:'https://oldmy.gov.uz/oz/service/159', komplayens:'https://t.me/QurilishKomplayensbot' };
 function rxFoot(v,A){ const f=v.floors[0], st=0.25, rs=f.rooms.concat(f.open||[]).filter(r=>r&&r.w>0&&r.h>0&&r.type!=='columns'); if(!rs.length) return v.W*v.D;
@@ -3915,8 +3982,17 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
   function check(){ const v=cur(); NC=normCheck(v,S.A); const r=NC;
     bot(`<div><b>${r.ok}</b> ✅ bajarildi · <b>${r.bad}</b> ❌ buzilgan · <b>${r.warn}</b> ⚠️ arxitektor aniqlaydi</div><table class="rxn">${r.rows.map(x=>`<tr><td>${ic[x.s]}</td><td><b>${esc(x.t)}</b><br><span class="note" style="margin:0">${esc(x.d)}</span></td></tr>`).join('')}</table>`,"Me'yor agenti");
     if(r.bad){ bot(`${r.bad} ta joy me'yorga to'g'ri kelmayapti. Uyni o'zgartirsangiz (xona o'lchamini kattalashtirish yoki yotoqxonani kamaytirish), men qayta tekshiraman. Yoki shundayligicha davom etsangiz, arxitektor to'g'rilaydi.`,"Me'yor agenti");
-      chips([["✏️ Uyni o'zgartirish",()=>show('result')],["Davom etish",askName,1]]); }
-    else { bot("Asosiy me'yorlar bajarilgan. Endi hujjatlar uchun bir necha savol beraman.","Me'yor agenti"); setTimeout(askName,400); } }
+      chips([["✏️ Uyni o'zgartirish",()=>show('result')],["Davom etish",askSeis,1]]); }
+    else { bot("Asosiy me'yorlar bajarilgan. Endi muhandis agenti konstruksiya va tarmoqlarni hisoblaydi.","Me'yor agenti"); setTimeout(askSeis,400); } }
+  function askSeis(){ bot("Hududingiz seysmikligi necha ball? (Bilmasangiz — tuman qurilish bo'limi yoki arxitektor aytadi; hozircha 8 ball deb hisoblayman.)",'Muhandis agenti');
+    const set=n=>()=>{ D.seis=n; LS.set('rx',D); engReport(); }; chips([["7 ball",set(7)],["8 ball",set(8),1],["9 ball",set(9)],["Bilmayman (8 deb ol)",set(8)]]); }
+  function engReport(next){ const v=cur(), E=engCalc(v,S.A,D.seis||8), N=netCalc(v,S.A);
+    bot(`<b>Konstruktiv tizim:</b> monolit temir-beton karkas (ustun + rigel/belbog') + g'isht to'ldirma, ${E.seis} ball.<br>
+      <table class="rxn">${E.checks.map(x=>`<tr><td>${ic[x.s]}</td><td><b>${esc(x.t)}</b><br><span class="note" style="margin:0">${esc(x.d)}</span></td></tr>`).join('')}</table>
+      <div style="margin-top:8px"><b>Armatura:</b> ≈${fmt1(E.steel/1000)} t · <b>Beton:</b> ≈${fmt(E.conc)} m³ · <b>Ustunlar:</b> ${E.nc} ta</div>
+      <div style="margin-top:6px"><b>Tarmoqlar:</b> ⚡ ${N.lights} chiroq, ${N.socks} rozetka, quvvat ≈${fmt1(N.elKw)} kVt (${N.input}) · 💧 ${N.wet} sanuzel, ≈${fmt(N.water)} l/kun · 🔥 isitish ≈${fmt1(N.heatKw)} kVt, qozon ${N.boiler} kVt</div>
+      <p class="note" style="margin:6px 0 0">Bu dastlabki hisob. Aniq hisobni litsenziyali konstruktor dasturda bajaradi va tasdiqlaydi.</p>`,'Muhandis agenti');
+    if(next===false){ menu(); return; } setTimeout(askName,500); }
   const askName=()=>ask("Uy egasining to'liq ismi (F.I.Sh.):",'owner','Masalan: Jasurov Jasur Akmalovich',askAddr);
   const askAddr=()=>ask("Yer manzili (viloyat, tuman, mahalla, ko'cha, uy):",'addr',"Masalan: Toshkent v., Qibray t., Bobur MFY, Navro'z ko'chasi 12",askKad);
   const askKad=()=>ask("Yerning kadastr raqami (kadastr pasportida yozilgan). Bilmasangiz, o'tkazib yuboring:",'kad','Masalan: 10:12:34:56:78:0123',askDoc,true);
@@ -3930,8 +4006,8 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
     c.addEventListener('pointerdown',e=>{ dn=true; last=pos(e); c.setPointerCapture(e.pointerId); }); c.addEventListener('pointermove',e=>{ if(!dn) return; const p2=pos(e); g.beginPath(); g.moveTo(last[0],last[1]); g.lineTo(p2[0],p2[1]); g.stroke(); last=p2; used=true; }); ['pointerup','pointercancel'].forEach(t=>c.addEventListener(t,()=>{ dn=false; }));
     $r('rxSigC').onclick=()=>{ g.clearRect(0,0,c.width,c.height); used=false; };
     $r('rxSigOk').onclick=()=>{ if(!used){ toast('Avval imzo chizing'); return; } const o=document.createElement('canvas'); o.width=600; o.height=Math.round(600*c.height/c.width); const og=o.getContext('2d'); og.fillStyle='#fff'; og.fillRect(0,0,o.width,o.height); og.drawImage(c,0,0,o.width,o.height); D.sig=o.toDataURL('image/jpeg',0.8); LS.set('rx',D); me('✍️ Imzo qo\'yildi'); inp.innerHTML=''; done(); }; }
-  function done(){ bot(`Tayyor! Hujjatlar paketi quyidagilardan iborat:<br>• titul varag'i (arxitektor imzosi va muhri uchun joy bilan)<br>• texnik-iqtisodiy ko'rsatkichlar (TEP)<br>• bosh reja (yerda joylashuvi va masofalar)<br>• har bir qavat rejasi, kesim va poydevor<br>• me'yorlar hisoboti va topshirish yo'riqnomasi`,'Hujjat agenti'); menu(); }
-  function menu(){ chips([["📄 Hujjatlar paketini yuklab olish (PDF)",pdf,1],["✍️ Arxitektorga imzoga yuborish",sign]].concat(D.orderId?[["📥 Imzolangan loyihani olish",getSigned]]:[]).concat([["🏛 my.gov.uz ga topshirish (qadamma-qadam)",guide],["❓ Qayerga topshiriladi?",where],["💰 Davlat to'lovi qancha?",fee],["🔁 Qayta tekshirish",start]])); }
+  function done(){ bot(`Tayyor! Hujjatlar paketi quyidagilardan iborat:<br>• titul varag'i (arxitektor imzosi va muhri uchun joy bilan)<br>• texnik-iqtisodiy ko'rsatkichlar (TEP)<br>• bosh reja (yerda joylashuvi va masofalar)<br>• AR: har bir qavat rejasi, kesim va poydevor<br>• KR: konstruktiv hisob, seysmika, ustun/poydevor sxemasi, armatura va beton jadvali<br>• VK: suv va kanalizatsiya sxemasi · EL: elektr sxemasi · OV: isitish sxemasi<br>• me'yorlar hisoboti va topshirish yo'riqnomasi`,'Hujjat agenti'); menu(); }
+  function menu(){ chips([["📄 Hujjatlar paketini yuklab olish (PDF)",pdf,1],["✍️ Arxitektorga imzoga yuborish",sign]].concat(D.orderId?[["📥 Imzolangan loyihani olish",getSigned]]:[]).concat([["🏛 my.gov.uz ga topshirish (qadamma-qadam)",guide],["🔧 Muhandislik hisobi",()=>engReport(false)],["❓ Qayerga topshiriladi?",where],["💰 Davlat to'lovi qancha?",fee],["🔁 Qayta tekshirish",start]])); }
   function guide(){ const v=cur(), A=S.A, g=(NC||normCheck(v,A)).g; const vals=[["F.I.Sh. (ariza beruvchi)",D.owner||(S.user&&S.user.name)||''],['Obyekt manzili',D.addr||''],['Kadastr raqami',D.kad||''],['Qurilish turi',D.type||'Yangi qurilish'],['Obyekt turi','Yakka tartibdagi turar joy uyi'],['Qavatlar soni',String(v.floors.length)],['Umumiy maydon, m²',fmtA(v.area)],['Qurilish osti maydoni, m²',fmtA(g.foot)],['Bino balandligi, m',fmt1(g.H)],['Yer maydoni, m²',fmt1(plotArea(A))]];
     const d=bot(`<b>my.gov.uz da ariza topshirish — qadamma-qadam</b><ol style="margin:6px 0 0;padding-left:20px;line-height:1.6">
       <li>Pastdagi tugma bilan xizmat sahifasini oching va <b>OneID</b> (login yoki elektron imzo — ERI) bilan kiring.</li>
@@ -3968,11 +4044,19 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
       page('YAKKA TARTIBDAGI TURAR JOY UYI'); doc.setFontSize(20); doc.setFont('helvetica','bold'); doc.text(pt('ESKIZ LOYIHA'),W/2,62,{align:'center'}); doc.setFontSize(12); doc.setFont('helvetica','normal'); doc.text(pt('(ruxsatnoma olish uchun loyiha taklifi)'),W/2,70,{align:'center'});
       tbl(40,88,[['Buyurtmachi',D.owner||'-'],['Manzil',D.addr||'-'],['Kadastr raqami',D.kad||'-'],['Qurilish turi',D.type||'Yangi qurilish'],['Uy',`Variant ${v.key}: ${v.name}, ${v.floors.length} qavat, ${fmtA(v.area)} m2`]],48);
       if(D.sig){ try{ doc.setFontSize(9.5); doc.text(pt('Buyurtmachi imzosi:'),40,124); doc.addImage(D.sig,'JPEG',80,114,45,15); }catch(_){} }
-      doc.setFontSize(8.5); doc.text(pt("Diqqat: ushbu hujjat UyChizma sayti tomonidan avtomatik tayyorlangan. Davlat organlariga topshirishdan oldin litsenziyaga ega loyiha tashkiloti tomonidan tekshirilib, imzo va muhr bilan tasdiqlanishi shart."),14,H-52,{maxWidth:140});
+      doc.setFontSize(8.5); doc.text(pt("Tarkibi: AR (arxitektura), KR (dastlabki konstruktiv hisob, seysmika, armatura), VK (suv-kanalizatsiya), EL (elektr), OV (isitish). Diqqat: hujjat UyChizma sayti tomonidan avtomatik tayyorlangan, barcha hisoblar dastlabki. Davlat organlariga topshirishdan oldin litsenziyaga ega loyiha tashkiloti (arxitektor, konstruktor, muhandislar) tomonidan tekshirilib, imzo va muhr bilan tasdiqlanishi shart."),14,H-58,{maxWidth:140});
       page('Texnik-iqtisodiy ko\'rsatkichlar (TEP)'); tbl(16,32,[['Yer uchastkasi maydoni',fmt1(plotArea(A))+' m2'],['Yer o\'lchamlari',`${fmt1(A.plotW)} x ${fmt1(A.plotL)} m`],['Qurilish osti maydoni',fmtA(g.foot)+' m2'],['Yerning band qilinishi',fmt(g.cover)+' %'],['Qavatlar soni',String(v.floors.length)],['Umumiy maydon',fmtA(v.area)+' m2'],['Yashash maydoni',fmtA(g.living)+' m2'],['Xonalar soni',`${v.bedCount} yotoqxona + zal`],['Bino balandligi (taxm.)',fmt1(g.H)+' m'],['Qurilish hajmi (taxm.)',fmt(g.vol)+' m3'],['Shift balandligi',fmt2(FH-0.3)+' m'],["Ko'chagacha / qo'shnigacha / orqagacha",`${fmt1(g.front)} / ${fmt1(g.side)} / ${fmt1(g.back)} m`]],78);
       page('Bosh reja (yer uchastkasida joylashuv)'); await img(siteSVG(v,A),14,24,150,H-60); tbl(172,32,[["Ko'chadan",fmt1(g.front)+' m'],["Qo'shnidan",fmt1(g.side)+' m'],['Orqa chegaradan',fmt1(g.back)+' m'],['Band qilinish',fmt(g.cover)+' %']],40);
       for(let k=0;k<v.floors.length;k++){ page(`${k+1}-qavat rejasi`); await img(planSVG(v,k),14,24,160,H-60,2400); const f=v.floors[k]; let y=30; doc.setFontSize(9); mainRooms(f).forEach((rm,i)=>{ if(y>H-56) return; doc.text(pt(`${i+1}. ${rm.n}`),182,y); doc.text(pt(`${fmtA(roomA(rm,f))} m2`),255,y); y+=5.4; }); }
-      page('Kesim 1-1 va poydevor'); await img(sectionSVG(v,A),14,26,130,120); await img(foundSVG(v),152,26,130,120);
+      page('AR · Kesim 1-1 va poydevor'); await img(sectionSVG(v,A),14,26,130,120); await img(foundSVG(v),152,26,130,120);
+      { const E=engCalc(v,A,D.seis||8), N=netCalc(v,A);
+        page(`KR-1 · Dastlabki konstruktiv hisob (${E.seis} ball)`); let y=tbl(16,30,[['Konstruktiv tizim',"Monolit temir-beton karkas + g'isht to'ldirma"],['Beton / armatura','B25 / A500C (xomutlar A240)'],['Doimiy+vaqtinchalik yuk (qavat)',fmt1(E.floorQ)+' kN/m2'],['Tom + qor yuki',fmt1(E.L.roof+E.L.snow)+' kN/m2'],['Binoning umumiy og\'irligi',fmt(E.Gtot)+' kN'],['Hisobiy (x1,2)',fmt(E.Gd)+' kN'],['Ustunlar',`${E.nc} ta, ${E.colSide*100}x${E.colSide*100} sm, 4Ø${E.d1}`],['Bitta ustun yuki / ko\'tarish qobiliyati',`${fmt(E.Ntrib)} / ${fmt(E.Ncap)} kN`],['Poydevor',`Lenta, eni ${fmt(E.bF*100)} sm, chuqurligi 1,2 m, uzunligi ${fmt(E.lenF)} m`],['Tuproq qarshiligi (qabul qilindi)',E.R+' kPa — geologiya bilan aniqlanadi'],['Seysmik kesuvchi kuch (taxm.)',fmt(E.Q)+' kN']],78);
+        doc.setFontSize(8.6); y+=4; E.checks.forEach(x=>{ if(y>H-52) return; doc.setFont('helvetica','bold'); doc.text(({ok:'[+]',bad:'[X]',warn:'[!]',info:'[i]'})[x.s]+' '+pt(x.t),16,y,{maxWidth:160}); doc.setFont('helvetica','normal'); doc.text(pt(x.d),22,y+4,{maxWidth:154}); y+=10; });
+        for(let k=0;k<v.floors.length;k++){ page(`KR-2 · ${k+1}-qavat ustunlar va belbog'lar sxemasi`); const cs=engGrid(v,v.floors[k]).map(([x,yy])=>`<rect x="${x-E.colSide/2-0.06}" y="${-yy-E.colSide/2-0.06}" width="${E.colSide+0.12}" height="${E.colSide+0.12}" fill="#1F3B8A" stroke="#fff" stroke-width="0.04"></rect>`).join(''); await img(planSVG(v,k).replace('</svg>',cs+'</svg>'),14,24,165,H-60,2400); tbl(186,32,[['Ustunlar',String(engGrid(v,v.floors[k]).length)+' ta'],['Kesimi',`${E.colSide*100}x${E.colSide*100} sm`],['Armatura',`4Ø${E.d1} A500C`],['Xomut','Ø8 @150/@100'],["Belbog'",`38x40 sm, 4Ø${E.d2}`]],34); }
+        page('KR-3 · Armatura va beton jadvali'); { let y2=32; doc.setFontSize(9.5); doc.setFont('helvetica','bold'); doc.text(pt('Element'),16,y2); doc.text(pt('Armatura'),110,y2); doc.text(pt('Massa, kg'),200,y2); doc.setFont('helvetica','normal'); y2+=7; E.rows.forEach(r=>{ doc.text(pt(r[0]),16,y2,{maxWidth:90}); doc.text(pt(r[1]),110,y2,{maxWidth:86}); doc.text(fmt(r[2]),200,y2); y2+=8; }); doc.setFont('helvetica','bold'); doc.text(pt('Jami armatura'),16,y2+2); doc.text(fmt(E.steel)+' kg',200,y2+2); doc.text(pt('Beton (B25)'),16,y2+10); doc.text(fmt(E.conc)+' m3',200,y2+10); doc.setFont('helvetica','normal'); }
+        const NP=[['vk','VK · Suv ta\'minoti va kanalizatsiya',[['Suv sarfi',fmt(N.water)+' l/kun'],['Sanuzellar',String(N.wet)],['Quvurlar','PPR Ø20–25 (V1/T3), PVX Ø50/110 (K1)'],['Chiqish',"Markaziy tarmoq yoki septik (≥5 m uydan)"]]],['el','EL · Elektr ta\'minoti',[['Chiroqlar',String(N.lights)],['Rozetkalar',String(N.socks)],['Hisobiy quvvat',fmt1(N.elKw)+' kVt'],['Ulanish',N.input],['Kabel','VVGng 3x2,5 (rozetka), 3x1,5 (chiroq)'],['Himoya','Avtomatlar + UZO 30 mA, yerga ulash']]],['ov','OV · Isitish',[['Issiqlik yuki',fmt1(N.heatKw)+' kVt (100 Vt/m2)'],['Qozon',N.boiler+' kVt, gaz, ikki konturli'],['Radiatorlar','Deraza ostida, har xonaga'],['Quvurlar','PPR/metall-plastik Ø20–26']]]];
+        const LG={vk:[['Belgilar',''],["Ko'k chiziq",'Sovuq/issiq suv (V1/T3)'],['Jigarrang','Kanalizatsiya (K1)'],['St','Stoyak (tik quvur)']],el:[['Belgilar',''],['(x) doira','Chiroq'],['T belgi','Rozetka'],['Nuqta','Viklyuchatel'],['ShR','Elektr shiti'],['Punktir','Guruh liniyasi']],ov:[['Belgilar',''],["Qizil to'rtburchak",'Radiator (deraza ostida)'],['Punktir','Isitish quvuri'],['Qozon','Isitish qozoni'],['Vt','Xona issiqlik yuki']]};
+        for(const [kd,tt,info] of NP) for(let k=0;k<v.floors.length;k++){ page(`${tt} — ${k+1}-qavat`); await img(netSVG(v,k,kd),14,24,165,H-60,2400); tbl(186,32,(k===0?info:[]).concat(LG[kd]),34); } }
       page("Me'yorlarga muvofiqlik (ShNK 2.08.01-19)"); { let y=28; doc.setFontSize(8.6); r.rows.forEach(x=>{ if(y>H-52){ page("Me'yorlarga muvofiqlik (davomi)"); y=28; } doc.setFontSize(8.6); const m={ok:'[+]',bad:'[X]',warn:'[!]',info:'[i]'}[x.s]; doc.setFont('helvetica','bold'); doc.text(m,14,y); doc.text(pt(x.t),24,y,{maxWidth:150}); doc.setFont('helvetica','normal'); doc.text(pt(x.d),24,y+4.2,{maxWidth:150}); y+=11; }); doc.setFontSize(8); doc.text(pt('[+] bajarilgan  [X] buzilgan  [!] arxitektor aniqlaydi  [i] ma\'lumot'),14,H-48); }
       page('Topshirish tartibi'); { let y=32; doc.setFontSize(10.5); ["1. Ushbu paketni litsenziyali loyiha tashkilotiga (arxitektorga) tekshirtiring, imzo va muhr qo'ydiring.","2. my.gov.uz portaliga OneID orqali kiring yoki Davlat xizmatlari markaziga boring.","3. 'Yakka tartibda uy-joy qurishga loyiha hujjatlarini kelishish' xizmatini tanlang.","4. Bosh reja va arxitektura chizmalarini (imzolangan, PDF/JPEG) yuklang. Davlat to'lovi: BHMning 50% (2026-yil 1-sentyabrdan 220 000 so'm), faqat elektron.","5. Javob 3 ish kunida portal orqali keladi (2 qavatgacha, 12 m gacha, 500 m2 gacha uylar).","Yakka tartibdagi uylar Toshkent shahrini rivojlantirish yig'imidan ozod.","Noqonuniy pul so'ralsa: 1066 yoki @QurilishKomplayensbot (Telegram)."].forEach(t=>{ doc.text(pt(t),16,y,{maxWidth:150}); y+=11; }); }
       const N=doc.getNumberOfPages(); for(let i=1;i<=N;i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(120); doc.text(`${i} / ${N}`,W/2,H-3,{align:'center'}); doc.setTextColor(0); }
