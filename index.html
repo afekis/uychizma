@@ -885,7 +885,11 @@ function genCompact(A,mw,opt){
   const zal={n:A.bigZal?'Zal (mehmonxona)':'Zal',t:'zal',a:(A.bigZal?34:26)*K};
   const osh={n:'Oshxona-yemakxona',t:'kitchen',a:22*K};
   const dah={n:'Dahliz',t:'circ',m:2.6,entry:{nx:0,ny:-1}};
-  const front0 = opt.mirror ? [osh,dah,zal] : [zal,dah,osh];
+  const mix=x=>{ x=(x|0)^0x9E3779B9; x^=x>>>16; x=Math.imul(x,0x45d9f3b); x^=x>>>16; x=Math.imul(x,0x45d9f3b); x^=x>>>16; return (x>>>0)%2147483000+1; };
+  const SR=opt.salt?srand(mix((A.seed|0)*7+(opt.salt|0)*977+(A.beds|0)*13+A.floors)):null;
+  const FO=[[zal,dah,osh],[osh,dah,zal],[dah,zal,osh],[zal,osh,dah],[osh,zal,dah],[dah,osh,zal]];
+  const front0 = SR ? FO[Math.floor(SR()*FO.length)].slice() : (opt.mirror ? [osh,dah,zal] : [zal,dah,osh]);
+  if(SR){ const kf=0.88+SR()*0.3; dF=Math.max(4.2,dF*kf); dB=Math.max(4.4,dB*(2-kf)*0.95+SR()*0.4); D=dF+C+dB; }
   const kir = lux==='oddiy' ? [] : [{n:'Kir yuvish',t:'util',m:2.0}];
   const sauna = A.sauna ? [{n:'Sauna-hammom',t:'wet',m:3.0}] : [];
   let floorsSpec=[];
@@ -907,8 +911,10 @@ function genCompact(A,mw,opt){
     ensureFlex(G.back);
     floorsSpec=[G];
   }
+  // Har bir maket o'z rejasi: orqa qatordagi xonalar tartibi aralashtiriladi (zina barcha qavatda bir joyda qoladi)
+  if(SR){ const stLast=false; SR(); floorsSpec.forEach(f=>['back','front'].forEach(row=>{ const st=f[row].filter(i=>i.t==='stair'), ot=f[row].filter(i=>i.t!=='stair'); for(let i=ot.length-1;i>0;i--){ const j=Math.floor(SR()*(i+1)); [ot[i],ot[j]]=[ot[j],ot[i]]; } if(row==='front'&&(f===floorsSpec[0]||st.length||floorsSpec.some(q=>q.front.some(i=>i.t==='stair')))) return; f[row]=stLast?ot.concat(st):st.concat(ot); ensureFlex(f[row]); })); }
   // Har bir uyda xonalar o'lchami har xil: bir xil turdagi xonalar ham teng chiqmaydi (urug'ga bog'liq, takrorlanadi)
-  { const RJ=srand((A.seed|0)*7919+(A.beds|0)*131+A.floors*17+Math.round((opt.k||1)*97)+(opt.plan==='markaz'?5:opt.plan==='orqa'?9:0)+(opt.bays?3:0)+(opt.mirror?1:0));
+  { const RJ=srand((A.seed|0)*7919+(opt.salt|0)*61+(A.beds|0)*131+A.floors*17+Math.round((opt.k||1)*97)+(opt.plan==='markaz'?5:opt.plan==='orqa'?9:0)+(opt.bays?3:0)+(opt.mirror?1:0));
     const used={}; floorsSpec.forEach(f=>['front','back'].forEach(row=>f[row].forEach(i=>{ if(i.m||i.fixA) return; let j, g=0;
       do{ j=i.t==='bed'?0.78+RJ()*0.5:(i.t==='zal'||i.t==='kitchen')?0.86+RJ()*0.32:0.9+RJ()*0.25; g++; } while(g<6 && (used[i.t]||[]).some(u=>Math.abs(u-i.a*j)<1.2));
       i.a*=j; i._j=((used[i.t]||[]).length*0.11+RJ()*0.06)%0.42; (used[i.t]=used[i.t]||[]).push(i.a); })));
@@ -1024,7 +1030,7 @@ function genFront(A,mw,two,opt){
   opt=opt||{};
   const Dg=(A.bigZal?6:5.4)+6.2, L=Math.min(9*(opt.Lk||1),A.plotL-Dg-6);
   if(L<4.5) return null;
-  const core=genCompact(A,d=>mw(d+L),{noGarage:true,noAyvon:true,mirror:opt.mirror!==false,k:opt.k,plan:opt.plan,minW:two?2*((opt.ww||4.2)+(opt.gal||2.0))+3.5:0});
+  const core=genCompact(A,d=>mw(d+L),{noGarage:true,noAyvon:true,mirror:opt.mirror!==false,k:opt.k,plan:opt.plan,salt:opt.salt,minW:two?2*((opt.ww||4.2)+(opt.gal||2.0))+3.5:0});
   const D=core.D, W=core.W, ww=opt.ww||4.2, gal=opt.gal||2.0;
   const G=core.floors[0];
   const left=A.garage ? [['Garaj','garage',Math.min(6.2,L*0.62),{nx:0,ny:-1}],['Yozgi oshxona','kitchen',0,{nx:1,ny:0}]] : [['Mehmonxona (katta)','zal',L*0.6,{nx:1,ny:0}],['Yozgi oshxona','kitchen',0,{nx:1,ny:0}]];
@@ -1049,7 +1055,7 @@ function genFront(A,mw,two,opt){
 function genCourt(A,mw,two,opt){
   opt=opt||{};
   const Dg=(A.bigZal?5.6:5.0)+6.2, L=Math.max(4,Math.min(12*(opt.Lk||1),A.plotL-SB-Dg-3));
-  const core = genCompact(A,d=>mw(d+L),{shallow:true,mirror:opt.mirror!==false,noGarage:true,ayvon:true,k:opt.k,plan:opt.plan,bays:opt.bays,porch:opt.porch,minW:two?(opt.ww||4.2)*2+4.5:0});
+  const core = genCompact(A,d=>mw(d+L),{shallow:true,mirror:opt.mirror!==false,noGarage:true,ayvon:true,k:opt.k,plan:opt.plan,salt:opt.salt,bays:opt.bays,porch:opt.porch,minW:two?(opt.ww||4.2)*2+4.5:0});
   const D=core.D, W=core.W, ww=opt.ww||4.2, gal=opt.gal||2.0;
   const G=core.floors[0];
   const items=[]; if(A.garage) items.push(['Garaj','garage',6.2]); items.push(['Yozgi oshxona','kitchen',4.6]); items.push(['Omborxona','util',2.6]);
@@ -1098,21 +1104,22 @@ const WALL_PAL=['#EDEAE3','#E0CCA9','#C8BFAE','#B4624A','#D9D4CA','#CDB79A','#A8
 const LAYOUTS={auto:'Farqi yo\'q',ixcham:'Ixcham',erker:'Erkerli',L:'L-shakl (oldda hovli)',U:'U-shakl (oldda hovli)',orqaL:'L-shakl (orqada hovli)',orqaU:'U-shakl (orqada hovli)',darvoza:'Darvozaxonali'};
 function buildRandom(A){
   const mw = depth => Math.max(7.5, widthAt(A,SB+depth)-1.2);
-  const R=srand(A.seed*7919+A.plotW*31+A.plotL), pick=a=>a[Math.floor(R()*a.length)], ch=p=>R()<p;
+  const MH=[...String(A.massing||'auto')].reduce((h,c)=>(h*31+c.charCodeAt(0))%100003,7);
+  const R=srand(A.seed*7919+A.plotW*31+A.plotL+MH*131), pick=a=>a[Math.floor(R()*a.length)], ch=p=>R()<p;
   let fams = A.layout&&A.layout!=='auto' ? [A.layout] : ['ixcham','erker','L','U','orqaL','orqaU'].concat(A.darvoza&&A.floors===2?['darvoza','darvoza']:[]);
   const out=[], seen=new Set();
   for(let t=0;t<14&&out.length<3;t++){
-    const fam=pick(fams); const o={mirror:ch(0.5),porch:ch(0.5),bays:ch(0.4),backAyvon:ch(0.5),shallow:ch(0.3),ww:3.8+R()*1.4,gal:1.6+R()*1.0,Lk:0.75+R()*0.35};
+    const fam=pick(fams); const o={salt:MH*7+t*13+1,mirror:ch(0.5),porch:ch(0.5),bays:ch(0.4),backAyvon:ch(0.5),shallow:ch(0.3),ww:3.8+R()*1.4,gal:1.6+R()*1.0,Lk:0.75+R()*0.35};
     const ms=A.massing||'auto', MK=mkFind(ms); if(MK) Object.assign(o,MK.o);
     o.plan=(MK&&MK.plan)?MK.plan:((A.plan&&A.plan!=='auto')?A.plan:['klassik','orqa','markaz'][(t+out.length)%3]);
     if(ms==='kub'){ o.porch=false; o.backAyvon=true; } if(ms==='porch'){ o.porch=true; } if(ms==='ayvon'){ o.backAyvon=false; o.frontAyvon=true; } if(ms==='garaj'){ o.porch=ch(0.5); }
     let v=null, nm='', ds=''; const J=0.9+R()*0.26;
     const mods=()=>[o.bays?'erker oynalar':'',o.porch?'ustunli kirish':'',o.mirror?'oyna-teskari reja':''].filter(Boolean).join(', ');
     if(fam==='darvoza'){ v=sized(A,k=>genPassage(A,mw,{k:k*J*(o.dk||1)})); nm='Darvozaxonali'; ds="Mashina uy ostidan o'tadi"; }
-    else if(fam==='ixcham'){ v=sized(A,k=>genCompact(A,mw,{mirror:o.mirror,porch:o.porch,backAyvon:o.backAyvon,ayvon:o.frontAyvon,shallow:o.shallow,bays:!!(MK&&MK.o.bays),extraDepth:(MK&&MK.o.bays)?4.2:undefined,k:k*J,plan:o.plan})); nm=({kub:'Ixcham kub',porch:'Ustunli kirish',ayvon:'Old ayvonli',garaj:'Yon garajli'})[A.massing]||'Ixcham'; ds=mods()||"To'g'ri to'rtburchak, tejamkor"; }
-    else if(fam==='erker'){ v=sized(A,k=>genCompact(A,mw,{bays:true,porch:o.porch,mirror:o.mirror,k:k*J,extraDepth:4.2,plan:o.plan})); nm='Erkerli'; ds=o.porch?'Erker oynalar, ustunli kirish':'Erker oynalar, orqada ayvon'; }
-    else if(fam==='L'||fam==='U'){ v=sized(A,k=>genFront(A,mw,fam==='U',{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,plan:o.plan})); if(v&&fam==='U'&&!v._two) v=null; nm=fam+'-shakl, old hovlili'; ds="Ko'chaga chiqqan qanot"+(fam==='U'?'lar':'')+' va galereya'; }
-    else { const two=fam==='orqaU'; v=sized(A,k=>genCourt(A,mw,two,{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,porch:o.porch,plan:o.plan})); if(v&&two&&!v._two) v=null; nm=(two?'U':'L')+'-shakl, orqa hovlili'; ds='Orqada yozgi oshxona va galereya'; }
+    else if(fam==='ixcham'){ v=sized(A,k=>genCompact(A,mw,{mirror:o.mirror,porch:o.porch,backAyvon:o.backAyvon,ayvon:o.frontAyvon,shallow:o.shallow,bays:!!(MK&&MK.o.bays),extraDepth:(MK&&MK.o.bays)?4.2:undefined,k:k*J,plan:o.plan,salt:o.salt})); nm=({kub:'Ixcham kub',porch:'Ustunli kirish',ayvon:'Old ayvonli',garaj:'Yon garajli'})[A.massing]||'Ixcham'; ds=mods()||"To'g'ri to'rtburchak, tejamkor"; }
+    else if(fam==='erker'){ v=sized(A,k=>genCompact(A,mw,{bays:true,porch:o.porch,mirror:o.mirror,k:k*J,extraDepth:4.2,plan:o.plan,salt:o.salt})); nm='Erkerli'; ds=o.porch?'Erker oynalar, ustunli kirish':'Erker oynalar, orqada ayvon'; }
+    else if(fam==='L'||fam==='U'){ v=sized(A,k=>genFront(A,mw,fam==='U',{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,plan:o.plan,salt:o.salt})); if(v&&fam==='U'&&!v._two) v=null; nm=fam+'-shakl, old hovlili'; ds="Ko'chaga chiqqan qanot"+(fam==='U'?'lar':'')+' va galereya'; }
+    else { const two=fam==='orqaU'; v=sized(A,k=>genCourt(A,mw,two,{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,porch:o.porch,plan:o.plan,salt:o.salt})); if(v&&two&&!v._two) v=null; nm=(two?'U':'L')+'-shakl, orqa hovlili'; ds='Orqada yozgi oshxona va galereya'; }
     if(!v) { if(fams.length===1 && t>6){ fams=['ixcham','erker','L','orqaL']; out.fallback=LAYOUTS[A.layout]; } continue; }
     const key=fam+Math.round(v.W*2)+'x'+Math.round(v.D*2)+(o.bays?1:0)+o.plan; if(seen.has(key)&&t<10) continue; seen.add(key);
     if(MK){ nm=MK.n; ds=MK.d; } const pd=planD(v.plan=o.plan); if(pd&&!MK) ds+=', '+pd;
