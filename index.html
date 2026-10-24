@@ -912,7 +912,8 @@ function genCompact(A,mw,opt){
     floorsSpec=[G];
   }
   // Har bir maket o'z rejasi: orqa qatordagi xonalar tartibi aralashtiriladi (zina barcha qavatda bir joyda qoladi)
-  if(SR){ const stLast=false; SR(); floorsSpec.forEach(f=>['back','front'].forEach(row=>{ const st=f[row].filter(i=>i.t==='stair'), ot=f[row].filter(i=>i.t!=='stair'); for(let i=ot.length-1;i>0;i--){ const j=Math.floor(SR()*(i+1)); [ot[i],ot[j]]=[ot[j],ot[i]]; } if(row==='front'&&(f===floorsSpec[0]||st.length||floorsSpec.some(q=>q.front.some(i=>i.t==='stair')))) return; f[row]=stLast?ot.concat(st):st.concat(ot); ensureFlex(f[row]); })); }
+  var stMode=SR?['first','last','mid','mid'][Math.floor(SR()*4)]:'first', stFrac=SR?0.3+SR()*0.4:0.5;
+  if(SR){ const stLast=false; floorsSpec.forEach(f=>['back','front'].forEach(row=>{ const st=f[row].filter(i=>i.t==='stair'), ot=f[row].filter(i=>i.t!=='stair'); for(let i=ot.length-1;i>0;i--){ const j=Math.floor(SR()*(i+1)); [ot[i],ot[j]]=[ot[j],ot[i]]; } if(row==='front'&&(f===floorsSpec[0]||st.length||floorsSpec.some(q=>q.front.some(i=>i.t==='stair')))) return; f[row]=stLast?ot.concat(st):st.concat(ot); ensureFlex(f[row]); })); }
   // Har bir uyda xonalar o'lchami har xil: bir xil turdagi xonalar ham teng chiqmaydi (urug'ga bog'liq, takrorlanadi)
   { const RJ=srand((A.seed|0)*7919+(opt.salt|0)*61+(A.beds|0)*131+A.floors*17+Math.round((opt.k||1)*97)+(opt.plan==='markaz'?5:opt.plan==='orqa'?9:0)+(opt.bays?3:0)+(opt.mirror?1:0));
     const used={}; floorsSpec.forEach(f=>['front','back'].forEach(row=>f[row].forEach(i=>{ if(i.m||i.fixA) return; let j, g=0;
@@ -935,8 +936,16 @@ function genCompact(A,mw,opt){
   if(W>maxW){ notes.push("Yer eni yetmadi: xonalar biroz kichraytirildi."); W=Math.max(8,Math.floor(maxW*10)/10); }
   { const MF={zal:3.0,kitchen:2.4,bed:2.4,util:1.2,wet:1.4}, rowMin=it=>it.reduce((t,i)=>t+(i.m?i.m*0.55:(MF[i.t]||1.6)),0); let wmin=0; floorsSpec.forEach(f=>{ wmin=Math.max(wmin,rowMin(f.front),rowMin(f.back)); });
     if(W<wmin-0.05){ W=Math.ceil(wmin*2)/2; notes.push("Yer bu xonalar soni uchun tor: uy yer chegarasidan chiqib ketishi mumkin. Yotoqxonalarni kamaytiring yoki 2 qavat tanlang."); } }
+  const MF2={zal:3.0,kitchen:2.4,bed:2.4,util:1.4,wet:1.4}, needW=a2=>a2.reduce((t,i)=>t+(i.m||MF2[i.t]||1.8),0);
+  const stSplit=(items,SX,sw)=>{ const ot=items.filter(i=>i.t!=='stair'), fx=ot.filter(i=>!i.m), fixd=ot.filter(i=>i.m); if(SX>=W-sw-0.01){ const L=ot.slice(); ensureFlex(L); return {L,R:[],ok:needW(L)<=SX+0.05}; } if(fx.length<2) return {ok:false,L:[],R:[]};
+    const r=SX/(W-sw), fL=Math.min(fx.length-1,Math.max(1,Math.round(fx.length*r))), mL=Math.round(fixd.length*r); const L=fixd.slice(0,mL).concat(fx.slice(0,fL)), R=fixd.slice(mL).concat(fx.slice(fL)); return {L,R,ok:needW(L)<=SX-0.1&&needW(R)<=W-sw-SX-0.1}; };
+  let STX=null; { const hasFrontSt=floorsSpec.some(q=>q.front.some(i=>i.t==='stair')), st0=floorsSpec.map(f=>f.back.find(i=>i.t==='stair')).find(Boolean);
+    if(st0&&!hasFrontSt&&stMode!=='first'){ const sw=st0.m||2.8; let x=stMode==='last'?W-sw:Math.round(Math.min(W-sw-2.6,Math.max(2.6,(W-sw)*stFrac))*10)/10; if(x<2.6) x=W-sw;
+      const okAll=X=>floorsSpec.every(f=>!f.back.some(i=>i.t==='stair')||stSplit(f.back,X,sw).ok); if(!okAll(x)) x=W-sw; if(okAll(x)) STX={x}; } }
   floors = floorsSpec.map((f,k)=>{
-    const rooms = seg(0,W,0,dF,f.front).concat([room("Yo'lak",'circ',0,dF,W,C)]).concat(seg(0,W,dF+C,dB,f.back));
+    const segBack=(items)=>{ const st=items.find(i=>i.t==='stair'); if(!st||!STX) return seg(0,W,dF+C,dB,items);
+        const sw=st.m||2.8, SX=STX.x, sp=stSplit(items,SX,sw); return seg(0,SX,dF+C,dB,sp.L).concat(seg(SX,SX+sw,dF+C,dB,[st])).concat(sp.R.length?seg(SX+sw,W,dF+C,dB,sp.R):[]); };
+    const rooms = seg(0,W,0,dF,f.front).concat([room("Yo'lak",'circ',0,dF,W,C)]).concat(segBack(f.back));
     return {rooms, blocks:[{x:0,y:0,w:W,h:D,roof:k===floorsSpec.length-1}], open:[]};
   }); }
   if(opt.bays){
