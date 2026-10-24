@@ -742,7 +742,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div class="panel" id="ustaPanel">
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end">
         <div style="display:flex;flex-direction:column;gap:4px"><div class="eyebrow">Qurilish uchun</div><h2 style="font-size:20px">Ustaga beriladigan loyiha</h2><span class="note">Rejalar, poydevor, kesim, deraza-eshik jadvali va bosqichma-bosqich materiallar. PDF qilib yoki havola bilan ustaga yuboring.</span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="pdfBtn" type="button">📘 Loyiha kitobini yuklab olish (PDF)</button><button class="btn ghost" id="linkBtn" type="button">Ustaga havolani nusxalash</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="pdfBtn" type="button">📘 Loyiha kitobini yuklab olish (PDF)</button><button class="btn ghost" id="linkBtn" type="button">Ustaga havolani nusxalash</button><button class="btn ghost" id="rxBtn" type="button" style="border-color:#1F7A4D;color:#1F7A4D">🏛 Qurilishga ruxsat olish</button></div>
       </div>
       <p class="note" id="ustaMsg" role="status"></p>
       <div class="sheets" id="ustaSheets"></div>
@@ -771,6 +771,25 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   </section>
 
   <!-- PROJECTS -->
+  <section data-screen="ruxsat" hidden>
+    <div class="eyebrow">Ruxsatnoma</div>
+    <h2 style="margin:4px 0 6px">Uy qurishga ruxsat olish</h2>
+    <p class="note" style="margin:0 0 12px">Yordamchi agent uyingizni qurilish me'yorlariga solishtiradi, bir necha savol beradi va arxitektor imzolashi uchun tayyor hujjatlar paketini yig'adi.</p>
+    <div id="rxChat" aria-live="polite" style="display:flex;flex-direction:column;gap:10px;max-width:760px"></div>
+    <div id="rxIn" style="max-width:760px;margin-top:12px"></div>
+    <style>
+      .rxm{padding:11px 14px;border-radius:16px;max-width:92%;line-height:1.5;font-size:15px}
+      .rxm.bot{background:var(--card,#fff);border:1px solid var(--line,#D6DEEA);align-self:flex-start;border-bottom-left-radius:4px}
+      .rxm.me{background:var(--accent,#1F5FE0);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+      .rxm.bot b.ag{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#1F5FE0);margin-bottom:4px}
+      .rxchips{display:flex;flex-wrap:wrap;gap:8px}
+      .rxchips button{border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:999px;padding:9px 14px;font:600 14px/1.2 inherit;cursor:pointer;min-height:42px}
+      .rxchips button.pri{background:var(--accent,#1F5FE0);border-color:var(--accent,#1F5FE0);color:#fff}
+      .rxrow{display:flex;gap:8px}.rxrow input{flex:1;min-width:0}
+      .rxn{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}.rxn td{padding:5px 4px;border-top:1px solid var(--line,#E3E8F0);vertical-align:top}
+      .rxn td:first-child{width:22px}
+    </style>
+  </section>
   <section data-screen="projects" hidden>
     <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-end">
       <div style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">Saqlanganlar</div><h2 style="font-size:28px">Mening loyihalarim</h2></div>
@@ -845,7 +864,10 @@ function seg(x0,x1,y,h,items){
   const flex = fl.reduce((s,i)=>s+i.a,0);
   const free = Math.max(0,span-fixed0*sc);
   let x=x0; const out=[];
-  items.forEach(i=>{ const w = i.m ? i.m*sc : (flex ? free*i.a/flex : 0); out.push(room(i.n,i.t,x,y,w,h,i.entry?{entry:i.entry}:null)); x+=w; });
+  // me'yor (ShNK 2.08.01-19): xona juda tor bo'lib qolmasin — avval har biriga eng kam en, qolgani maydoniga qarab bo'linadi
+  const fw=new Map(); { let pool=fl.slice(), rest=free; for(let it=0;it<5&&pool.length;it++){ const fa=pool.reduce((t,i)=>t+i.a,0); const low=pool.filter(i=>rest*i.a/fa<(MINF[i.t]||1.6)); if(!low.length) break; const base=low.reduce((t,i)=>t+(MINF[i.t]||1.6),0); if(base>rest) break; const jt=low.reduce((t,i)=>t+(MINF[i.t]||1.6)*(1+(i._j||0)*0.35),0), useJ=jt<=rest-(pool.length-low.length)*1.6; low.forEach(i=>{ const mw=(MINF[i.t]||1.6)*(useJ?1+(i._j||0)*0.35:1); fw.set(i,mw); rest-=mw; }); pool=pool.filter(i=>!low.includes(i)); }
+    const fa=pool.reduce((t,i)=>t+i.a,0); pool.forEach(i=>fw.set(i,fa?rest*i.a/fa:0)); }
+  items.forEach(i=>{ const w = i.m ? i.m*sc : (flex ? fw.get(i) : 0); out.push(room(i.n,i.t,x,y,w,h,i.entry?{entry:i.entry}:null)); x+=w; });
   return out;
 }
 function greedy(rows,list){ list.forEach(it=>{ let k=0; rows.forEach((r,i)=>{ if(rowW(r.items,r.d)<rowW(rows[k].items,rows[k].d)) k=i; }); rows[k].items.push(it); }); }
@@ -3837,6 +3859,94 @@ async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user
 (function(){ const l=document.getElementById('qVid'); if(!l) return; l.addEventListener('click',e=>{ e.preventDefault(); const ov=document.createElement('div'); ov.style.cssText='position:fixed;inset:0;z-index:250;background:rgba(5,10,19,.92);display:flex;align-items:center;justify-content:center;padding:14px';
   ov.innerHTML='<button type="button" aria-label="Yopish" style="position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:10px;width:44px;height:44px;border:0;border-radius:999px;background:#fff;color:#0A1120;font-size:20px">✕</button><video controls autoplay playsinline src="video/qollanma.mp4" poster="img/qollanma.jpg" style="max-width:100%;max-height:92vh;border-radius:16px;background:#000"></video>';
   const close=()=>{ const v=ov.querySelector('video'); try{ v.pause(); }catch(_){} ov.remove(); document.body.style.overflow=''; }; ov.querySelector('button').onclick=close; ov.addEventListener('click',ev=>{ if(ev.target===ov) close(); }); document.body.appendChild(ov); document.body.style.overflow='hidden'; }); })();
+</script>
+<script>
+/* ===== RUXSATNOMA AGENTLARI: 1) me'yor tekshiruvchi  2) hujjat yig'uvchi  3) yo'l ko'rsatuvchi (ShNK 2.08.01-19 asosida) ===== */
+const RX_LINKS={ portal:'https://my.gov.uz/uz', loyiha:'https://oldmy.gov.uz/oz/service/159', komplayens:'https://t.me/QurilishKomplayensbot' };
+function rxFoot(v,A){ const f=v.floors[0], st=0.25, rs=f.rooms.concat(f.open||[]).filter(r=>r&&r.w>0&&r.h>0&&r.type!=='columns'); if(!rs.length) return v.W*v.D;
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; rs.forEach(r=>{ x0=Math.min(x0,r.x); x1=Math.max(x1,r.x+r.w); y0=Math.min(y0,r.y); y1=Math.max(y1,r.y+r.h); }); let n=0;
+  for(let x=x0+st/2;x<x1;x+=st) for(let y=y0+st/2;y<y1;y+=st) if(f.rooms.some(r=>x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h)) n++; return n*st*st*1.08; }
+function rxGeom(v,A){ const Y=v.yard||{}, hx=Y.hx0||0, hy=Y.hy0||SB; const front=hy+(v.minY||0), back=A.plotL-(hy+(v.maxY!=null?v.maxY:v.D)); const wAt=widthAt(A,front+v.D/2);
+  const side=Math.min(hx,Math.max(0,wAt-hx-v.W)); const roofH=(v.roof&&v.roof.shape==='tekis')?0.6:Math.max(1.5,Math.min(v.W,v.D)/2*((v.roof&&v.roof.pitch)||0.5)); const H=PL+v.floors.length*FH+roofH;
+  const foot=rxFoot(v,A); const living=v.floors.reduce((s,f)=>s+f.rooms.filter(r=>r.t==='bed'||r.t==='zal').reduce((a,r)=>a+roomA(r,f),0),0);
+  return {front,back,side,H,foot,living,vol:foot*(H-roofH*0.5),cover:foot/plotArea(A)*100}; }
+function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t,d}); const md=r=>Math.min(r.w,r.h);
+  // xonalar
+  v.floors.forEach((f,k)=>mainRooms(f).forEach(r=>{ const a=roomA(r,f), nm=`${k+1}-qavat, ${r.n}`;
+    if(r.t==='zal'&&k===0&&r===mainRooms(f).filter(q=>q.t==='zal').sort((p1,p2)=>roomA(p2,f)-roomA(p1,f))[0]) add(a>=16&&md(r)>=3?'ok':'bad',`${nm}: ${fmtA(a)} m², eni ${fmt2(md(r))} m`,"Umumiy xona kamida 16 m², eni kamida 3 m (ShNK 2.08.01-19, 3.8)");
+    if(r.t==='bed') add(a>=8&&md(r)>=2.2?(a>=12||!/ota-ona/i.test(r.n)?'ok':'warn'):'bad',`${nm}: ${fmtA(a)} m², eni ${fmt2(md(r))} m`,"Yotoqxona: 1 kishiga kamida 8 m², 2 kishiga 12 m², eni kamida 2,2 m (3.8)");
+    if(r.t==='kitchen') add(a>=8&&md(r)>=1.7?'ok':'bad',`${nm}: ${fmtA(a)} m², eni ${fmt2(md(r))} m`,"Oshxona kamida 8 m², eni kamida 1,7 m (3.8, 3.10)");
+    if(r.t==='wet') add(md(r)>=1.2?'ok':'warn',`${nm}: eni ${fmt2(md(r))} m`,"Sanuzel eni: hojatxona ≥1,2 m tavsiya, birlashgan sanuzel ≥2,2 m (3.12)");
+    if(r.t==='circ'&&md(r)<1.1) add('warn',`${nm}: eni ${fmt2(md(r))} m`,"Xonalarga olib boruvchi yo'lak eni kamida 1,1 m (3.10)");
+    if(r.t==='stair') add(r.w/2>=0.9||r.h/2>=0.9?'ok':'bad',`${nm}: marsh eni ≈${fmt2(Math.max(r.w,r.h)/2>1.4?Math.min(r.w,r.h)/2:Math.min(r.w,r.h))} m`,"Uy ichidagi zina marshi eni kamida 0,9 m, panjara balandligi 1,2 m (5.17–5.18)"); }));
+  add('ok',`Shift balandligi ≈ ${fmt2(FH-0.3)} m`,"Yashash xonalari va oshxonada kamida 2,7 m (2.10)");
+  const per=v.area/(A.family||4); add(per>=16?'ok':'bad',`Har bir kishiga ${fmt1(per)} m² (${A.family||4} kishi)`,"Umumiy maydon har bir kishiga kamida 16 m² (2.9)");
+  // joylashuv
+  add(g.front>=5?'ok':'warn',`Ko'chadan uygacha ${fmt1(g.front)} m`,"Odatda ko'cha qizil chizig'idan kamida 5 m. Aniq talab hududning arxitektura-rejalashtirish topshirig'ida (APT) beriladi");
+  add(g.side>=3?'ok':'warn',`Qo'shni chegarasigacha ${fmt1(g.side)} m`,"Odatda qo'shni chegarasidan kamida 3 m (qo'shni roziligi bilan kamroq bo'lishi mumkin). Arxitektor hudud talabini aniqlaydi");
+  add(g.back>=3?'ok':'warn',`Orqa chegaragacha ${fmt1(g.back)} m`,"Orqa qo'shni chegarasidan ham odatda kamida 3 m");
+  add(g.cover<=60?'ok':'warn',`Yerning ${fmt(g.cover)}% qismi bino bilan band`,"Hovli uchun joy qolishi kerak (tavsiya: 60% dan oshmasin)");
+  const exp=v.floors.length>2||g.H>12||v.area>500; add(exp?'info':'ok',exp?'Ekspertiza majburiy':'Ekspertiza shart emas',`2 qavatdan, 12 m balandlikdan yoki 500 m² dan oshsa, loyiha ekspertizadan o'tadi. Sizda: ${v.floors.length} qavat, ≈${fmt1(g.H)} m, ${fmtA(v.area)} m²`);
+  add('info',"Tabiiy yorug'lik va yong'in xavfsizligi","Deraza maydoni (pol maydonining kamida 1/8 qismi) va yong'in masofalarini arxitektor tekshiradi");
+  return {rows:out,g,ok:out.filter(r=>r.s==='ok').length,bad:out.filter(r=>r.s==='bad').length,warn:out.filter(r=>r.s==='warn').length}; }
+(function(){
+  const $r=id=>document.getElementById(id), chat=$r('rxChat'), inp=$r('rxIn'); let D=LS.get('rx',{}), NC=null;
+  const ic={ok:'✅',bad:'❌',warn:'⚠️',info:'ℹ️'};
+  const bot=(h,ag)=>{ const d=document.createElement('div'); d.className='rxm bot'; d.innerHTML=(ag?`<b class="ag">${ag}</b>`:'')+h; chat.appendChild(d); d.scrollIntoView({behavior:'smooth',block:'nearest'}); return d; };
+  const me=t=>{ const d=document.createElement('div'); d.className='rxm me'; d.textContent=t; chat.appendChild(d); };
+  const chips=list=>{ inp.innerHTML='<div class="rxchips"></div>'; const w=inp.firstChild; list.forEach(([t,fn,pri])=>{ const b=document.createElement('button'); b.type='button'; b.textContent=t; if(pri) b.className='pri'; b.onclick=()=>{ me(t); inp.innerHTML=''; fn(); }; w.appendChild(b); }); };
+  const ask=(q,key,ph,next,opt)=>{ bot(q,'Hujjat agenti'); inp.innerHTML=`<div class="rxrow"><input id="rxQ" placeholder="${esc(ph)}" value="${esc(D[key]||'')}" autocomplete="off"><button type="button" class="btn primary" id="rxOk">Keyingi</button></div>`+(opt?'<div class="rxchips" style="margin-top:8px"><button type="button" id="rxSkip">O\'tkazib yuborish</button></div>':'');
+    const go=skip=>{ const v=skip?'':$r('rxQ').value.trim(); if(!skip&&v.length<2){ $r('rxQ').focus(); return; } D[key]=v; LS.set('rx',D); me(skip?"O'tkazib yuborildi":v); inp.innerHTML=''; next(); };
+    $r('rxOk').onclick=()=>go(false); $r('rxQ').addEventListener('keydown',e=>{ if(e.key==='Enter') go(false); }); if(opt) $r('rxSkip').onclick=()=>go(true); setTimeout(()=>{ try{ $r('rxQ').focus(); }catch(_){} },50); };
+  const cur=()=>S.variants&&S.variants[S.active];
+  function start(){ chat.innerHTML=''; inp.innerHTML=''; const v=cur();
+    if(!v){ bot("Avval uyingizni chizing — keyin men uni qurilish me'yorlariga solishtiraman va ruxsatnoma uchun hujjatlarni tayyorlayman.",'Yordamchi'); chips([["🏠 Uy chizishni boshlash",()=>go('start'),1]]); return; }
+    bot(`Salom! Men 3 ta agentdan iborat yordamchiman:<br>1) <b>Me'yor agenti</b> — uyingizni qurilish qoidalariga solishtiradi;<br>2) <b>Hujjat agenti</b> — arxitektor uchun tayyor paket yig'adi;<br>3) <b>Yo'l ko'rsatuvchi</b> — qayerga topshirish va qancha to'lashni aytadi.<br><br>Variant ${v.key}: <b>${esc(v.name)}</b>, ${fmtA(v.area)} m², ${v.floors.length} qavat. Tekshiruvni boshlayman…`,'Yordamchi');
+    setTimeout(check,500); }
+  function check(){ const v=cur(); NC=normCheck(v,S.A); const r=NC;
+    bot(`<div><b>${r.ok}</b> ✅ bajarildi · <b>${r.bad}</b> ❌ buzilgan · <b>${r.warn}</b> ⚠️ arxitektor aniqlaydi</div><table class="rxn">${r.rows.map(x=>`<tr><td>${ic[x.s]}</td><td><b>${esc(x.t)}</b><br><span class="note" style="margin:0">${esc(x.d)}</span></td></tr>`).join('')}</table>`,"Me'yor agenti");
+    if(r.bad){ bot(`${r.bad} ta joy me'yorga to'g'ri kelmayapti. Uyni o'zgartirsangiz (xona o'lchamini kattalashtirish yoki yotoqxonani kamaytirish), men qayta tekshiraman. Yoki shundayligicha davom etsangiz, arxitektor to'g'rilaydi.`,"Me'yor agenti");
+      chips([["✏️ Uyni o'zgartirish",()=>show('result')],["Davom etish",askName,1]]); }
+    else { bot("Asosiy me'yorlar bajarilgan. Endi hujjatlar uchun bir necha savol beraman.","Me'yor agenti"); setTimeout(askName,400); } }
+  const askName=()=>ask("Uy egasining to'liq ismi (F.I.Sh.):",'owner','Masalan: Jasurov Jasur Akmalovich',askAddr);
+  const askAddr=()=>ask("Yer manzili (viloyat, tuman, mahalla, ko'cha, uy):",'addr',"Masalan: Toshkent v., Qibray t., Bobur MFY, Navro'z ko'chasi 12",askKad);
+  const askKad=()=>ask("Yerning kadastr raqami (kadastr pasportida yozilgan). Bilmasangiz, o'tkazib yuboring:",'kad','Masalan: 10:12:34:56:78:0123',askDoc,true);
+  function askDoc(){ bot("Yerga egalik hujjatingiz (kadastr pasporti yoki ko'chmas mulk reyestridan ko'chirma) bormi?",'Hujjat agenti');
+    chips([["Ha, bor",()=>{ D.doc='bor'; LS.set('rx',D); askType(); },1],["Yo'q / bilmayman",()=>{ D.doc="yo'q"; LS.set('rx',D); bot("Ruxsatnoma uchun yerga egalik hujjati kerak. Uni kadastr agentligi yoki my.gov.uz orqali olasiz. Hozircha davom etamiz.",'Yo\'l ko\'rsatuvchi'); askType(); }]]); }
+  function askType(){ bot("Bu yangi qurilishmi yoki eski uyni qayta qurish (rekonstruksiya)?",'Hujjat agenti'); chips([["Yangi qurilish",()=>{ D.type='Yangi qurilish'; LS.set('rx',D); done(); },1],["Rekonstruksiya",()=>{ D.type='Rekonstruksiya'; LS.set('rx',D); done(); }]]); }
+  function done(){ bot(`Tayyor! Hujjatlar paketi quyidagilardan iborat:<br>• titul varag'i (arxitektor imzosi va muhri uchun joy bilan)<br>• texnik-iqtisodiy ko'rsatkichlar (TEP)<br>• bosh reja (yerda joylashuvi va masofalar)<br>• har bir qavat rejasi, kesim va poydevor<br>• me'yorlar hisoboti va topshirish yo'riqnomasi`,'Hujjat agenti'); menu(); }
+  function menu(){ chips([["📄 Hujjatlar paketini yuklab olish (PDF)",pdf,1],["✍️ Arxitektorga imzoga yuborish",sign],["🏛 Qayerga topshiriladi?",where],["💰 Davlat to'lovi qancha?",fee],["🔁 Qayta tekshirish",start]]); }
+  function where(){ bot(`<b>Qadamlar:</b><br>1. Paketni yuklab oling va <b>litsenziyali arxitektor</b>ga imzolating (sayt orqali yuborishingiz mumkin).<br>2. <a href="${RX_LINKS.portal}" target="_blank" rel="noopener">my.gov.uz</a> ga OneID bilan kiring yoki <b>Davlat xizmatlari markazi</b>ga boring.<br>3. Xizmat: <a href="${RX_LINKS.loyiha}" target="_blank" rel="noopener">«Yakka tartibda uy-joy qurishga loyiha hujjatlarini kelishish»</a>. Yuklanadi: <b>bosh reja</b> (yer uchastkasi), <b>arxitektura chizmalari</b> (poydevor, qavatlar, kesim, old fasad) — PDF yoki JPEG. Boshqa hujjat talab qilinmaydi (kredit olinsa — smeta).<br>4. To'lov: 220 000 so'm (BHMning 50%). Javob 3 ish kunida portal orqali keladi.<br><br>Shaharsozlik hujjatlari <b>faqat</b> my.gov.uz yoki Davlat xizmatlari markazlari orqali qabul qilinadi — mansabdor bilan yuzma-yuz uchrashuv yo'q.`,"Yo'l ko'rsatuvchi"); menu(); }
+  function fee(){ bot(`• <b>Loyiha hujjatlarini kelishish</b> (yakka tartibdagi uy): <b>BHMning 50%</b> — 2026-yil 1-sentyabrdan <b>220 000 so'm</b> (BHM = 440 000 so'm).<br>• Ko'rib chiqish: <b>3 ish kuni</b> (2 qavatgacha, 12 m gacha, 500 m² gacha uylar — tuman qurilish bo'limi).<br>• Yakka tartibdagi uylar «Toshkent shahrini rivojlantirish» yig'imidan (har m³ ga 1 BHM) <b>ozod</b>.<br>• To'lov faqat elektron, my.gov.uz da ariza paytida.<br>• Arxitektor xizmati (eskiz-loyiha va imzo) alohida, kelishuv asosida.<br>• Ortiqcha pul so'rashsa: <b>1066</b> yoki <a href="${RX_LINKS.komplayens}" target="_blank" rel="noopener">@QurilishKomplayensbot</a>.`,"Yo'l ko'rsatuvchi"); menu(); }
+  async function sign(){ const v=cur(); const u=S.user||{}; const b=bot('Yuborilmoqda…','Hujjat agenti');
+    try{ if(!(await cloudReady())) throw 0; await CLOUD.db.collection('orders').add({name:String(D.owner||u.name||'').slice(0,80),phone:String(u.phone||'').slice(0,30),city:String(D.addr||u.city||'').slice(0,160),pkgName:'Ruxsatnoma: eskiz-loyiha + imzo',pkg:'ruxsat',note:`Kadastr: ${D.kad||'-'}; hujjat: ${D.doc||'-'}; ${D.type||''}; me'yor: ${NC?NC.ok+' ok / '+NC.bad+' buzilgan':''}`.slice(0,400),variant:`${v.key}: ${v.name}, ${fmtA(v.area)} m2`,link:shareUrl(),at:Date.now()});
+      b.innerHTML=`<b class="ag">Hujjat agenti</b>✅ Yuborildi! Hamkor arxitektor siz bilan <b>${esc(u.phone||'telefoningiz')}</b> orqali bog'lanadi: loyihani tekshiradi, kerak bo'lsa to'g'rilaydi, imzo va muhr qo'yadi. Xizmat narxi kelishuv asosida.`; }
+    catch(_){ b.innerHTML=`<b class="ag">Hujjat agenti</b>Yuborib bo'lmadi. Internetni tekshiring yoki Telegramda yozing: <a href="https://t.me/${CONTACT_TG}" target="_blank" rel="noopener">@${CONTACT_TG}</a>`; } menu(); }
+  async function pdf(){ const b=bot('PDF tayyorlanmoqda…','Hujjat agenti');
+    try{ if(!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'); const v=cur(), A=S.A, r=NC||normCheck(v,A), g=r.g; const doc=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'}); const W=297,H=210; let pg=0; const dt=new Date().toLocaleDateString('ru-RU');
+      const stamp=()=>{ const x=W-128,y=H-46; doc.setDrawColor(20); doc.setLineWidth(0.5); doc.rect(8,8,W-16,H-16); doc.setLineWidth(0.3); doc.rect(x,y,120,38); [7,14,21,28].forEach(d=>doc.line(x,y+d,x+120,y+d)); doc.line(x+40,y,x+40,y+38);
+        doc.setFontSize(7.5); doc.setFont('helvetica','normal'); [["Loyihachi tashkilot",''],["Litsenziya №",''],["Bosh arxitektor",'imzo ________'],["Buyurtmachi",pt(D.owner||'')],["Sana / bosqich",dt+'  ·  Eskiz loyiha']].forEach(([a,b2],i)=>{ doc.text(pt(a),x+2,y+5+i*7); doc.text(b2,x+42,y+5+i*7); });
+        doc.setFontSize(7); doc.text(pt('M.O. (muhr)'),x+100,y+36); };
+      const page=t=>{ if(pg++) doc.addPage(); stamp(); doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text(pt(t),14,19); doc.setFont('helvetica','normal'); };
+      const tbl=(x,y,rows,w)=>{ doc.setFontSize(9.5); rows.forEach(([a,b2])=>{ doc.text(pt(a),x,y); doc.setFont('helvetica','bold'); doc.text(pt(String(b2)),x+w,y,{maxWidth:150}); doc.setFont('helvetica','normal'); y+=6.4; }); return y; };
+      const img=async(svg,x,y,mw,mh,px)=>{ const s=await svgToPng(svg,px||2200); let w=mw,h=w*s.ar; if(h>mh){ h=mh; w=h/s.ar; } doc.addImage(s.data,'JPEG',x,y,w,h); };
+      page('YAKKA TARTIBDAGI TURAR JOY UYI'); doc.setFontSize(20); doc.setFont('helvetica','bold'); doc.text(pt('ESKIZ LOYIHA'),W/2,62,{align:'center'}); doc.setFontSize(12); doc.setFont('helvetica','normal'); doc.text(pt('(ruxsatnoma olish uchun loyiha taklifi)'),W/2,70,{align:'center'});
+      tbl(40,88,[['Buyurtmachi',D.owner||'-'],['Manzil',D.addr||'-'],['Kadastr raqami',D.kad||'-'],['Qurilish turi',D.type||'Yangi qurilish'],['Uy',`Variant ${v.key}: ${v.name}, ${v.floors.length} qavat, ${fmtA(v.area)} m2`]],48);
+      doc.setFontSize(8.5); doc.text(pt("Diqqat: ushbu hujjat UyChizma sayti tomonidan avtomatik tayyorlangan. Davlat organlariga topshirishdan oldin litsenziyaga ega loyiha tashkiloti tomonidan tekshirilib, imzo va muhr bilan tasdiqlanishi shart."),14,H-52,{maxWidth:140});
+      page('Texnik-iqtisodiy ko\'rsatkichlar (TEP)'); tbl(16,32,[['Yer uchastkasi maydoni',fmt1(plotArea(A))+' m2'],['Yer o\'lchamlari',`${fmt1(A.plotW)} x ${fmt1(A.plotL)} m`],['Qurilish osti maydoni',fmtA(g.foot)+' m2'],['Yerning band qilinishi',fmt(g.cover)+' %'],['Qavatlar soni',String(v.floors.length)],['Umumiy maydon',fmtA(v.area)+' m2'],['Yashash maydoni',fmtA(g.living)+' m2'],['Xonalar soni',`${v.bedCount} yotoqxona + zal`],['Bino balandligi (taxm.)',fmt1(g.H)+' m'],['Qurilish hajmi (taxm.)',fmt(g.vol)+' m3'],['Shift balandligi',fmt2(FH-0.3)+' m'],["Ko'chagacha / qo'shnigacha / orqagacha",`${fmt1(g.front)} / ${fmt1(g.side)} / ${fmt1(g.back)} m`]],78);
+      page('Bosh reja (yer uchastkasida joylashuv)'); await img(siteSVG(v,A),14,24,150,H-60); tbl(172,32,[["Ko'chadan",fmt1(g.front)+' m'],["Qo'shnidan",fmt1(g.side)+' m'],['Orqa chegaradan',fmt1(g.back)+' m'],['Band qilinish',fmt(g.cover)+' %']],40);
+      for(let k=0;k<v.floors.length;k++){ page(`${k+1}-qavat rejasi`); await img(planSVG(v,k),14,24,160,H-60,2400); const f=v.floors[k]; let y=30; doc.setFontSize(9); mainRooms(f).forEach((rm,i)=>{ if(y>H-56) return; doc.text(pt(`${i+1}. ${rm.n}`),182,y); doc.text(pt(`${fmtA(roomA(rm,f))} m2`),255,y); y+=5.4; }); }
+      page('Kesim 1-1 va poydevor'); await img(sectionSVG(v,A),14,26,130,120); await img(foundSVG(v),152,26,130,120);
+      page("Me'yorlarga muvofiqlik (ShNK 2.08.01-19)"); { let y=28; doc.setFontSize(8.6); r.rows.forEach(x=>{ if(y>H-52){ page("Me'yorlarga muvofiqlik (davomi)"); y=28; } doc.setFontSize(8.6); const m={ok:'[+]',bad:'[X]',warn:'[!]',info:'[i]'}[x.s]; doc.setFont('helvetica','bold'); doc.text(m,14,y); doc.text(pt(x.t),24,y,{maxWidth:150}); doc.setFont('helvetica','normal'); doc.text(pt(x.d),24,y+4.2,{maxWidth:150}); y+=11; }); doc.setFontSize(8); doc.text(pt('[+] bajarilgan  [X] buzilgan  [!] arxitektor aniqlaydi  [i] ma\'lumot'),14,H-48); }
+      page('Topshirish tartibi'); { let y=32; doc.setFontSize(10.5); ["1. Ushbu paketni litsenziyali loyiha tashkilotiga (arxitektorga) tekshirtiring, imzo va muhr qo'ydiring.","2. my.gov.uz portaliga OneID orqali kiring yoki Davlat xizmatlari markaziga boring.","3. 'Yakka tartibda uy-joy qurishga loyiha hujjatlarini kelishish' xizmatini tanlang.","4. Bosh reja va arxitektura chizmalarini (imzolangan, PDF/JPEG) yuklang. Davlat to'lovi: BHMning 50% (2026-yil 1-sentyabrdan 220 000 so'm), faqat elektron.","5. Javob 3 ish kunida portal orqali keladi (2 qavatgacha, 12 m gacha, 500 m2 gacha uylar).","Yakka tartibdagi uylar Toshkent shahrini rivojlantirish yig'imidan ozod.","Noqonuniy pul so'ralsa: 1066 yoki @QurilishKomplayensbot (Telegram)."].forEach(t=>{ doc.text(pt(t),16,y,{maxWidth:150}); y+=11; }); }
+      const N=doc.getNumberOfPages(); for(let i=1;i<=N;i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(120); doc.text(`${i} / ${N}`,W/2,H-3,{align:'center'}); doc.setTextColor(0); }
+      const blob=doc.output('blob'), fn=`Ruxsatnoma-paketi-${v.key}.pdf`; const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+      if(dl) await dl.save({filename:fn,data:blob}); else { const u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download=fn; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); }
+      b.innerHTML=`<b class="ag">Hujjat agenti</b>✅ «${fn}» yuklab olindi (${N} bet). Har bir betda arxitektor imzosi va muhri uchun joy bor.`; }
+    catch(e){ console.error(e); b.innerHTML="<b class=\"ag\">Hujjat agenti</b>PDF tayyorlab bo'lmadi. Qayta urinib ko'ring."; } menu(); }
+  $r('rxBtn').onclick=()=>{ show('ruxsat'); start(); };
+  window.rxStart=()=>{ show('ruxsat'); start(); };
+})();
 </script>
 <div id="payBox" hidden style="position:fixed;inset:0;z-index:2147483000;background:rgba(5,10,19,.72);overflow:auto;padding:16px">
  <div style="max-width:460px;margin:4vh auto;background:var(--card,#fff);color:var(--ink,#0A1120);border-radius:20px;padding:20px 18px 18px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);position:relative">
