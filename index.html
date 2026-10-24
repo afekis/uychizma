@@ -969,23 +969,21 @@ function genCompact(A,mw,opt){
 }
 
 /* Markaziy hol: o'rtada uzun hol, chapda zal va yotoqxonalar, o'ngda zina, oshxona va xizmat xonalari */
-/* Ochiq zalli reja (tor yer 10–13 m uchun): katta ochiq zal + zina zal ichida, xonalar bir yon ustunda, orqa-chapda landshaft hovlicha */
-function genOchiq(A,mw,opt){ opt=opt||{};
-  const k=Math.min(1.35,Math.max(0.8,opt.k||1)), sy=Math.min(1.22,Math.max(0.9,Math.sqrt(k))), maxW=mw(13*sy+4); if(maxW<8.6) return null;
-  const sx=Math.min(1.3,Math.max(0.82,Math.min(maxW,10.5*Math.sqrt(k)*1.04)/10.5));
-  const X=x=>Math.round(x*sx*100)/100, Yv=y=>Math.round(y*sy*100)/100;
-  const R=(n,t,x,y,w,h,ex)=>room(n,t,X(x),Yv(y),X(x+w)-X(x),Yv(y+h)-Yv(y),ex);
-  const W=X(10.5), DL=Yv(9.8), DR=Yv(13), two=A.floors===2;
-  const blocks=top=>[{x:0,y:0,w:X(6.15),h:DL,roof:top},{x:X(6.15),y:0,w:W-X(6.15),h:DR,roof:top}];
-  const f1=[R('Zal (mehmonxona)','zal',0,0,6.15,6.0,{entry:{nx:0,ny:-1},og:1}),R('Zina','stair',0,6.0,3.4,3.8,{og:1}),R('Oshxona (ochiq)','kitchen',3.4,6.0,2.75,3.8,{og:1}),
-    R('Yotoqxona 1','bed',6.15,0,4.35,4.75),R('Hojatxona','wet',6.15,4.75,4.35,1.6),R('Vanna','wet',6.15,6.35,4.35,1.8),R('Mehmon yotoqxonasi','bed',6.15,8.15,4.35,4.85)];
-  if(!two){ f1[1]=R('Yemakxona (ochiq)','kitchen',0,6.0,3.4,3.8,{og:1}); }
-  const floors=[{rooms:f1,blocks:blocks(!two),open:[]}];
-  if(two) floors.push({rooms:[R('Yotoqxona 2','bed',0,0,3.4,3.4),R('Hojatxona','wet',0,3.4,3.4,2.6),R('Zina','stair',0,6.0,3.4,3.8),R('Hol','circ',3.4,0,2.75,9.8),
-    R('Yotoqxona 3','bed',6.15,0,4.35,4.75),R('Vanna','wet',6.15,4.75,4.35,1.6),R('Kir yuvish','util',6.15,6.35,4.35,1.8),R('Ota-ona xonasi','bed',6.15,8.15,4.35,4.85)],blocks:blocks(true),open:[]});
-  floors[0].open.push({type:'ayvon',porch:true,x:X(0.6),y:-1.8,w:X(5.0),h:1.8,roofed:true,cols:[]});
-  if(two) floors[1].open.push({type:'balcony',x:X(3.4),y:-1.2,w:X(2.75),h:1.2});
-  return {W,D:DR,floors,notes:["Ochiq zalli reja: katta zal va ochiq oshxona birga, zina zal ichida, orqa-chapda landshaft hovlicha (yorug'lik uchun)."],car:null}; }
+/* Ochiq zalli reja — Amirhon bergan chizma (Parkent, 10x30) bo'yicha AYNAN o'lchamlarda (m, tashqi o'qlar).
+   Chap qism 6,43 x 9,8 (zal + ochiq oshxona + zina), o'ng ustun 4,07 x 13: 4550 / 1500 / 1700 / 4000. Zina ikkala qavatda bir joyda. */
+function genOchiq(A,mw,opt){ const two=A.floors===2, XM=6.43, W=10.5, YF=1.69, YB=11.49, SX=4.0, ys=[0,4.8,6.45,8.3,13.0];
+  const R=(n,t,x,y,w,h,ex)=>room(n,t,x,y,w,h,ex);
+  const col=(names,types)=>names.map((n,i)=>R(n,types[i],XM,ys[i],W-XM,ys[i+1]-ys[i]));
+  const blocks=top=>[{x:0,y:YF,w:XM,h:YB-YF,roof:top},{x:XM,y:0,w:W-XM,h:13.0,roof:top}];
+  const f1=[R('Zal (mehmonxona)','zal',0,YF,XM,6.75-YF,{entry:{nx:0,ny:-1},og:1}),R('Oshxona-yemakxona (ochiq)','kitchen',0,6.75,SX,YB-6.75,{og:1}),
+    two?R('Zina','stair',SX,6.75,XM-SX,YB-6.75,{og:1,dt:1}):R('Omborxona','util',SX,6.75,XM-SX,YB-6.75)].concat(col(['Yotoqxona 1','Hojatxona','Vanna','Mehmon yotoqxonasi'],['bed','wet','wet','bed']));
+  const floors=[{rooms:f1,blocks:blocks(!two),open:[{type:'ayvon',porch:true,x:2.2,y:0,w:XM-2.2,h:YF,roofed:true,cols:[]}]}];
+  if(two) floors.push({rooms:[R('Hol','circ',SX,YF,XM-SX,6.75-YF),R('Yotoqxona 2','bed',0,YF,SX,5.06-YF),R('Hojatxona','wet',0,5.06,2.4,6.75-5.06),R('Kichik hol','circ',2.4,5.06,SX-2.4,6.75-5.06),
+      R('Yotoqxona 3','bed',0,6.75,SX,YB-6.75),R('Zina','stair',SX,6.75,XM-SX,YB-6.75,{dt:1})].concat(col(['Yotoqxona 4','Hojatxona','Vanna','Ota-ona xonasi'],['bed','wet','wet','bed'])),
+    blocks:blocks(true),open:[{type:'balcony',x:SX,y:0,w:XM-SX,h:YF}]});
+  const nt=["Sizning chizmangiz (Parkent, 10×30) bo'yicha: uy 10,5 × 13 m, zal + oshxona + zina ochiq (55 m² ga yaqin), orqa-chapda landshaft hovlicha."];
+  if(widthAt(A,SB+10)<10.5) nt.push("Diqqat: yer eni 10,5 m dan tor — uy chegaraga taqalib turadi (qo'shni roziligi kerak bo'ladi).");
+  return {W,D:13.0,floors,notes:nt,car:null,prefSub:'zamtosh'}; }
 function planD(p){ return {markaz:'markaziy hol',orqa:"zal bog' tomonda"}[p]||''; }
 function mkFind(id){ try{ return MAKETS.find(x=>x.id===id&&x.o)||null; }catch(e){ return null; } }
 var MK_ALPH='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -1133,7 +1131,7 @@ function buildRandom(A){
   const mw = depth => Math.max(7.5, widthAt(A,SB+depth)-1.2);
   const MH=[...String(A.massing||'auto')].reduce((h,c)=>(h*31+c.charCodeAt(0))%100003,7);
   const R=srand(A.seed*7919+A.plotW*31+A.plotL+MH*131), pick=a=>a[Math.floor(R()*a.length)], ch=p=>R()<p;
-  let fams = A.layout&&A.layout!=='auto' ? [A.layout] : ['ixcham','erker','L','U','orqaL','orqaU'].concat(A.darvoza&&A.floors===2?['darvoza','darvoza']:[]).concat(widthAt(A,SB+10)<=14.5?['ochiq','ochiq']:[]);
+  let fams = A.layout&&A.layout!=='auto' ? [A.layout] : ['ixcham','erker','L','U','orqaL','orqaU'].concat(A.darvoza&&A.floors===2?['darvoza','darvoza']:[]);
   const out=[], seen=new Set();
   for(let t=0;t<14&&out.length<3;t++){
     const fam=pick(fams); const o={salt:MH*7+t*13+1,mirror:ch(0.5),porch:ch(0.5),bays:ch(0.4),backAyvon:ch(0.5),shallow:ch(0.3),ww:3.8+R()*1.4,gal:1.6+R()*1.0,Lk:0.75+R()*0.35};
@@ -1146,7 +1144,7 @@ function buildRandom(A){
     else if(fam==='ixcham'){ v=sized(A,k=>genCompact(A,mw,{mirror:o.mirror,porch:o.porch,backAyvon:o.backAyvon,ayvon:o.frontAyvon,shallow:o.shallow,bays:!!(MK&&MK.o.bays),extraDepth:(MK&&MK.o.bays)?4.2:undefined,k:k*J,plan:o.plan,salt:o.salt})); nm=({kub:'Ixcham kub',porch:'Ustunli kirish',ayvon:'Old ayvonli',garaj:'Yon garajli'})[A.massing]||'Ixcham'; ds=mods()||"To'g'ri to'rtburchak, tejamkor"; }
     else if(fam==='erker'){ v=sized(A,k=>genCompact(A,mw,{bays:true,porch:o.porch,mirror:o.mirror,k:k*J,extraDepth:4.2,plan:o.plan,salt:o.salt})); nm='Erkerli'; ds=o.porch?'Erker oynalar, ustunli kirish':'Erker oynalar, orqada ayvon'; }
     else if(fam==='L'||fam==='U'){ v=sized(A,k=>genFront(A,mw,fam==='U',{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,plan:o.plan,salt:o.salt})); if(v&&fam==='U'&&!v._two) v=null; nm=fam+'-shakl, old hovlili'; ds="Ko'chaga chiqqan qanot"+(fam==='U'?'lar':'')+' va galereya'; }
-    else if(fam==='ochiq'){ v=sized(A,k=>genOchiq(A,mw,{k:k*J})); nm='Ochiq zalli'; ds="Katta ochiq zal, zina zal ichida, xonalar bir yonda"; }
+    else if(fam==='ochiq'){ v=genOchiq(A,mw,{}); nm='Ochiq zalli (10×30 namuna)'; ds="Katta ochiq zal, zina zal ichida, xonalar o'ng ustunda"; }
     else { const two=fam==='orqaU'; v=sized(A,k=>genCourt(A,mw,two,{k:k*J,ww:o.ww,gal:o.gal,Lk:o.Lk,mirror:o.mirror,bays:o.bays,porch:o.porch,plan:o.plan,salt:o.salt})); if(v&&two&&!v._two) v=null; nm=(two?'U':'L')+'-shakl, orqa hovlili'; ds='Orqada yozgi oshxona va galereya'; }
     if(!v) { if(fams.length===1 && t>6){ fams=['ixcham','erker','L','orqaL']; out.fallback=LAYOUTS[A.layout]; } continue; }
     const key=fam+Math.round(v.W*2)+'x'+Math.round(v.D*2)+(o.bays?1:0)+o.plan; if(seen.has(key)&&t<10) continue; seen.add(key);
@@ -1161,7 +1159,7 @@ function buildRandom(A){
     v.wall = A.wallFixed||i===0 ? A.wall : pick(WALL_PAL);
     v.facade = A.facade&&A.facade!=='auto' ? A.facade : (i===0 ? 'auto' : pick({klassik:['gisht','travertin','kombi','gisht'],zamonaviy:['suvoq','yogoch','travertin','kombi'],milliy:['gisht','suvoq','tosh','kombi']}[v.style]));
     v.rv={shape:wpick(ROOFP[v.style]),mat:pick(['metall','metall','keramik','yumshoq','profnastil']),col:pick(['grafit','grafit','jigar','qizil','yashil','kok'])};
-    v.sub=''; if(v.style===A.style&&A.sub&&SUBS[A.sub]) applySub(v,A,A.sub); else if(i>0&&!A.styleFixed&&R()<0.75){ const L=SUBS_OF(v.style); if(L.length) applySub(v,A,L[Math.floor(R()*L.length)]); }
+    v.sub=''; if(v.style===A.style&&A.sub&&SUBS[A.sub]) applySub(v,A,A.sub); else if(i===0&&v.prefSub&&!A.styleFixed&&SUBS[v.prefSub]){ v.style=SUBS[v.prefSub].b; applySub(v,A,v.prefSub); } else if(i>0&&v.prefSub&&!A.styleFixed){ const alt=['haytek','minimal'][i-1]; if(SUBS[alt]) applySub(v,A,alt); } else if(i>0&&!A.styleFixed&&R()<0.75){ const L=SUBS_OF(v.style); if(L.length) applySub(v,A,L[Math.floor(R()*L.length)]); }
     finalize(v,A); if(out.fallback && v.name.indexOf(A.layout+'-')!==0) v.notes.unshift(`${out.fallback} uchun yer o'lchami yetmadi, shu sababli o'xshash boshqa shakl berildi.`); });
   return out;
 }
@@ -1283,7 +1281,7 @@ function computeDoors(f){
   f.rooms.forEach(r=>{
     if(['circ','stair','garage'].includes(r.t)) return;
     if(r.entry || r.part || r.og) return;
-    for(const q of circ.concat(pub)){ if(q===r) continue; const e=sharedEdge(r,q); if(e&&e.len>=1.2){ const c=(e.a0+e.a1)/2; f.doors.push(Object.assign(e,{c,w:Math.min(0.9,e.len-0.3),room:r})); return; } }
+    for(const q of circ.concat(pub,f.rooms.filter(z=>z.dt))){ if(q===r) continue; const e=sharedEdge(r,q); if(e&&e.len>=1.2){ const c=(e.a0+e.a1)/2; f.doors.push(Object.assign(e,{c,w:Math.min(0.9,e.len-0.3),room:r})); return; } }
   });
   // open passages between circulation spaces (no wall)
   const cs=f.rooms.filter(q=>q.t==='circ'||q.t==='stair');
@@ -1518,6 +1516,7 @@ function planSVG(v,k,opt){
   });
   f.open.forEach(b=>{ (b.cols||[]).forEach(([cx,cy])=>o.push(`<rect x="${cx-0.2}" y="${Y(cy)-0.2}" width="0.4" height="0.4" fill="#FFF" stroke="#444" stroke-width="0.05"></rect>`)); });
   f.rooms.forEach(r=>{ o.push(`<rect x="${r.x}" y="${Y(r.y+r.h)}" width="${r.w}" height="${r.h}" fill="${PCOL[r.t]||'#FFF'}" stroke="#2A2A2A" stroke-width="0.12"></rect>`); });
+  (f.opens||[]).filter(e=>e.full).forEach(e=>{ const c=PCOL.zal||'#FFF'; o.push(e.o==='h'?`<line x1="${e.a0+0.07}" y1="${Y(e.line)}" x2="${e.a1-0.07}" y2="${Y(e.line)}" stroke="${c}" stroke-width="0.16"></line>`:`<line x1="${e.line}" y1="${Y(e.a0+0.07)}" x2="${e.line}" y2="${Y(e.a1-0.07)}" stroke="${c}" stroke-width="0.16"></line>`); });
   f.rooms.filter(q=>q.part).forEach(q=>{ o.push(`<line x1="${q.x+0.07}" y1="${Y(q.part.y)}" x2="${q.x+q.w-0.07}" y2="${Y(q.part.y)}" stroke="${PCOL[q.t]||'#FFF'}" stroke-width="0.16"></line>`); });
   // stairs
   f.rooms.filter(r=>r.t==='stair').forEach(r=>{
@@ -2396,6 +2395,7 @@ function buildHouse(v,A){
     led:new THREE.MeshStandardMaterial({color:0xFFFFFF,emissive:0xFFF6E8,emissiveIntensity:1.4}), hedge:matT('hedge',grassTex('#3F5F30','hedge'),{roughness:1}),
     parq:matT('parq',parquetTex(),{roughness:0.5}), tileW:matT('tileW',tileTex('#E9EEF1','tileW'),{roughness:0.3}), tileK:matT('tileK',tileTex('#E6E1D8','tileK',3),{roughness:0.35}), marbleF:matT('marbleF',tileTex('#EFECE6','marbleF',2),{roughness:0.15,envMapIntensity:0.9}),
     wetWall:matT('tileWall',tileTex('#F3F6F7','tileWall',6),{roughness:0.3}), water:mat(0x3FA7D6,{transparent:true,opacity:0.82,roughness:0.04,metalness:0.1,envMapIntensity:1.4}), clay:mat(0xB9764A,{roughness:0.9})};
+  if(FAC==='zamtosh'){ M.white=mat(0x1D2023,{roughness:0.5,metalness:0.2}); M.blk=M.white; }
   const FLOOR={zal:lux==='hashamatli'?M.marbleF:M.parq,kitchen:M.tileK,bed:M.parq,wet:M.tileW,circ:lux==='oddiy'?M.tileK:M.marbleF,stair:M.slab,util:M.tileK,garage:M.slab};
   if(A.floorType==='parket'||A.floorType==='laminat'){ FLOOR.zal=M.parq; FLOOR.bed=M.parq; } else if(A.floorType==='marmar'){ FLOOR.zal=M.marbleF; FLOOR.bed=M.marbleF; FLOOR.circ=M.marbleF; FLOOR.kitchen=M.marbleF; } else if(A.floorType==='kafel'){ FLOOR.zal=M.tileK; FLOOR.bed=M.tileK; FLOOR.circ=M.tileK; }
   const g=new THREE.Group(); const floors=[]; const roof=new THREE.Group(); g.add(roof);
@@ -2574,6 +2574,7 @@ function buildHouse(v,A){
       if(hole){ const parts=[[b.x,b.y,hole.x-b.x,b.h],[hole.x+hole.w,b.y,b.x+b.w-hole.x-hole.w,b.h],[hole.x,b.y,hole.w,hole.y-b.y],[hole.x,hole.y+hole.h,hole.w,b.y+b.h-hole.y-hole.h]];
         parts.forEach(([x,y,w,d])=>{ if(w>0.01&&d>0.01) box(cap,w,0.25,d,X(x+w/2),top-0.125,Z(y+d/2),M.slab); }); }
       else box(cap,b.w+(hasUpper?0:0.3),0.25,b.h+(hasUpper?0:0.3),X(b.x+b.w/2),top-0.125,Z(b.y+b.h/2),M.slab);
+      if(FAC==='zamtosh'&&hasUpper){ const e=0.14; [[b.w+2*e,e,X(b.x+b.w/2),Z(b.y)+e/2],[b.w+2*e,e,X(b.x+b.w/2),Z(b.y+b.h)-e/2]].forEach(([w,d,x,z])=>box(cap,w,0.34,d,x,top-0.13,z,M.blk)); [[e,b.h,X(b.x)-e/2,Z(b.y+b.h/2)],[e,b.h,X(b.x+b.w)+e/2,Z(b.y+b.h/2)]].forEach(([w,d,x,z])=>box(cap,w,0.34,d,x,top-0.13,z,M.blk)); }
       if(b.roof && !hasUpper){
         if(RF.shape==='mansard'){ const ov=0.35, r=mansardRoof(X(b.x)-ov,Z(b.y+b.h)-ov,b.w+ov*2,b.h+ov*2,M.roof,1.9); r.position.y=top+0.18; roof.add(r); box(roof,b.w+ov*2+0.1,0.24,b.h+ov*2+0.1,X(b.x+b.w/2),top+0.08,Z(b.y+b.h/2),M.white); }
         else if(RF.shape==='tort' && S!=='milliy'){
@@ -2596,6 +2597,7 @@ function buildHouse(v,A){
         } else if(RF.shape==='ikki'){ const ov=0.6, r=gableRoof(X(b.x)-ov,Z(b.y+b.h)-ov,b.w+ov*2,b.h+ov*2,RF.pitch,M.roof,M.wall,ov); r.position.y=top+0.02; roof.add(r); box(roof,b.w+1.25,0.2,b.h+1.25,X(b.x+b.w/2),top+0.02,Z(b.y+b.h/2),S==='milliy'?M.trim:M.white);
           const al=b.w>=b.h; (al?[[X(b.x+b.w/2),Z(b.y)+0.68],[X(b.x+b.w/2),Z(b.y+b.h)-0.68]]:[[X(b.x)-0.68,Z(b.y+b.h/2)],[X(b.x+b.w)+0.68,Z(b.y+b.h/2)]]).forEach(([x,z])=>box(roof,al?b.w+1.4:0.12,0.12,al?0.12:b.h+1.4,x,top+0.05,z,M.gutter,false));
         } else if(RF.shape==='tort'){ const r=hipRoof(X(b.x)-0.8,Z(b.y+b.h)-0.8,b.w+1.6,b.h+1.6,RF.pitch,M.roof); r.position.y=top+0.05; roof.add(r); box(roof,b.w+1.65,0.24,b.h+1.65,X(b.x+b.w/2),top+0.04,Z(b.y+b.h/2),M.trim); box(roof,b.w+1.7,0.08,b.h+1.7,X(b.x+b.w/2),top-0.1,Z(b.y+b.h/2),M.wood); }
+        else if(FAC==='zamtosh'){ const ov=0.65; box(roof,b.w+ov*2,0.32,b.h+ov*2,X(b.x+b.w/2),top+0.16,Z(b.y+b.h/2),M.blk); box(roof,b.w+ov*2-0.04,0.03,b.h+ov*2-0.04,X(b.x+b.w/2),top-0.005,Z(b.y+b.h/2),M.wood); }
         else { const ph=0.75; [[b.x,b.y,b.x+b.w,b.y],[b.x,b.y+b.h,b.x+b.w,b.y+b.h],[b.x,b.y,b.x,b.y+b.h],[b.x+b.w,b.y,b.x+b.w,b.y+b.h]].forEach(([a,c1,c,d])=>{ const hz=Math.abs(c1-d)<1e-6; const L=hz?c-a:d-c1; box(roof,hz?L+0.3:0.3,ph,hz?0.3:L+0.3,X((a+c)/2),top+ph/2,Z((c1+d)/2),M.wall); box(roof,hz?L+0.36:0.36,0.06,hz?0.36:L+0.36,X((a+c)/2),top+ph+0.03,Z((c1+d)/2),M.steel); }); }
       }
     });
@@ -3176,7 +3178,7 @@ function genMB(fam,f){ const H=f.one?3.3:6.6, b=[]; const W=f.w||12, D=f.d||10;
 ["x58", "Orqa U + ustunli kirish, markaziy hol", "Ustunli kirish; ichkarida o'rtada uzun hol", "orqaU", {"porch": true}, "markaz", {"porch": 1, "markaz": 1}, {}],
 ["x59", "Orqa U + ustunli kirish, qisqa qanot, markaziy hol", "Ustunli kirish, qisqa qanot; ichkarida o'rtada uzun hol", "orqaU", {"porch": true, "Lk": 0.75}, "markaz", {"porch": 1, "Lk": 0.7, "markaz": 1}, {}],
 ["x60", "Orqa U + garaj, uzun qanot, markaziy hol", "Garaj, uzun qanot; ichkarida o'rtada uzun hol", "orqaU", {"Lk": 1.15}, "markaz", {"gar": 1, "Lk": 1.2, "markaz": 1}, {"gar": 1}]].forEach(([id,n,d,layout,o,plan,mf,fx])=>MAKETS.push({id,n,d,layout,o,plan,fx:fx||{},b:genMB(layout,mf||{})}));
-MAKETS.push({id:'ochiq',n:'Ochiq zalli (tor yer)',d:"Katta ochiq zal, zina zal ichida, xonalar bir yonda — 10–13 m li yerga",layout:'ochiq',b:[[0,0,6.2,9.8,6.6],[6.2,0,4.3,13,6.6],[0.6,-1.8,5,1.8,0.2,3.1]]});
+MAKETS.push({id:'ochiq',n:'Ochiq zalli (10×30 namuna)',d:"Sizning chizmangiz: katta ochiq zal, zina zal ichida, xonalar o'ng ustunda — 10,5 m li yerga",layout:'ochiq',b:[[0,0,6.2,9.8,6.6],[6.2,0,4.3,13,6.6],[0.6,-1.8,5,1.8,0.2,3.1]]});
 
 function maketSVG(m){ const k=6.2, ix=(x,y,z)=>[(x-y)*0.866*k/6, ((x+y)*0.5-z)*k/6]; const polys=[];
   const bs=m.b.map(b=>({x:b[0],y:-b[1]-b[3],w:b[2],d:b[3],h:b[4],z:b[5]||0})).sort((a,b)=>(a.x+a.y+a.z*0.01)-(b.x+b.y+b.z*0.01));
