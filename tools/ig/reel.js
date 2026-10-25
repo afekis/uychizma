@@ -6,6 +6,7 @@
 //  'tur'     : och krem fon, reja kattalashib xonalar bo'ylab yuradi, xona nomlari+m² chiqadi; plans + rooms:[[[nom,m2]..] har qavat]
 //  'fakt'    : kinetik matn — sariq/qora chaqnovchi fonlarda katta jumlalar (xato/to'g'ri, faktlar); rows (3–6)
 //  'yer'     : yashil fon, bo'sh yer chegarasi o'lchamlari bilan chiziladi → ichida 1-qavat rejasi masshtabda paydo bo'ladi; plot:{W,L} + house:{W:v.W, D:v.maxY-v.minY} + plans
+// voice: "diktor matni" (o'zbekcha AI ovoz; ixtiyoriy voiceName: uz-UZ-SardorNeural | uz-UZ-MadinaNeural)
 // Umumiy maydonlar: hook:"1-QATOR|2-QATOR", tag, title (<em> urg'u), chips:[..], cta:"1|2" (ixtiyoriy)
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
@@ -206,6 +207,21 @@ const { css, html, D } = T[style]();
 const seed = S.seed != null ? S.seed : [...path.basename(outPath)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);
 const wav = outPath.replace(/\.mp4$/, '') + '.music.wav';
 require('child_process').execFileSync('python3', [path.join(__dirname, 'music.py'), wav, String(D), style, String(seed)]);
+// AI diktor ovozi (o'zbekcha, edge-tts: uz-UZ-SardorNeural / uz-UZ-MadinaNeural). spec.voice — o'qiladigan matn (≤ D*2.2 so'z).
+// Tarmoq ruxsat bermasa — jim o'tkazib yuboriladi, faqat musiqa qoladi (VOICE_STATUS konsolga chiqadi).
+let VOICE_STATUS = 'yoq';
+if (S.voice) {
+  const cp = require('child_process');
+  const mp3 = outPath.replace(/\.mp4$/, '') + '.voice.mp3', mixed = outPath.replace(/\.mp4$/, '') + '.mix.wav';
+  const tts = () => cp.execFileSync('python3', ['-m', 'edge_tts', '--voice', S.voiceName || 'uz-UZ-SardorNeural', '--rate', S.voiceRate || '+8%', '--text', S.voice, '--write-media', mp3], { stdio: 'pipe', timeout: 60000 });
+  try {
+    try { tts(); } catch (e) { cp.execFileSync('pip', ['install', '-q', 'edge-tts', '--break-system-packages'], { stdio: 'pipe', timeout: 120000 }); tts(); }
+    cp.execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', wav, '-i', mp3, '-filter_complex',
+      '[0]volume=0.22[m];[1]adelay=500|500,volume=1.8[v];[m][v]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95', mixed]);
+    fs.renameSync(mixed, wav); VOICE_STATUS = 'bor';
+  } catch (e) { VOICE_STATUS = 'XATO: ' + String(e.stderr || e.message).slice(0, 200); }
+  try { fs.unlinkSync(mp3); } catch (e) {}
+}
 const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css}</style></head><body>${html}</body></html>`;
 (async () => {
   const b = await chromium.launch();
@@ -226,5 +242,5 @@ const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css
   await new Promise(r => ff.on('close', r));
   try { fs.unlinkSync(wav); } catch (e) {}
   await b.close();
-  console.log('ok', style, outPath, D.toFixed(1) + 's');
+  console.log('ok', style, outPath, D.toFixed(1) + 's', 'diktor:', VOICE_STATUS);
 })();
