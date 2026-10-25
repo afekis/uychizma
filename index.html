@@ -1568,17 +1568,17 @@ function planSVG(v,k,opt){
   const pad=2.6, vx=x0-pad, vy=-(y1)-pad, vw=(x1-x0)+pad*2, vh=(y1-y0)+pad*2+0.4;
   const Y=y=>-y; const o=[];
   o.push(`<svg viewBox="${vx} ${vy} ${vw} ${vh}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${k+1}-qavat rejasi" font-family="Golos Text, sans-serif">`);
-  o.push(`<defs><pattern id="ht${k}${v.key}" patternUnits="userSpaceOnUse" width="0.16" height="0.16" patternTransform="rotate(45)"><rect width="0.16" height="0.16" fill="#B4362A"></rect><rect width="0.05" height="0.16" fill="#86231A"></rect></pattern></defs>`);
-  o.push(`<rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#FFFFFF"></rect>`);
+  o.push(`<defs><pattern id="ht${k}${v.key}" patternUnits="userSpaceOnUse" width="0.16" height="0.16" patternTransform="rotate(45)"><rect width="0.16" height="0.16" fill="#3A3A3A"></rect><rect width="0.05" height="0.16" fill="#3A3A3A"></rect></pattern></defs>`);
+  o.push(`<defs><pattern id="gr${k}${v.key}" patternUnits="userSpaceOnUse" width="1" height="1"><rect width="1" height="1" fill="#F3F3F3"></rect><path d="M1 0H0V1" fill="none" stroke="#DCDCDC" stroke-width="0.03"></path></pattern></defs><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="url(#gr${k}${v.key})"></rect>`);
   f.open.forEach(b=>{
     if(b.type==='columns') return;
     o.push(`<rect x="${b.x}" y="${Y(b.y+b.h)}" width="${b.w}" height="${b.h}" fill="${b.type==='passage'?'#F0F1F2':'#F5F3EE'}" stroke="#888" stroke-width="0.05" stroke-dasharray="0.25 0.15"></rect>`);
     if(b.type==='balcony') o.push(`<rect x="${b.x+0.05}" y="${Y(b.y+b.h)+0.05}" width="${b.w-0.1}" height="${b.h-0.1}" fill="none" stroke="#333" stroke-width="0.07"></rect>`);
   });
   f.open.forEach(b=>{ (b.cols||[]).forEach(([cx,cy])=>o.push(`<rect x="${cx-0.2}" y="${Y(cy)-0.2}" width="0.4" height="0.4" fill="#FFF" stroke="#444" stroke-width="0.05"></rect>`)); });
-  f.rooms.forEach(r=>{ o.push(`<rect x="${r.x}" y="${Y(r.y+r.h)}" width="${r.w}" height="${r.h}" fill="${PCOL[r.t]||'#FFF'}" stroke="#2A2A2A" stroke-width="0.12"></rect>`); });
-  (f.opens||[]).filter(e=>e.full).forEach(e=>{ const c=PCOL.zal||'#FFF'; o.push(e.o==='h'?`<line x1="${e.a0+0.07}" y1="${Y(e.line)}" x2="${e.a1-0.07}" y2="${Y(e.line)}" stroke="${c}" stroke-width="0.16"></line>`:`<line x1="${e.line}" y1="${Y(e.a0+0.07)}" x2="${e.line}" y2="${Y(e.a1-0.07)}" stroke="${c}" stroke-width="0.16"></line>`); });
-  f.rooms.filter(q=>q.part).forEach(q=>{ o.push(`<line x1="${q.x+0.07}" y1="${Y(q.part.y)}" x2="${q.x+q.w-0.07}" y2="${Y(q.part.y)}" stroke="${PCOL[q.t]||'#FFF'}" stroke-width="0.16"></line>`); });
+  f.rooms.forEach(r=>{ o.push(`<rect x="${r.x}" y="${Y(r.y+r.h)}" width="${r.w}" height="${r.h}" fill="${r.t==='garage'?'#DADADA':'#E4E4E4'}" stroke="#2A2A2A" stroke-width="0.12"></rect>`); });
+  (f.opens||[]).filter(e=>e.full).forEach(e=>{ const c='#E4E4E4'; o.push(e.o==='h'?`<line x1="${e.a0+0.07}" y1="${Y(e.line)}" x2="${e.a1-0.07}" y2="${Y(e.line)}" stroke="${c}" stroke-width="0.16"></line>`:`<line x1="${e.line}" y1="${Y(e.a0+0.07)}" x2="${e.line}" y2="${Y(e.a1-0.07)}" stroke="${c}" stroke-width="0.16"></line>`); });
+  f.rooms.filter(q=>q.part).forEach(q=>{ o.push(`<line x1="${q.x+0.07}" y1="${Y(q.part.y)}" x2="${q.x+q.w-0.07}" y2="${Y(q.part.y)}" stroke="#E4E4E4" stroke-width="0.16"></line>`); });
   // stairs
   f.rooms.filter(r=>r.t==='stair').forEach(r=>{
     const vert=r.h>=r.w; const half=vert?r.w/2:r.h/2; let s='';
@@ -1588,7 +1588,7 @@ function planSVG(v,k,opt){
   });
   // exterior walls
   f.segs.forEach(s=>{ const ox=-s.nx*WT/2, oy=-s.ny*WT/2; o.push(`<line x1="${s.x0+ox}" y1="${Y(s.y0+oy)}" x2="${s.x1+ox}" y2="${Y(s.y1+oy)}" stroke="url(#ht${k}${v.key})" stroke-width="${WT}" stroke-linecap="square"></line>`); });
-  f.segs.forEach(s=>{ o.push(`<line x1="${s.x0}" y1="${Y(s.y0)}" x2="${s.x1}" y2="${Y(s.y1)}" stroke="#4E0F0A" stroke-width="0.04"></line>`); });
+  f.segs.forEach(s=>{ o.push(`<line x1="${s.x0}" y1="${Y(s.y0)}" x2="${s.x1}" y2="${Y(s.y1)}" stroke="#2A2A2A" stroke-width="0.04"></line>`); });
   // openings
   f.openings.forEach(op=>{
     const s=f.segs[op.si], hz=Math.abs(s.y0-s.y1)<1e-6;
@@ -1597,9 +1597,9 @@ function planSVG(v,k,opt){
     const [ax,ay]=P(a,WT/2),[bx,by]=P(b,WT/2);
     o.push(`<line x1="${ax}" y1="${Y(ay)}" x2="${bx}" y2="${Y(by)}" stroke="#FFFFFF" stroke-width="${WT+0.04}"></line>`);
     if(op.kind==='win'){
-      [0.12,0.26].forEach(off=>{ const [p1x,p1y]=P(a,off),[p2x,p2y]=P(b,off); o.push(`<line x1="${p1x}" y1="${Y(p1y)}" x2="${p2x}" y2="${Y(p2y)}" stroke="#1F6FA8" stroke-width="0.04"></line>`); });
+      [0.12,0.26].forEach(off=>{ const [p1x,p1y]=P(a,off),[p2x,p2y]=P(b,off); o.push(`<line x1="${p1x}" y1="${Y(p1y)}" x2="${p2x}" y2="${Y(p2y)}" stroke="#7A7A7A" stroke-width="0.04"></line>`); });
       const [e1x,e1y]=P(a,0),[e2x,e2y]=P(a,WT),[e3x,e3y]=P(b,0),[e4x,e4y]=P(b,WT);
-      o.push(`<path d="M${e1x} ${Y(e1y)}L${e2x} ${Y(e2y)}M${e3x} ${Y(e3y)}L${e4x} ${Y(e4y)}" stroke="#1F6FA8" stroke-width="0.04"></path>`);
+      o.push(`<path d="M${e1x} ${Y(e1y)}L${e2x} ${Y(e2y)}M${e3x} ${Y(e3y)}L${e4x} ${Y(e4y)}" stroke="#7A7A7A" stroke-width="0.04"></path>`);
     } else {
       const H=P(a,WT), L1=hz?[a,s.y0-s.ny*(WT+op.w*0.9)]:[s.x0-s.nx*(WT+op.w*0.9),a], C=P(b,WT);
       if(op.kind==='gdoor'){ o.push(`<line x1="${H[0]}" y1="${Y(H[1])}" x2="${C[0]}" y2="${Y(C[1])}" stroke="#333" stroke-width="0.08" stroke-dasharray="0.2 0.12"></line>`); }
@@ -1615,16 +1615,16 @@ function planSVG(v,k,opt){
   if(opt.furn){ const ps=mebelPieces(v,k,opt.A||S.A); o.push(ps.map(mebelSVG).join('')); o.push(ps.map(mebelDims).join(''));
     mainRooms(f).forEach(r=>{ if(r.t==='stair') return; const room=r.w-0.3; let fs=0.22; let t=r.n+' · '+fmtA(roomA(r,f))+' m²'; const fit=(x,z)=>x.length*z*0.56<=room;
       if(!fit(t,fs)) t=r.n; if(!fit(t,fs)) t=r.n.split(/[ ,(]/)[0]; while(!fit(t,fs)&&fs>0.14) fs-=0.02; if(!fit(t,fs)) return;
-      const tx=r.x+r.w/2, ty=Y(r.y+r.h)+0.12+fs; o.push(`<text x="${tx}" y="${ty}" font-size="${fs.toFixed(2)}" text-anchor="middle" fill="#1F5F8B" font-weight="600" paint-order="stroke" stroke="#fff" stroke-width="0.06">${esc(t)}</text>`); }); }
+      const tx=r.x+r.w/2, ty=Y(r.y+r.h)+0.12+fs; o.push(`<text x="${tx}" y="${ty}" font-size="${fs.toFixed(2)}" text-anchor="middle" fill="#2B2B2B" font-weight="600" paint-order="stroke" stroke="#fff" stroke-width="0.06">${esc(t)}</text>`); }); }
   // labels
   if(!opt.furn) mainRooms(f).forEach(r=>{
     const small=r.w<2.3||r.h<2.0; const ra=roomA(r,f); const fs=small?0.3:0.42, fa=small?0.27:0.34;
     let nm=r.n; if(small && nm.length>10) nm=nm.split(/[ ,]/)[0];
     const cx=r.x+r.w/2, cy=Y(r.y+r.h/2);
     const vertical = r.w<1.8 && r.h>r.w*1.6;
-    if(r.t==='stair'){ o.push(`<text x="${cx}" y="${Y(r.y+0.6)}" font-size="0.3" text-anchor="middle" fill="#1F5F8B">Zina</text>`); return; }
-    if(vertical){ o.push(`<g transform="translate(${cx} ${cy}) rotate(-90)"><text y="-0.05" font-size="${fs}" text-anchor="middle" fill="#1F5F8B">${esc(nm)}</text><text y="${fa+0.08}" font-size="${fa}" text-anchor="middle" fill="#1F5F8B" text-decoration="underline" font-family="JetBrains Mono, monospace">${fmtA(ra)}</text></g>`); return; }
-    o.push(`<text x="${cx}" y="${cy-0.05}" font-size="${fs}" text-anchor="middle" fill="#1F5F8B">${esc(nm)}</text><text x="${cx}" y="${cy+fa+0.1}" font-size="${fa}" text-anchor="middle" fill="#1F5F8B" text-decoration="underline" font-family="JetBrains Mono, monospace">${fmtA(ra)}</text>`+(small?'':`<text x="${cx}" y="${cy+fa+0.5}" font-size="0.24" text-anchor="middle" fill="#6A6A6A" font-family="JetBrains Mono, monospace">${fmt2(r.w)} × ${fmt2(r.h)}</text>`));
+    if(r.t==='stair'){ o.push(`<text x="${cx}" y="${Y(r.y+0.6)}" font-size="0.3" text-anchor="middle" fill="#2B2B2B">Zina</text>`); return; }
+    if(vertical){ o.push(`<g transform="translate(${cx} ${cy}) rotate(-90)"><text y="-0.05" font-size="${fs}" text-anchor="middle" fill="#2B2B2B">${esc(nm)}</text><text y="${fa+0.08}" font-size="${fa}" text-anchor="middle" fill="#2B2B2B" text-decoration="underline" font-family="JetBrains Mono, monospace">${fmtA(ra)}</text></g>`); return; }
+    o.push(`<text x="${cx}" y="${cy-0.05}" font-size="${fs}" text-anchor="middle" fill="#2B2B2B">${esc(nm)}</text><text x="${cx}" y="${cy+fa+0.1}" font-size="${fa}" text-anchor="middle" fill="#2B2B2B" text-decoration="underline" font-family="JetBrains Mono, monospace">${fmtA(ra)}</text>`+(small?'':`<text x="${cx}" y="${cy+fa+0.5}" font-size="0.24" text-anchor="middle" fill="#6A6A6A" font-family="JetBrains Mono, monospace">${fmt2(r.w)} × ${fmt2(r.h)}</text>`));
   });
   f.open.forEach(b=>{ if(b.type==='columns') return; const nm={passage:'Darvozaxona',ayvon:'Ayvon',balcony:'Balkon'}[b.type]; if(!nm) return; const vert=b.w<2.4&&b.h>b.w; const cx=b.x+b.w/2, cy=Y(b.y+b.h/2);
     o.push(vert?`<text transform="translate(${cx} ${cy}) rotate(-90)" font-size="0.34" text-anchor="middle" fill="#555">${nm} ${fmtA(b.w*b.h)}</text>`:`<text x="${cx}" y="${cy+0.12}" font-size="0.36" text-anchor="middle" fill="#555">${nm} ${fmtA(b.w*b.h)}</text>`); });
