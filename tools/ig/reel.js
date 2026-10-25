@@ -1,6 +1,12 @@
-// UyChizma reel generator: node reel.js spec.json out.mp4
-// spec: {hook:"DIZAYNER|KERAK EMAS!", tag:"YER 14×28 m", title:"...<em>..</em>", plans:[svgString,...],
-//        rows:["..",".."] (plans o'rniga ro'yxat), chips:["🏠 161 m²",...], cta:"SAYTGA KIRING|VA BOSHLANG!"}
+// UyChizma Reel generator (1080x1920 MP4): node reel.js spec.json out.mp4
+// spec.style — har xil kreativ shablon (bir xil video qilmaslik uchun ALMASHTIRIB ishlating):
+//  'klassik' : jigarrang bokeh + quruvchi personaj; hook → reja (plans) YOKI ro'yxat (rows) → CTA
+//  'chizma'  : ko'k chizma (blueprint) qog'oz, terminal-yozuv hook, reja skaner bilan chiziladi; plans YOKI rows
+//  'quiz'    : "Qaysi biri yoqadi?" — 3 variant A/B/C ketma-ket, keyin "izohga harfini yozing"; variants:[{svgs,area,beds,floors}]×3
+//  'tur'     : och krem fon, reja kattalashib xonalar bo'ylab yuradi, xona nomlari+m² chiqadi; plans + rooms:[[[nom,m2]..] har qavat]
+//  'fakt'    : kinetik matn — sariq/qora chaqnovchi fonlarda katta jumlalar (xato/to'g'ri, faktlar); rows (3–6)
+//  'yer'     : yashil fon, bo'sh yer chegarasi o'lchamlari bilan chiziladi → ichida 1-qavat rejasi masshtabda paydo bo'ladi; plot:{W,L} + house:{W:v.W, D:v.maxY-v.minY} + plans
+// Umumiy maydonlar: hook:"1-QATOR|2-QATOR", tag, title (<em> urg'u), chips:[..], cta:"1|2" (ixtiyoriy)
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -9,84 +15,211 @@ const [, , specPath, outPath] = process.argv;
 const S = JSON.parse(fs.readFileSync(specPath, 'utf8'));
 const MASCOT = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, 'mascot.png')).toString('base64');
 const FPS = 30;
-const T1 = 3.2, T2 = S.rows ? 10.5 : 9.5, T3 = T2 + 4; // sahna chegaralari (s)
-const DUR = T3;
-
-const bokeh = Array.from({ length: 16 }, (_, i) => {
-  const x = (i * 137) % 1080, y = (i * 389) % 1920, s = 90 + (i * 53) % 160, d = 6 + (i % 5);
-  return `<i style="left:${x}px;top:${y}px;width:${s}px;height:${s}px;animation:drift ${d}s ease-in-out ${-i}s infinite alternate"></i>`;
-}).join('');
-const hook = S.hook.split('|');
-const cta = (S.cta || 'SAYTGA KIRING|VA BOSHLANG!').split('|');
-const body = S.rows
-  ? `<div class="rows">${S.rows.map((r, i) => `<div class="row" style="animation:pop .5s ${T1 + 0.8 + i * 1.1}s both">${r}</div>`).join('')}</div>`
-  : `<div class="card">${S.plans.map((p, k) => `<div class="pl">${p}${S.plans.length > 1 ? `<div class="cap">${k + 1}-qavat</div>` : ''}</div>`).join('')}</div>`;
-const chips = (S.chips || []).map((c, i) => `<div class="chip" style="animation:pop .4s ${T1 + 2.6 + i * 0.35}s both">${c}</div>`).join('');
-
-const html = `<!doctype html><html><head><meta charset="utf-8"><style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{width:1080px;height:1920px;overflow:hidden;font-family:Inter,sans-serif;background:radial-gradient(ellipse at 50% 42%,#7a4a2a 0%,#4a2b17 55%,#25150b 100%)}
-.bk i{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,214,160,.22),rgba(255,214,160,0) 70%);filter:blur(4px)}
-@keyframes drift{from{transform:translate(0,0)}to{transform:translate(40px,-60px)}}
-@keyframes pop{0%{opacity:0;transform:scale(.6)}70%{opacity:1;transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+const URL = 'afekis.github.io/uychizma';
+const split = s => String(s || '').split('|');
+const KF = `@keyframes pop{0%{opacity:0;transform:scale(.6)}70%{opacity:1;transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}} @keyframes fadeOut{from{opacity:1}to{opacity:0}}
 @keyframes up{from{opacity:0;transform:translateY(80px)}to{opacity:1;transform:none}}
+@keyframes left{from{opacity:0;transform:translateX(-120px)}to{opacity:1;transform:none}}
 @keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes wipeDown{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-14px) rotate(1deg)}}
-.sc{position:absolute;inset:0}
-.h{font-family:'DejaVu Serif',serif;font-weight:700;color:#FBE7C2;text-transform:uppercase;text-align:center;letter-spacing:2px;text-shadow:0 5px 0 #6B3A1C,0 10px 24px rgba(0,0,0,.45)}
-.h .a{color:#FFC13B}
-#s1{animation:fadeOut .35s ${T1 - 0.35}s both}
-#s1 .h{position:absolute;left:40px;right:40px;top:260px;font-size:104px;line-height:1.12}
-#s1 .h div{animation:pop .6s both}
-#s1 .m{position:absolute;left:250px;top:760px;width:580px;animation:up .7s .3s both}
-#s1 .m img{width:100%;animation:bob 2s ease-in-out infinite}
-#s2{animation:fadeIn .35s ${T1}s both, fadeOut .35s ${T2 - 0.35}s forwards}
-.tag{position:absolute;left:60px;top:150px;background:#FFC13B;color:#2A1606;font-weight:800;font-size:40px;padding:14px 30px;border-radius:40px;animation:pop .5s ${T1 + 0.1}s both}
-.title{position:absolute;left:60px;right:60px;top:250px;font-size:84px;line-height:1.08;text-align:left;animation:up .6s ${T1 + 0.2}s both}
-.title em{font-style:normal;color:#FFC13B}
-.card{position:absolute;left:50px;right:50px;top:560px;height:820px;background:#fff;border-radius:40px;display:flex;gap:16px;padding:30px;box-shadow:0 20px 50px rgba(0,0,0,.4);animation:pop .5s ${T1 + 0.5}s both}
-.card .pl{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:wipe 1.6s ${T1 + 0.9}s both}
-.card .pl svg{width:100%;height:100%;max-height:740px}
-.card .cap{font-weight:800;font-size:30px;color:#333}
-.rows{position:absolute;left:50px;right:50px;top:600px;display:flex;flex-direction:column;gap:26px}
-.row{background:#FFF8EC;color:#2A1606;border-radius:30px;padding:30px 36px;font-size:44px;font-weight:700;line-height:1.2;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-.row b{color:#C2410C}
-.chips{position:absolute;left:50px;right:50px;top:1410px;display:flex;flex-wrap:wrap;gap:16px}
-.chip{background:#FFF8EC;color:#2A1606;border-radius:26px;padding:16px 24px;font-size:38px;font-weight:800}
-#s2 .m{position:absolute;right:20px;bottom:-50px;width:250px;animation:up .6s ${T1 + 1.2}s both}
-#s2 .m img{width:100%;animation:bob 2.2s ease-in-out infinite}
-#s3{animation:fadeIn .4s ${T2}s both}
-#s3 .h{position:absolute;left:40px;right:40px;top:300px;font-size:96px;line-height:1.15;animation:pop .6s ${T2 + 0.1}s both}
-#s3 .btn{position:absolute;left:110px;right:110px;top:640px;background:#2563EB;color:#fff;font-weight:800;font-size:50px;text-align:center;padding:34px 0;border-radius:70px;box-shadow:0 0 0 8px rgba(37,99,235,.25),0 18px 40px rgba(0,0,0,.4);animation:pop .5s ${T2 + 0.6}s both}
-#s3 .sub{position:absolute;left:0;right:0;top:820px;text-align:center;color:#FBE7C2;font-size:44px;font-weight:700;animation:fadeIn .5s ${T2 + 1}s both}
-#s3 .m{position:absolute;left:300px;top:960px;width:480px;animation:up .6s ${T2 + 0.4}s both}
-#s3 .m img{width:100%;animation:bob 2s ease-in-out infinite}
-</style></head><body><div class="bk">${bokeh}</div>
-<div class="sc" id="s1"><div class="h">${hook.map((l, i) => `<div class="${i ? 'a' : ''}" style="animation-delay:${0.1 + i * 0.6}s">${l}</div>`).join('')}</div><div class="m"><img src="${MASCOT}"></div></div>
-<div class="sc" id="s2"><div class="tag">${S.tag}</div><div class="h title">${S.title}</div>${body}<div class="chips">${chips}</div><div class="m"><img src="${MASCOT}"></div></div>
-<div class="sc" id="s3"><div class="h">${cta.map((l, i) => `<div class="${i ? 'a' : ''}">${l}</div>`).join('')}</div><div class="btn">🌐 afekis.github.io/uychizma</div><div class="sub">Tekin · 1 daqiqada · havola profilda 👆</div><div class="m"><img src="${MASCOT}"></div></div>
-</body></html>`;
+@keyframes slam{0%{opacity:0;transform:scale(2.4)}60%{opacity:1;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
+@keyframes type{from{width:0}to{width:100%}} @keyframes blink{50%{opacity:0}}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(40px,-60px)}}
+@keyframes scan{from{top:0%}to{top:100%}}
+@keyframes draw{to{stroke-dashoffset:0}}
+*{box-sizing:border-box;margin:0;padding:0} body{width:1080px;height:1920px;overflow:hidden;font-family:Inter,sans-serif}
+.sc{position:absolute;inset:0} em{font-style:normal}`;
+// sahna: [boshlanish, tugash] — fade in/out
+const scene = (id, a, b, inner, last) => `<div class="sc" id="${id}" style="animation:fadeIn .35s ${a}s both${last ? '' : `, fadeOut .35s ${b - 0.35}s forwards`}">${inner}</div>`;
+const pls = (svgs, cls = 'pl') => svgs.map((p, k) => `<div class="${cls}">${p}${svgs.length > 1 ? `<div class="cap">${k + 1}-qavat</div>` : ''}</div>`).join('');
+const chips = (list, t0, cls = 'chip') => (list || []).map((c, i) => `<div class="${cls}" style="animation:pop .4s ${t0 + i * 0.35}s both">${c}</div>`).join('');
+const mascot = (cls, d) => `<div class="${cls}" style="animation:up .6s ${d}s both"><img src="${MASCOT}" style="width:100%;animation:bob 2.1s ease-in-out infinite"></div>`;
 
+const T = {};
+// ---------------- klassik ----------------
+T.klassik = () => {
+  const T1 = 3.2, T2 = S.rows ? 10.5 : 9.5, D = T2 + 4;
+  const bokeh = Array.from({ length: 16 }, (_, i) => `<i style="left:${(i * 137) % 1080}px;top:${(i * 389) % 1920}px;width:${90 + (i * 53) % 160}px;height:${90 + (i * 53) % 160}px;animation:drift ${6 + i % 5}s ease-in-out ${-i}s infinite alternate"></i>`).join('');
+  const body = S.rows ? `<div class="rows">${S.rows.map((r, i) => `<div class="row" style="animation:pop .5s ${T1 + 0.8 + i * 1.1}s both">${r}</div>`).join('')}</div>`
+    : `<div class="card" style="animation:pop .5s ${T1 + .5}s both">${pls(S.plans).replace(/class="pl"/g, `class="pl" style="animation:wipe 1.6s ${T1 + .9}s both"`)}</div>`;
+  const css = `body{background:radial-gradient(ellipse at 50% 42%,#7a4a2a 0%,#4a2b17 55%,#25150b 100%)}
+.bk i{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,214,160,.22),rgba(255,214,160,0) 70%);filter:blur(4px)}
+.h{font-family:'DejaVu Serif',serif;font-weight:700;color:#FBE7C2;text-transform:uppercase;text-align:center;letter-spacing:2px;text-shadow:0 5px 0 #6B3A1C,0 10px 24px rgba(0,0,0,.45)} .h .a,.h em{color:#FFC13B}
+#s1 .h{position:absolute;left:40px;right:40px;top:260px;font-size:104px;line-height:1.12} #s1 .m{position:absolute;left:250px;top:760px;width:580px}
+.tag{position:absolute;left:60px;top:150px;background:#FFC13B;color:#2A1606;font-weight:800;font-size:40px;padding:14px 30px;border-radius:40px}
+.title{position:absolute;left:60px;right:60px;top:250px;font-size:84px;line-height:1.08;text-align:left}
+.card{position:absolute;left:50px;right:50px;top:560px;height:820px;background:#fff;border-radius:40px;display:flex;gap:16px;padding:30px;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.pl{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center} .pl svg{width:100%;height:100%;max-height:740px} .cap{font-weight:800;font-size:30px;color:#333}
+.rows{position:absolute;left:50px;right:50px;top:600px;display:flex;flex-direction:column;gap:26px}
+.row{background:#FFF8EC;color:#2A1606;border-radius:30px;padding:30px 36px;font-size:44px;font-weight:700;line-height:1.2;box-shadow:0 10px 30px rgba(0,0,0,.3)} .row b{color:#C2410C}
+.chips{position:absolute;left:50px;right:50px;top:1410px;display:flex;flex-wrap:wrap;gap:16px} .chip{background:#FFF8EC;color:#2A1606;border-radius:26px;padding:16px 24px;font-size:38px;font-weight:800}
+#s2 .m{position:absolute;right:20px;bottom:-50px;width:250px}
+#s3 .h{position:absolute;left:40px;right:40px;top:300px;font-size:96px;line-height:1.15}
+.btn{position:absolute;left:110px;right:110px;top:640px;background:#2563EB;color:#fff;font-weight:800;font-size:50px;text-align:center;padding:34px 0;border-radius:70px;box-shadow:0 0 0 8px rgba(37,99,235,.25),0 18px 40px rgba(0,0,0,.4)}
+.sub{position:absolute;left:0;right:0;top:820px;text-align:center;color:#FBE7C2;font-size:44px;font-weight:700} #s3 .m{position:absolute;left:300px;top:960px;width:480px}`;
+  const cta = split(S.cta || 'SAYTGA KIRING|VA BOSHLANG!');
+  const html = `<div class="bk">${bokeh}</div>`
+    + scene('s1', 0, T1, `<div class="h">${split(S.hook).map((l, i) => `<div class="${i ? 'a' : ''}" style="animation:pop .6s ${0.1 + i * 0.6}s both">${l}</div>`).join('')}</div>${mascot('m', .3)}`)
+    + scene('s2', T1, T2, `<div class="tag" style="animation:pop .5s ${T1 + .1}s both">${S.tag}</div><div class="h title" style="animation:up .6s ${T1 + .2}s both">${S.title}</div>${body}<div class="chips">${chips(S.chips, T1 + 2.6)}</div>${mascot('m', T1 + 1.2)}`)
+    + scene('s3', T2, D, `<div class="h" style="animation:pop .6s ${T2 + .1}s both">${cta.map((l, i) => `<div class="${i ? 'a' : ''}">${l}</div>`).join('')}</div><div class="btn" style="animation:pop .5s ${T2 + .6}s both">🌐 ${URL}</div><div class="sub" style="animation:fadeIn .5s ${T2 + 1}s both">Tekin · 1 daqiqada · havola profilda 👆</div>${mascot('m', T2 + .4)}`, true);
+  return { css, html, D };
+};
+// ---------------- chizma (blueprint) ----------------
+T.chizma = () => {
+  const T1 = 3.4, T2 = S.rows ? 11 : 10, D = T2 + 3.8;
+  const hook = split(S.hook);
+  const body = S.rows ? `<div class="rows">${S.rows.map((r, i) => `<div class="row" style="animation:left .45s ${T1 + .8 + i * 1.15}s both"><span>${String(i + 1).padStart(2, '0')}</span>${r.replace(/<b>[^<]*<\/b>\s*/, '')}</div>`).join('')}</div>`
+    : `<div class="card"><div class="scan" style="animation:scan 2.2s linear ${T1 + .6}s both"></div>${pls(S.plans).replace(/class="pl"/g, `class="pl" style="animation:wipeDown 2.2s linear ${T1 + .6}s both"`)}</div>`;
+  const css = `body{background:#0B2D52;background-image:linear-gradient(rgba(255,255,255,.07) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.07) 2px,transparent 2px),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:120px 120px,120px 120px,24px 24px,24px 24px}
+.mono{font-family:'DejaVu Sans Mono',monospace;color:#E8F1FF}
+.ln{white-space:nowrap;overflow:hidden;display:block;font-size:80px;font-weight:700;line-height:1.25}
+.cur{display:inline-block;width:40px;height:80px;background:#7FD3FF;vertical-align:middle;animation:blink .8s steps(1) infinite}
+#s1 .box{position:absolute;left:70px;right:70px;top:620px}
+.lbl{position:absolute;left:70px;top:150px;border:3px solid #7FD3FF;color:#7FD3FF;font-size:34px;padding:10px 22px;font-weight:700}
+.title{position:absolute;left:70px;right:70px;top:240px;font-size:70px;line-height:1.15;font-weight:700} .title em{color:#7FD3FF}
+.card{position:absolute;left:50px;right:50px;top:520px;height:860px;background:#0D3260;border:3px dashed rgba(127,211,255,.6);padding:26px;display:flex;gap:14px}
+.pl{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;mix-blend-mode:screen} .pl svg{width:100%;height:100%;max-height:780px;filter:invert(1) hue-rotate(180deg) saturate(1.4) brightness(1.05)}
+.cap{color:#7FD3FF;font-family:'DejaVu Sans Mono',monospace;font-size:30px;font-weight:700}
+.scan{position:absolute;left:0;right:0;height:6px;background:#7FD3FF;box-shadow:0 0 30px 8px rgba(127,211,255,.7);z-index:2}
+.rows{position:absolute;left:60px;right:60px;top:560px;display:flex;flex-direction:column;gap:30px}
+.row{border-left:8px solid #7FD3FF;background:rgba(127,211,255,.1);color:#E8F1FF;font-size:46px;font-weight:700;padding:26px 30px;line-height:1.2} .row span{font-family:'DejaVu Sans Mono',monospace;color:#7FD3FF;margin-right:24px}
+.chips{position:absolute;left:50px;right:50px;top:1430px;display:flex;flex-wrap:wrap;gap:16px} .chip{border:3px solid #E8F1FF;color:#E8F1FF;font-family:'DejaVu Sans Mono',monospace;padding:14px 22px;font-size:34px;font-weight:700}
+#s3 .big{position:absolute;left:70px;right:70px;top:520px;font-size:84px;line-height:1.2;font-weight:700}
+.url{position:absolute;left:70px;right:70px;top:900px;border:4px dashed #7FD3FF;color:#fff;text-align:center;padding:34px 0;font-size:50px;font-weight:700;font-family:'DejaVu Sans Mono',monospace}
+.sub{position:absolute;left:70px;right:70px;top:1080px;color:#9CC8F0;font-size:40px;text-align:center}`;
+  const html = scene('s1', 0, T1, `<div class="box mono">${hook.map((l, i) => `<div style="position:relative"><span class="ln" style="animation:type ${0.9}s steps(${l.length}) ${0.2 + i * 1.1}s both">&gt; ${l}</span></div>`).join('')}<span class="cur"></span></div>`)
+    + scene('s2', T1, T2, `<div class="lbl mono" style="animation:fadeIn .4s ${T1 + .1}s both">${S.tag}</div><div class="title mono" style="animation:left .5s ${T1 + .2}s both">${S.title}</div>${body}<div class="chips">${chips(S.chips, T1 + 3)}</div>`)
+    + scene('s3', T2, D, `<div class="big mono" style="animation:up .5s ${T2 + .1}s both">${split(S.cta || 'O\'Z YERINGIZGA|CHIZDIRING →').join('<br>')}</div><div class="url" style="animation:pop .5s ${T2 + .6}s both">${URL}</div><div class="sub mono" style="animation:fadeIn .5s ${T2 + 1}s both">tekin · 1 daqiqa · havola profilda</div>`, true);
+  return { css, html, D };
+};
+// ---------------- quiz (A/B/C) ----------------
+T.quiz = () => {
+  const V = S.variants.slice(0, 3), L = 'ABC', T1 = 2.8, per = 2.9, T2 = T1 + per * V.length, T3 = T2 + 3.4, D = T3 + 3.4;
+  const css = `body{background:linear-gradient(160deg,#4C1D95 0%,#7C3AED 45%,#DB2777 100%)}
+.h{color:#fff;font-weight:900;text-align:center;letter-spacing:-1px;text-shadow:0 8px 30px rgba(0,0,0,.35)} .h em{color:#FDE047}
+#s1 .h{position:absolute;left:50px;right:50px;top:600px;font-size:130px;line-height:1.05}
+.q{position:absolute;inset:0}
+.let{position:absolute;left:50%;top:170px;margin-left:-120px;width:240px;height:240px;border-radius:50%;background:#FDE047;color:#4C1D95;font-size:170px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.qc{position:absolute;left:50px;right:50px;top:470px;height:900px;background:#fff;border-radius:44px;padding:30px;display:flex;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.pl{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center} .pl svg{width:100%;height:100%;max-height:820px} .cap{font-weight:800;font-size:30px;color:#333}
+.qs{position:absolute;left:50px;right:50px;top:1420px;display:flex;justify-content:center;gap:16px} .chip{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.5);color:#fff;border-radius:26px;padding:16px 26px;font-size:40px;font-weight:800}
+.grid{position:absolute;left:40px;right:40px;top:470px;display:flex;flex-direction:column;gap:24px}
+.gi{background:#fff;border-radius:34px;height:300px;display:flex;align-items:center;padding:20px;gap:20px}
+.gi .l{width:150px;height:150px;flex:none;border-radius:50%;background:#FDE047;color:#4C1D95;font-size:100px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.gi .s{flex:1;height:100%;display:flex;gap:8px} .gi .s svg{height:100%;width:auto;max-width:48%}
+.gi .t{font-size:38px;font-weight:800;color:#3B0764;width:230px;line-height:1.3}
+#s9 .h{position:absolute;left:50px;right:50px;top:200px;font-size:96px;line-height:1.08}
+.ans{position:absolute;left:40px;right:40px;top:1450px;text-align:center;color:#fff;font-size:50px;font-weight:900;line-height:1.2}
+.btn{position:absolute;left:100px;right:100px;top:760px;background:#FDE047;color:#4C1D95;font-weight:900;font-size:52px;text-align:center;padding:36px 0;border-radius:70px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+#s10 .h{position:absolute;left:50px;right:50px;top:420px;font-size:100px;line-height:1.08}
+.sub{position:absolute;left:0;right:0;top:960px;text-align:center;color:#fff;font-size:44px;font-weight:700}`;
+  let html = scene('s1', 0, T1, `<div class="h">${split(S.hook || 'QAYSI BIRI|<em>YOQADI?</em>').map((l, i) => `<div style="animation:slam .55s ${0.1 + i * .5}s both">${l}</div>`).join('')}</div>`);
+  V.forEach((v, i) => {
+    const a = T1 + i * per;
+    html += scene('q' + i, a, a + per, `<div class="let" style="animation:slam .5s ${a + .05}s both">${L[i]}</div><div class="qc" style="animation:up .5s ${a + .2}s both">${pls(v.svgs)}</div><div class="qs">${chips([`🏠 ${v.area} m²`, `🛏 ${v.beds} yotoq.`, `🏢 ${v.floors} qavat`], a + .7)}</div>`);
+  });
+  html += scene('s9', T2, T3, `<div class="h" style="animation:pop .5s ${T2 + .1}s both">${S.title || 'Sizga <em>qaysi biri?</em>'}</div><div class="grid">${V.map((v, i) => `<div class="gi" style="animation:left .4s ${T2 + .3 + i * .3}s both"><div class="l">${L[i]}</div><div class="s">${v.svgs.join('')}</div><div class="t">${v.area} m²<br>${v.beds} yotoq.</div></div>`).join('')}</div><div class="ans" style="animation:slam .5s ${T2 + 1.4}s both">Izohga A, B yoki C yozing 👇</div>`)
+    + scene('s10', T3, D, `<div class="h" style="animation:slam .5s ${T3 + .1}s both">${split(S.cta || 'O\'Z YERINGIZ UCHUN|<em>3 TA VARIANT</em>').join('<br>')}</div><div class="btn" style="animation:pop .5s ${T3 + .6}s both">🌐 ${URL}</div><div class="sub" style="animation:fadeIn .5s ${T3 + 1}s both">Tekin · 1 daqiqada · havola profilda 👆</div>`, true);
+  return { css, html, D };
+};
+// ---------------- tur (xonalar bo'ylab) ----------------
+T.tur = () => {
+  const F = S.plans.length, T1 = 3, per = 5.2, T2 = T1 + per * F, D = T2 + 3.6;
+  const css = `body{background:#F4EDE2}
+.h{color:#1E1B18;font-weight:900;letter-spacing:-1px} .h em{color:#D9480F}
+#s1 .h{position:absolute;left:70px;right:70px;top:560px;font-size:120px;line-height:1.02}
+#s1 .ln{position:absolute;left:70px;top:520px;width:200px;height:14px;background:#D9480F}
+.ft{position:absolute;left:60px;top:120px;font-size:44px;font-weight:800;color:#D9480F;letter-spacing:4px}
+.tt{position:absolute;left:60px;right:60px;top:180px;font-size:72px;line-height:1.05}
+.vp{position:absolute;left:40px;right:40px;top:400px;height:940px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 14px 40px rgba(60,40,20,.18)}
+.vp .in{position:absolute;inset:20px;display:flex;align-items:center;justify-content:center} .vp svg{width:100%;height:100%}
+.rl{position:absolute;left:40px;right:40px;top:1380px;display:flex;flex-wrap:wrap;gap:14px}
+.rc{background:#1E1B18;color:#F4EDE2;border-radius:18px;padding:14px 22px;font-size:34px;font-weight:700} .rc b{color:#FFB37A}
+.foot{position:absolute;left:60px;right:60px;bottom:90px;display:flex;gap:16px} .chip{background:#D9480F;color:#fff;border-radius:20px;padding:14px 22px;font-size:36px;font-weight:800}
+#s9 .h{position:absolute;left:70px;right:70px;top:480px;font-size:104px;line-height:1.05}
+.btn{position:absolute;left:70px;right:70px;top:900px;background:#1E1B18;color:#fff;font-weight:800;font-size:50px;text-align:center;padding:34px 0;border-radius:24px}
+.sub{position:absolute;left:70px;right:70px;top:1070px;color:#6B5B4B;font-size:42px;font-weight:700}`;
+  let html = scene('s1', 0, T1, `<div class="ln" style="animation:wipe .6s .1s both"></div><div class="h">${split(S.hook).map((l, i) => `<div style="animation:up .5s ${.2 + i * .4}s both">${l}</div>`).join('')}</div>`);
+  const pans = [['1', '0%', '0%'], ['1.7', '18%', '14%'], ['1.7', '-18%', '-12%'], ['1.0', '0%', '0%']];
+  S.plans.forEach((svg, k) => {
+    const a = T1 + k * per, kf = `pan${k}`;
+    const rooms = ((S.rooms || [])[k] || []).slice(0, 8);
+    html += `<style>@keyframes ${kf}{0%{transform:scale(1)}30%{transform:scale(1.7) translate(16%,12%)}65%{transform:scale(1.7) translate(-16%,-10%)}100%{transform:scale(1)}}</style>`;
+    html += scene('f' + k, a, a + per, `<div class="ft" style="animation:fadeIn .4s ${a + .1}s both">${F > 1 ? (k + 1) + '-QAVAT' : (S.tag || '')}</div><div class="h tt" style="animation:up .5s ${a + .15}s both">${S.title}</div><div class="vp" style="animation:pop .5s ${a + .3}s both"><div class="in" style="animation:${kf} ${per - .6}s ease-in-out ${a + .5}s both">${svg}</div></div><div class="rl">${rooms.map((r, i) => `<div class="rc" style="animation:pop .35s ${a + .9 + i * (per - 1.6) / Math.max(rooms.length, 1)}s both">${r[0]} <b>${String(r[1]).replace('.', ',')} m²</b></div>`).join('')}</div>`);
+  });
+  html += scene('s9', T2, D, `<div class="h" style="animation:up .5s ${T2 + .1}s both">${split(S.cta || 'SIZNING UYINGIZ|<em>QANDAY BO\'LADI?</em>').join('<br>')}</div><div class="btn" style="animation:pop .5s ${T2 + .6}s both">🌐 ${URL}</div><div class="sub" style="animation:fadeIn .5s ${T2 + 1}s both">Tekin · 1 daqiqada · havola profilda 👆</div><div class="foot">${chips(S.chips, T2 + 1.2)}</div>`, true);
+  return { css, html, D };
+};
+// ---------------- fakt (kinetik matn) ----------------
+T.fakt = () => {
+  const R = S.rows, T1 = 2.4, per = 2.2, T2 = T1 + per * R.length, D = T2 + 3.4;
+  const pal = [['#FFD600', '#111'], ['#111', '#FFD600'], ['#2563EB', '#fff'], ['#fff', '#111']];
+  const css = `body{background:#111}
+.full{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 70px;text-align:center}
+.big{font-weight:900;font-size:118px;line-height:1.02;letter-spacing:-2px;text-transform:uppercase}
+.mid{font-weight:900;font-size:86px;line-height:1.08;letter-spacing:-1px}
+.mid b{display:block;font-size:150px;line-height:1;margin-bottom:24px;opacity:.9}
+.cnt{position:absolute;top:140px;left:0;right:0;text-align:center;font-weight:900;font-size:44px;letter-spacing:6px;opacity:.7}
+.tagx{position:absolute;bottom:160px;left:0;right:0;text-align:center;font-size:40px;font-weight:800;letter-spacing:4px;opacity:.75}
+.btn{margin-top:60px;background:#FFD600;color:#111;font-weight:900;font-size:50px;padding:34px 60px;border-radius:20px}
+.sub{margin-top:30px;color:#fff;font-size:40px;font-weight:700;opacity:.85}`;
+  let html = scene('s1', 0, T1, `<div class="full" style="background:#FFD600;color:#111"><div class="big">${split(S.hook).map((l, i) => `<div style="animation:slam .45s ${.05 + i * .45}s both">${l}</div>`).join('')}</div></div>`);
+  R.forEach((r, i) => {
+    const a = T1 + i * per, [bg, fg] = pal[i % pal.length];
+    const m = r.match(/^<b>([^<]*)<\/b>\s*(.*)$/); const num = m ? m[1] : (i + 1) + '.'; const txt = m ? m[2] : r;
+    html += scene('r' + i, a, a + per, `<div class="full" style="background:${bg};color:${fg}"><div class="cnt">${i + 1} / ${R.length}</div><div class="mid" style="animation:slam .45s ${a + .05}s both"><b>${num}</b>${txt}</div><div class="tagx">${S.tag || 'UYCHIZMA'}</div></div>`);
+  });
+  html += scene('s9', T2, D, `<div class="full" style="background:#111;color:#fff"><div class="big" style="animation:slam .45s ${T2 + .05}s both">${split(S.cta || 'SAQLAB|QO\'YING 📌').join('<br>')}</div><div class="btn" style="animation:pop .5s ${T2 + .6}s both">🌐 ${URL}</div><div class="sub" style="animation:fadeIn .5s ${T2 + 1}s both">Uy loyihasini tekin chizdiring</div></div>`, true);
+  return { css, html, D };
+};
+// ---------------- yer (bo'sh yer → uy) ----------------
+T.yer = () => {
+  const { W, L } = S.plot, Hh = S.house || { W: W - 4, D: L / 2 }, T1 = 4.2, T2 = 10.2, D = T2 + 3.6;
+  const sc = Math.min(760 / W, 1000 / L), pw = W * sc, ph = L * sc, px = (1080 - pw) / 2, py = 470;
+  const per = 2 * (pw + ph);
+  const css = `body{background:radial-gradient(ellipse at 50% 40%,#1F5130 0%,#123620 60%,#0A2214 100%)}
+.h{color:#fff;font-weight:900;text-align:center;letter-spacing:-1px} .h em{color:#B8F36B}
+.top{position:absolute;left:50px;right:50px;top:170px;font-size:96px;line-height:1.05}
+.dim{position:absolute;color:#B8F36B;font-weight:900;font-size:52px;font-family:'DejaVu Sans Mono',monospace}
+.hs{position:absolute;left:${(1080 - (Hh.W + 5.2) * sc) / 2}px;top:${py + ph - (Hh.D + 5.6) * sc - 0.4 * sc}px;width:${(Hh.W + 5.2) * sc}px;height:${(Hh.D + 5.6) * sc}px;border-radius:10px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.hs svg{width:100%;height:100%;display:block}
+.street{position:absolute;left:0;right:0;top:${py + ph + 10}px;text-align:center;color:#D7F5C0;font-size:30px;font-weight:700;letter-spacing:6px}
+.chips{position:absolute;left:50px;right:50px;top:${py + ph + 70}px;display:flex;flex-wrap:wrap;justify-content:center;gap:16px} .chip{background:#B8F36B;color:#0A2214;border-radius:24px;padding:16px 24px;font-size:38px;font-weight:900}
+.tm{position:absolute;left:0;right:0;top:${py + ph / 2 - 60}px;text-align:center;font-size:110px;font-weight:900;color:#B8F36B}
+.btn{position:absolute;left:100px;right:100px;top:880px;background:#B8F36B;color:#0A2214;font-weight:900;font-size:52px;text-align:center;padding:36px 0;border-radius:70px}
+.sub{position:absolute;left:0;right:0;top:1060px;text-align:center;color:#D7F5C0;font-size:44px;font-weight:700}
+#s9 .h{position:absolute;left:50px;right:50px;top:480px;font-size:104px;line-height:1.05}`;
+  const plot = `<svg style="position:absolute;left:0;top:0" width="1080" height="1920"><rect x="${px}" y="${py}" width="${pw}" height="${ph}" fill="rgba(184,243,107,.07)" stroke="#B8F36B" stroke-width="8" stroke-dasharray="${per}" stroke-dashoffset="${per}" style="animation:draw 1.8s ease-out .6s forwards"/></svg>`;
+  const html = `<div class="sc">${plot}<div class="dim" style="left:0;right:0;text-align:center;top:${py - 80}px;animation:fadeIn .4s 2.2s both">${W} m</div><div class="dim" style="left:${px + pw + 14}px;top:${py + ph / 2 - 30}px;animation:fadeIn .4s 2.4s both;writing-mode:vertical-rl">${L} m</div></div>`
+    + scene('s1', 0, T1, `<div class="h top">${split(S.hook).map((l, i) => `<div style="animation:up .5s ${.1 + i * .4}s both">${l}</div>`).join('')}</div><div class="tm" style="animation:pop .4s 3s both">?</div>`)
+    + scene('s2', T1, T2, `<div class="h top" style="animation:up .5s ${T1 + .1}s both">${S.title}</div><div class="hs" style="animation:pop .6s ${T1 + .4}s both">${S.plans[0]}</div><div class="street" style="animation:fadeIn .4s ${T1 + .8}s both">↓ KO'CHA ↓</div><div class="chips">${chips(S.chips, T1 + 1.6)}</div>`)
+    + scene('s9', T2, D, `<div style="position:absolute;inset:0;background:#0A2214"></div><div class="h" style="animation:up .5s ${T2 + .1}s both">${split(S.cta || 'YERINGIZ O\'LCHAMINI|<em>KIRITING</em>').join('<br>')}</div><div class="btn" style="animation:pop .5s ${T2 + .6}s both">🌐 ${URL}</div><div class="sub" style="animation:fadeIn .5s ${T2 + 1}s both">1 daqiqada 3 xil reja · tekin · havola profilda 👆</div>`, true);
+  return { css, html, D };
+};
+
+const style = S.style || 'klassik';
+if (!T[style]) throw new Error('Noma\'lum style: ' + style + ' (bor: ' + Object.keys(T).join(', ') + ')');
+const { css, html, D } = T[style]();
+const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css}</style></head><body>${html}</body></html>`;
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
-  await p.setContent(html);
+  await p.setContent(page);
   await p.waitForTimeout(300);
   await p.evaluate(() => document.getAnimations().forEach(a => a.pause()));
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-',
-    '-f', 'lavfi', '-t', String(DUR), '-i', 'anullsrc=r=44100:cl=stereo',
+    '-f', 'lavfi', '-t', String(D), '-i', 'anullsrc=r=44100:cl=stereo',
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '21', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', outPath]);
-  const N = Math.round(DUR * FPS);
+  const N = Math.round(D * FPS);
   for (let f = 0; f < N; f++) {
-    const t = f * 1000 / FPS;
-    await p.evaluate(t => document.getAnimations().forEach(a => { a.currentTime = t; }), t);
+    await p.evaluate(t => document.getAnimations().forEach(a => { a.currentTime = t; }), f * 1000 / FPS);
     const buf = await p.screenshot({ type: 'jpeg', quality: 88 });
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
   }
   ff.stdin.end();
   await new Promise(r => ff.on('close', r));
   await b.close();
-  console.log('ok', outPath, DUR + 's');
+  console.log('ok', style, outPath, D.toFixed(1) + 's');
 })();

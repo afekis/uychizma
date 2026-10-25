@@ -1,7 +1,7 @@
 // Saytdan uy rejalarini olish: node plans.js configs.json out.json /path/to/uychizma(main klon)
 // configs: [{id:"yer-11x22", A:{plotW:11, plotL:22, floors:1, beds:3, family:4, darvoza:false}}]
 // A — DEF ustiga yoziladi (plotShape:'trap'|'tri', plotBackW, garage, ayvon, ...).
-// Natija: [{id, variants:[{name, area, beds, floors, W, D, minY, maxY, svgs:[...]}]}]  (gabarit: W × (maxY-minY))
+// Natija: [{id, variants:[{name, area, beds, floors, W, D, minY, maxY, svgs:[...], rooms:[[[nom,m2],..] har qavat]}]}]  (gabarit: W × (maxY-minY))
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
@@ -18,7 +18,8 @@ const CFGS = JSON.parse(fs.readFileSync(CFG, 'utf8'));
     const A = Object.assign({}, DEF, c.A);
     return { id: c.id, variants: buildVariants(A).map(v => ({
       name: v.name, area: Math.round(calcArea(v)), beds: v.bedCount, floors: v.floors.length,
-      W: v.W, D: v.D, minY: v.minY, maxY: v.maxY, svgs: v.floors.map((f, k) => planSVG(v, k)) })) };
+      W: v.W, D: v.D, minY: v.minY, maxY: v.maxY, svgs: v.floors.map((f, k) => planSVG(v, k)),
+      rooms: v.floors.map(f => f.rooms.filter(r => !r.part && r.w * r.h >= 4).map(r => [r.n, Math.round(r.w * r.h * 10) / 10])) })) };
   }), CFGS);
   fs.writeFileSync(OUT, JSON.stringify(res));
   res.forEach(r => console.log(r.id, r.variants.map(v => `${v.name}|${v.area}m2|${v.beds}y|${v.floors}q|${v.W.toFixed(1)}x${(v.maxY - v.minY).toFixed(1)}`).join('  ;  ')));
