@@ -509,14 +509,42 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <div data-step="0" class="field" style="gap:16px">
         <div class="qmode" role="group" aria-label="Rejim"><button type="button" class="qm" data-m="tez" aria-pressed="true"><b>⚡ Tez</b><small>6 ta savol, 1 daqiqa</small></button><button type="button" class="qm" data-m="toliq" aria-pressed="false"><b>🧩 To'liq sozlash</b><small>9 qadam, hamma narsani o'zingiz tanlaysiz</small></button></div>
         <div class="dream" id="yerBox">
-          <div class="dream-h"><b>📐 Yer chizmangiz bormi?</b><span class="opt">ixtiyoriy</span></div>
-          <p>Yer (uchastka) chizmangizni rasm yoki PDF qilib yuklang — sayt yerning shakli va metrlarini o'qib, o'lchamlarni o'zi yozadi. Qolganini pastdagi savollarda tanlaysiz.</p>
+          <div class="dream-h"><b>📐 Uy chizmangiz bormi?</b><span class="opt">ixtiyoriy</span></div>
+          <p>Uy (yoki yer) chizmangizni rasm yoki PDF qilib yuklang — sayt xonalar va metrlarni o'qib, uyni aynan shu shakl va o'lchamda chizadi. Uslub, tom, rang va boshqasini pastdagi savollarda tanlaysiz.</p>
           <div class="dream-row">
             <label class="btn ghost small" for="yerFile">📄 Chizma yuklash</label><input type="file" id="yerFile" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
             <img id="yerPrev" class="dream-prev" alt="Yuklangan chizma" hidden>
-            <button class="btn primary small" id="yerGo" type="button" disabled>📏 Metrlarni o'qish</button>
+            <button class="btn primary small" id="yerGo" type="button" disabled>📏 Chizmani o'qish</button>
+            <button class="btn ghost small" id="cpManual" type="button">✏️ Xonalarni o'zim kiritaman</button>
           </div>
           <div id="yerOut" class="dream-out" role="status" hidden></div>
+          <div id="cpWrap" class="cplan" hidden>
+            <div id="cpSvg" class="cp-svg"></div>
+            <div id="cpWarn" class="cp-warn"></div>
+            <details id="cpDet"><summary style="cursor:pointer;font-weight:600">✏️ Xonalar va metrlarni tekshirish / to'g'rilash</summary>
+              <div class="cplan" style="margin-top:10px">
+                <div class="cp-grid4">
+                  <label>Uy ko'chadan, m<input id="cpHY" type="number" step="0.01" min="0" placeholder="avto"></label>
+                  <label>Uy chap chegaradan, m<input id="cpHX" type="number" step="0.01" min="0" placeholder="o'rtada"></label>
+                </div>
+                <div class="cp-tabs" id="cpTabs"></div>
+                <div class="cp-tblw"><table class="cp-tbl"><thead><tr><th>Xona nomi</th><th>Turi</th><th title="Chap devordan">X, m</th><th title="Old devordan">Y, m</th><th>Eni, m</th><th>Bo'yi, m</th><th title="Devorsiz ochiq">Ochiq</th><th></th></tr></thead><tbody id="cpRows"></tbody></table></div>
+                <div class="dream-row">
+                  <button class="btn ghost small" id="cpAdd" type="button">➕ Xona qo'shish</button>
+                  <button class="btn ghost small" id="cpFlip" type="button">↕ Old/orqa</button>
+                  <button class="btn ghost small" id="cpMir" type="button">↔ Ko'zgu</button>
+                  <button class="btn ghost small" id="cpFloor" type="button"></button>
+                </div>
+                <div class="cp-grid4" id="cpPorchW">
+                  <label>Ayvon X, m<input id="cpPoX" type="number" step="0.01"></label>
+                  <label>Ayvon Y (oldinga −), m<input id="cpPoY" type="number" step="0.01"></label>
+                  <label>Ayvon eni, m<input id="cpPoW" type="number" step="0.01" min="0" placeholder="yo'q"></label>
+                  <label>Ayvon bo'yi, m<input id="cpPoH" type="number" step="0.01" min="0" placeholder="yo'q"></label>
+                </div>
+              </div>
+            </details>
+            <button class="btn back small" id="cpOff" type="button" style="justify-self:start">✕ Chizmani bekor qilish</button>
+          </div>
         </div>
         <div class="quick" id="quick">
           <h2 style="font-size:22px">Uyingiz haqida bir necha savol</h2><p style="margin:-4px 0 6px"><a href="#vguide" id="qVid" style="font-weight:600">📹 Qanday ishlaydi? Video qo'llanmani ko'rish</a></p>
@@ -1195,6 +1223,7 @@ function buildRandom(A){
   return out;
 }
 function buildVariants(A){
+  if(A.layout==='custom'){ const C=cpClean(A.custom); if(C) A.floors=C.fl.length; else A.layout='auto'; }
   if(A.seed>0 || (A.layout&&A.layout!=='auto')){ const r=buildRandom(A);
     if(r.length<3){ const d=buildVariants(Object.assign({},A,{seed:0,layout:'auto'})); for(const v of d){ if(r.length>=3) break; if(!r.some(x=>x.name===v.name)) r.push(v); } r.forEach((v,i)=>v.key='ABC'[i]); }
     if(r.length) return r.slice(0,3); }
@@ -3065,37 +3094,84 @@ function applyDream(P){
   syncInputs(); return ch; }
 function dreamShow(html){ const o=$('#dreamOut'); o.hidden=false; o.innerHTML=html; }
 
-/* ===== 📐 Yer chizmasi: AI faqat yer shakli va metrlarini o'qiydi; qolgani odatdagi savollarda ===== */
+/* ===== 📐 Uy chizmasi: odam chizmasini yuklaydi → AI xonalar va metrlarni o'qiydi → uy aynan shu shakl va o'lchamda; qolgani (uslub, tom, rang…) savollarda ===== */
 let cpPdfP=null; const cpPdf=()=>cpPdfP||(cpPdfP=new Promise((res,rej)=>{ if(window.pdfjsLib) return res(window.pdfjsLib); const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; sc.onload=()=>{ try{ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(pdfjsLib); }catch(e){ rej(e); } }; sc.onerror=()=>{ cpPdfP=null; rej(new Error('pdf.js')); }; document.head.appendChild(sc); }));
 function cpToJpeg(src,max){ return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>{ const k=Math.min(1,max/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.88)); }; im.onerror=()=>rej(new Error('img')); im.src=src; }); }
 function cpParse(t){ if(t&&typeof t==='object') return t; const s=String(t||''); const a=s.indexOf('{'), b=s.lastIndexOf('}'); if(a<0||b<=a) return null; try{ return JSON.parse(s.slice(a,b+1)); }catch(e){ try{ return JSON.parse(s.slice(a,b+1).replace(/,\s*([}\]])/g,'$1')); }catch(e2){ return null; } } }
-const YER_PROMPT=`This is a drawing of a land plot (it may also show a house on it). Read the DIMENSION NUMBERS of the plot boundary written on the drawing (often in millimetres or metres) — do not guess from pixels.
+const CP_TN={zal:'Zal / mehmonxona',kitchen:'Oshxona',bed:'Yotoqxona',wet:'Hojatxona / vanna',circ:"Hol / yo'lak",stair:'Zina',util:'Boshqa (ombor, garderob)',garage:'Garaj'};
+const CP_COL={zal:'#F3E3C3',kitchen:'#F6D7B0',bed:'#DCE8F5',wet:'#CDEBEA',circ:'#EEEEEE',stair:'#E3DAF0',util:'#E9E4DA',garage:'#DDDDDD'};
+const CP_PROMPT=`You are reading an architectural drawing: a house floor plan, or a land-plot plan with the house on it. Read the DIMENSION NUMBERS written on the drawing (dimension lines, often in millimetres) — do not guess from pixels.
 Return ONLY one JSON object, no other text:
-{"shape":"rect"|"trap"|"tri","front":number,"depth":number,"back":number|null,"summary":"one short sentence in Uzbek Latin"}
-Rules: values in METRES (convert mm to m, e.g. 10500 -> 10.5). front = width of the plot along the street (entrance/gate side); depth = distance from the street boundary to the back boundary; back = width of the back boundary. shape: "rect" if front and back are equal (within 0.3 m), "trap" if they differ, "tri" if the back narrows to a point (back = null).`;
+{"plotW":number|null,"plotL":number|null,"houseFromStreet":number|null,"houseFromLeft":number|null,"floors":[{"rooms":[{"name":"string","type":"zal|kitchen|bed|wet|circ|stair|util|garage","x":number,"y":number,"w":number,"h":number,"open":boolean}]}],"porch":{"x":number,"y":number,"w":number,"h":number}|null,"pool":boolean}
+Rules: all values in METRES (convert mm to m, e.g. 4800 -> 4.8). Origin = front-left outer corner of the house; x grows to the right, y grows away from the street (the entrance/street side is y=0). Every room is an axis-aligned rectangle; rooms of one floor tile the house with no overlaps; widths in a row must add up to the overall dimension on the drawing. type: zal = living room / hall / mehmonxona / gostinaya; kitchen = oshxona / kuxnya / dining; bed = yotoqxona / spalnya / bedroom; wet = hojatxona / vanna / sanuzel / WC / bathroom; circ = hol / dahliz / koridor / yo'lak / prixojaya; stair = zina / lestnitsa; util = ombor / garderob / kotelnaya / other; garage = garaj. open = true when the room has no wall to its neighbour (open plan). Room names in Uzbek Latin; numbered rooms without names: guess from size and fixtures. List each drawn floor separately (1st floor first). porch = covered entrance/terrace in front of the house (negative y), or null. plotW = plot width along the street, plotL = plot depth, houseFromStreet = distance from street boundary to house front wall, houseFromLeft = distance from left boundary to house; null when not shown. pool = true if a swimming pool (basseyn) is drawn.`;
+function cpState(){ if(!S.cp){ const C=cpClean(S.A.custom); S.cp=C?{fl:C.fl.map(f=>f.map(r=>r.slice())),po:C.po,hx:C.hx,hy:C.hy,cur:0}:{fl:[[["Zal (mehmonxona)",'zal',0,0,5,6,0],['Oshxona','kitchen',5,0,4,4,0],["Hol",'circ',5,4,4,2,0]]],po:null,hx:null,hy:null,cur:0}; } return S.cp; }
+const cpNum=v=>{ v=parseFloat(String(v==null?'':v).replace(',','.')); return isFinite(v)?v:null; };
+function cpOpen(){ const C=cpState(); $('#cpWrap').hidden=false; $('#cpHY').value=C.hy==null?'':C.hy; $('#cpHX').value=C.hx==null?'':C.hx; const po=C.po||[]; ['cpPoX','cpPoY','cpPoW','cpPoH'].forEach((id,i)=>{ $('#'+id).value=po[i]==null?'':po[i]; }); cpRender(); }
+function cpRender(){ const C=cpState(); if(C.cur>=C.fl.length) C.cur=0;
+  $('#cpTabs').innerHTML=C.fl.map((f,k)=>`<button type="button" data-k="${k}" aria-pressed="${k===C.cur}">${k+1}-qavat · ${f.length} xona</button>`).join('');
+  $('#cpFloor').textContent=C.fl.length<2?"➕ 2-qavat qo'shish":"✕ 2-qavatni o'chirish"; $('#cpPorchW').hidden=C.cur!==0;
+  const opt=t=>CP_T.map(x=>`<option value="${x}"${x===t?' selected':''}>${CP_TN[x]}</option>`).join('');
+  $('#cpRows').innerHTML=C.fl[C.cur].map((r,i)=>`<tr data-i="${i}"><td><input data-c="0" value="${esc(r[0])}"></td><td><select data-c="1">${opt(r[1])}</select></td>${[2,3,4,5].map(c=>`<td><input data-c="${c}" type="number" step="0.01" value="${r[c]}"></td>`).join('')}<td style="text-align:center"><input data-c="6" type="checkbox"${r[6]?' checked':''} style="width:auto"></td><td><button type="button" class="x" data-del="${i}" aria-label="O'chirish">×</button></td></tr>`).join('');
+  cpPreview(); }
+function cpBox(C){ let W=0,D=0,x0=Infinity,y0=Infinity; C.fl.forEach(f=>f.forEach(r=>{ x0=Math.min(x0,r[2]); y0=Math.min(y0,r[3]); W=Math.max(W,r[2]+r[4]); D=Math.max(D,r[3]+r[5]); })); if(!isFinite(x0)){ x0=y0=0; } return {x0,y0,W:W-x0,D:D-y0,x1:W,y1:D}; }
+function cpPreview(){ const C=cpState(), f=C.fl[C.cur]||[], B=cpBox(C), warn=[], bad=new Set();
+  for(let i=0;i<f.length;i++) for(let j=i+1;j<f.length;j++){ const a=f[i],b=f[j]; const ox=Math.min(a[2]+a[4],b[2]+b[4])-Math.max(a[2],b[2]), oy=Math.min(a[3]+a[5],b[3]+b[5])-Math.max(a[3],b[3]); if(ox>0.05&&oy>0.05){ bad.add(i); bad.add(j); warn.push(`«${a[0]}» va «${b[0]}» bir-birining ustiga tushgan (${fmt1(ox)} × ${fmt1(oy)} m).`); } }
+  if(C.fl.length===2){ const s0=C.fl[0].filter(r=>r[1]==='stair'), s1=C.fl[1].filter(r=>r[1]==='stair'); if(!s0.length||!s1.length) warn.push("2 qavatli uyda ikkala qavatda ham «Zina» bo'lishi kerak."); else if(!s0.some(a=>s1.some(b=>Math.min(a[2]+a[4],b[2]+b[4])-Math.max(a[2],b[2])>0.3&&Math.min(a[3]+a[5],b[3]+b[5])-Math.max(a[3],b[3])>0.3))) warn.push("1- va 2-qavatdagi zinalar bir joyga to'g'ri kelmayapti."); }
+  const pw=S.A.plotW, pl=S.A.plotL, hx=C.hx, hy=C.hy;
+  if(pw&&B.W>pw+0.01) warn.push(`Uy eni ${fmt1(B.W)} m — yer enidan (${fmt1(pw)} m) katta. Pastda yer enini tekshiring.`); else if(pw&&hx!=null&&hx+B.W>pw+0.01) warn.push(`Uy chap chegaradan ${fmt1(hx)} m bo'lsa, o'ng tomonda yerdan chiqib ketadi.`);
+  if(pl&&(hy||0)+B.D>pl+0.01) warn.push(`Uy chuqurligi ${fmt1(B.D)} m — yerga sig'maydi.`);
+  $$('#cpRows tr').forEach(tr=>tr.classList.toggle('bad',bad.has(+tr.dataset.i)));
+  $('#cpWarn').innerHTML=warn.map(w=>`<div>⚠️ ${esc(w)}</div>`).join('');
+  const pad=0.8, w=Math.max(B.W,1)+pad*2, h=Math.max(B.D,1)+pad*2+(C.po&&C.cur===0?Math.max(0,-(C.po[1]-B.y0)):0), sc=Math.min(60,560/w), fs=Math.max(9,Math.min(13,sc*0.32));
+  const X=x=>(x-B.x0+pad)*sc, Y=y=>(B.y1-y+pad)*sc;
+  let g=''; C.fl.forEach((F,k)=>{ if(k===C.cur) return; F.forEach(r=>{ g+=`<rect x="${X(r[2])}" y="${Y(r[3]+r[5])}" width="${r[4]*sc}" height="${r[5]*sc}" fill="none" stroke="#bbb" stroke-dasharray="4 3"/>`; }); });
+  if(C.cur===0&&C.po) g+=`<rect x="${X(C.po[0])}" y="${Y(C.po[1]+C.po[3])}" width="${C.po[2]*sc}" height="${C.po[3]*sc}" fill="#efe9dc" stroke="#999" stroke-dasharray="5 3"/><text x="${X(C.po[0]+C.po[2]/2)}" y="${Y(C.po[1]+C.po[3]/2)+4}" font-size="${fs}" text-anchor="middle" fill="#777">ayvon</text>`;
+  f.forEach((r,i)=>{ const cx=X(r[2]+r[4]/2), cy=Y(r[3]+r[5]/2); g+=`<rect x="${X(r[2])}" y="${Y(r[3]+r[5])}" width="${r[4]*sc}" height="${r[5]*sc}" fill="${CP_COL[r[1]]||'#eee'}" stroke="${bad.has(i)?'#d33':'#333'}" stroke-width="${bad.has(i)?2.5:1.5}"${r[6]?' stroke-dasharray="6 3"':''}/><text x="${cx}" y="${cy-2}" font-size="${fs}" text-anchor="middle" font-weight="600">${esc(r[0]).slice(0,22)}</text><text x="${cx}" y="${cy+fs}" font-size="${fs*0.9}" text-anchor="middle" fill="#555">${fmt1(r[4])}×${fmt1(r[5])}</text>`; });
+  g+=`<text x="${X(B.x0+B.W/2)}" y="${h*sc-4}" font-size="${fs}" text-anchor="middle" fill="#a15c00">${fmt1(B.W)} m · ko'cha tomoni ↓</text>`;
+  $('#cpSvg').innerHTML=`<svg viewBox="0 0 ${w*sc} ${h*sc}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">${g}</svg>`;
+  return warn; }
+let cpT=0; function cpApply(){ clearTimeout(cpT); cpT=setTimeout(()=>{ const C=cpState(), A=S.A; const cl=cpClean({fl:C.fl,po:C.po,hx:C.hx,hy:C.hy}); if(!cl) return;
+  A.custom=cl; A.layout='custom'; A.massing='auto'; A.floors=cl.fl.length; A.darvoza=false; const nb=cl.fl.reduce((s,f)=>s+f.filter(r=>r[1]==='bed').length,0); A.beds=Math.min(6,Math.max(2,nb||2)); A.targetArea=0;
+  try{ syncInputs(); }catch(e){} try{ syncQuick(); }catch(e){} try{ saveDraft(); }catch(e){} },250); }
+$('#cpTabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; cpState().cur=+b.dataset.k; cpRender(); });
+$('#cpRows').addEventListener('input',e=>{ const t=e.target, tr=t.closest('tr'); if(!tr||t.dataset.c==null) return; const C=cpState(), r=C.fl[C.cur][+tr.dataset.i], c=+t.dataset.c;
+  if(c===0) r[0]=t.value; else if(c>=2&&c<=5){ const v=cpNum(t.value); if(v!=null) r[c]=c>=4?Math.max(0.3,v):v; } cpPreview(); cpApply(); });
+$('#cpRows').addEventListener('change',e=>{ const c=e.target.dataset.c; if(c==='1'||c==='6'){ const C=cpState(), tr=e.target.closest('tr'), r=C.fl[C.cur][+tr.dataset.i]; if(c==='1') r[1]=e.target.value; else r[6]=e.target.checked?1:0; cpRender(); cpApply(); } });
+$('#cpRows').addEventListener('click',e=>{ const b=e.target.closest('[data-del]'); if(!b) return; const C=cpState(); C.fl[C.cur].splice(+b.dataset.del,1); cpRender(); cpApply(); });
+$('#cpAdd').onclick=()=>{ const C=cpState(), B=cpBox({fl:[C.fl[C.cur]]}); C.fl[C.cur].push(['Yangi xona','bed',isFinite(B.x1)?B.x1:0,isFinite(B.y0)?B.y0:0,3.5,4,0]); cpRender(); cpApply(); };
+$('#cpFloor').onclick=()=>{ const C=cpState(); if(C.fl.length<2){ const st=C.fl[0].filter(r=>r[1]==='stair').map(r=>r.slice()); C.fl.push(st.length?st:[['Zina','stair',0,0,2.5,4,0]]); C.cur=1; } else { C.fl.pop(); C.cur=0; } cpRender(); cpApply(); };
+$('#cpFlip').onclick=()=>{ const C=cpState(), B=cpBox(C); C.fl.forEach(f=>f.forEach(r=>{ r[3]=Math.round((B.y0+B.y1-r[3]-r[5])*100)/100; })); if(C.po) C.po[1]=Math.round((B.y0+B.y1-C.po[1]-C.po[3])*100)/100; cpOpen(); cpApply(); };
+$('#cpMir').onclick=()=>{ const C=cpState(), B=cpBox(C); C.fl.forEach(f=>f.forEach(r=>{ r[2]=Math.round((B.x0+B.x1-r[2]-r[4])*100)/100; })); if(C.po) C.po[0]=Math.round((B.x0+B.x1-C.po[0]-C.po[2])*100)/100; cpOpen(); cpApply(); };
+['cpHX','cpHY'].forEach(id=>$('#'+id).addEventListener('input',()=>{ const C=cpState(); C.hx=cpNum($('#cpHX').value); C.hy=cpNum($('#cpHY').value); cpPreview(); cpApply(); }));
+['cpPoX','cpPoY','cpPoW','cpPoH'].forEach(id=>$('#'+id).addEventListener('input',()=>{ const C=cpState(), v=['cpPoX','cpPoY','cpPoW','cpPoH'].map(i=>cpNum($('#'+i).value)); C.po=(v[2]>0&&v[3]>0)?[v[0]||0,v[1]||0,v[2],v[3]]:null; cpPreview(); cpApply(); }));
+$('#cpOff').onclick=()=>{ const A=S.A; A.custom=null; if(A.layout==='custom') A.layout='auto'; S.cp=null; $('#cpWrap').hidden=true; $('#yerFile').value=''; $('#yerPrev').hidden=true; yerMsg("Chizma bekor qilindi — uy odatdagidek savollarga qarab chiziladi."); try{ syncInputs(); syncQuick(); saveDraft(); }catch(e){} };
+$('#cpManual').onclick=()=>{ cpOpen(); $('#cpDet').open=true; cpApply(); };
+function cpFromAi(P){ if(!P||!Array.isArray(P.floors)) return 0; const n=v=>{ v=+v; return isFinite(v)?Math.round(v*100)/100:null; };
+  const fl=P.floors.slice(0,2).map(f=>((f&&f.rooms)||[]).map(r=>{ const w=n(r.w), h=n(r.h); if(!(w>0.3&&h>0.3)) return null; return [String(r.name||'Xona').slice(0,40),CP_T.includes(r.type)?r.type:'util',n(r.x)||0,n(r.y)||0,w,h,r.open?1:0]; }).filter(Boolean)).filter(f=>f.length);
+  if(!fl.length) return 0; S.cp={fl,cur:0,po:null,hx:null,hy:null}; const C=S.cp;
+  const po=P.porch; C.po=(po&&+po.w>0&&+po.h>0)?[n(po.x)||0,n(po.y)||0,n(po.w),n(po.h)]:null;
+  if(n(P.houseFromLeft)!=null) C.hx=n(P.houseFromLeft); if(n(P.houseFromStreet)!=null) C.hy=n(P.houseFromStreet);
+  const A=S.A; if(n(P.plotW)>=9&&n(P.plotW)<=60){ A.plotW=n(P.plotW); A.plotShape='rect'; } if(n(P.plotL)>=15&&n(P.plotL)<=80) A.plotL=n(P.plotL);
+  if(P.pool===true) A.pool=true;
+  const B=cpBox(C); if(B.W>A.plotW){ A.plotW=Math.min(60,Math.ceil(B.W*2)/2); } if(B.D+(C.hy||SB)+3>A.plotL) A.plotL=Math.min(80,Math.max(A.plotL,Math.ceil(B.D+(C.hy||SB)+6)));
+  try{ $('#qW').value=A.plotW; $('#qL').value=A.plotL; }catch(e){}
+  cpOpen(); cpApply(); return fl.reduce((s,f)=>s+f.length,0); }
 function yerMsg(h){ const o=$('#yerOut'); o.hidden=!h; o.innerHTML=h||''; }
 $('#yerFile').addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; $('#yerGo').disabled=true; yerMsg('Chizma ochilmoqda…');
   try{ let url;
     if(/pdf/.test(f.type)||/\.pdf$/i.test(f.name)){ const L=await cpPdf(); const doc=await L.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const pg=await doc.getPage(1); const vp0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:Math.min(4,2000/Math.max(vp0.width,vp0.height))}); const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:x,viewport:vp}).promise; url=c.toDataURL('image/png'); }
     else url=URL.createObjectURL(f);
-    S.yerImg=await cpToJpeg(url,1600); $('#yerPrev').src=S.yerImg; $('#yerPrev').hidden=false; $('#yerGo').disabled=false; yerMsg("Endi «📏 Metrlarni o'qish» ni bosing.");
+    S.yerImg=await cpToJpeg(url,1600); $('#yerPrev').src=S.yerImg; $('#yerPrev').hidden=false; $('#yerGo').disabled=false; yerMsg("Endi «📏 Chizmani o'qish» ni bosing.");
   }catch(err){ console.error(err); yerMsg("Faylni ochib bo'lmadi. JPG yoki PNG rasm yuklab ko'ring."); } });
-$('#yerGo').onclick=async()=>{ if(!S.yerImg) return; const btn=$('#yerGo'); btn.disabled=true; yerMsg("📏 Chizmadagi metrlarni o'qiyapman… (20–60 soniya)");
+$('#yerGo').onclick=async()=>{ if(!S.yerImg) return; const btn=$('#yerGo'); btn.disabled=true; yerMsg("📏 Chizmadagi xonalar va metrlarni o'qiyapman… (20–60 soniya)");
   let P=null;
-  try{ const sample=await getSample(); if(sample){ const lim=await sample.limits().catch(()=>null); if(lim&&lim.images){ const blob=await (await fetch(S.yerImg)).blob(); P=await sample.json(YER_PROMPT,{images:[new File([blob],'yer.jpg',{type:'image/jpeg'})]}); } } }catch(e){ console.warn(e); P=null; }
-  if(!P||!(+P.front>0)){ try{ const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),90000);
-      const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:S.yerImg,prompt:YER_PROMPT}),signal:ctl?ctl.signal:undefined}); clearTimeout(tm);
+  try{ const sample=await getSample(); if(sample){ const lim=await sample.limits().catch(()=>null); if(lim&&lim.images){ const blob=await (await fetch(S.yerImg)).blob(); P=await sample.json(CP_PROMPT,{images:[new File([blob],'chizma.jpg',{type:'image/jpeg'})]}); } } }catch(e){ console.warn(e); P=null; }
+  if(!P||!Array.isArray(P.floors)){ try{ const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),90000);
+      const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:S.yerImg,prompt:CP_PROMPT}),signal:ctl?ctl.signal:undefined}); clearTimeout(tm);
       if(r.ok&&/json/.test(r.headers.get('content-type')||'')){ const j=await r.json(); P=cpParse(j.text); } }catch(e){ console.warn(e); } }
-  btn.disabled=false;
-  const n=v=>{ v=+v; return isFinite(v)&&v>0?Math.round(v*10)/10:null; }; const fr=n(P&&P.front), dp=n(P&&P.depth);
-  if(!fr||!dp){ yerMsg("Chizmadagi metrlarni o'qiy olmadim. Yerning enini va uzunligini pastga o'zingiz yozing."); return; }
-  const A=S.A, cl=(v,a,b)=>Math.min(b,Math.max(a,v)), warn=[]; let sh=['rect','trap','tri'].includes(P.shape)?P.shape:'rect'; const bk=n(P.back);
-  if(sh==='trap'&&(!bk||Math.abs(bk-fr)<0.3)) sh='rect';
-  A.plotW=cl(fr,9,60); A.plotL=cl(dp,15,80); if(A.plotW!==fr||A.plotL!==dp) warn.push("Sayt 9–60 m eni va 15–80 m uzunlikdagi yerlar bilan ishlaydi — o'lcham shu chegaraga keltirildi.");
-  A.plotShape=sh; if(sh==='trap') A.plotBackW=cl(bk,2,60);
-  try{ syncInputs(); }catch(e){} try{ syncQuick(); }catch(e){} try{ $('#qW').value=A.plotW; $('#qL').value=A.plotL; }catch(e){}
-  const shN={rect:"to'rtburchak",trap:'trapetsiya',tri:'uchburchak'}[sh];
-  yerMsg(`✅ ${P.summary?esc(String(P.summary).slice(0,200))+'<br>':''}<div class="chips"><span>Shakli: ${shN}</span><span>Ko'cha tomoni: ${fmt1(A.plotW)} m</span><span>Uzunligi: ${fmt1(A.plotL)} m</span>${sh==='trap'?`<span>Orqa tomoni: ${fmt1(A.plotBackW)} m</span>`:''}</div><div style="margin-top:6px;color:var(--muted);font-size:13px">${warn.map(esc).join(' ')} Raqamlarni chizmangiz bilan solishtiring, kerak bo'lsa pastda to'g'rilang. Qolganini savollarda tanlaysiz.</div>`); };
+  btn.disabled=false; const k=cpFromAi(P);
+  if(k) yerMsg(`✅ Chizmangizdan ${k} ta xona o'qildi — uy aynan shu shakl va metrlarda chiziladi. Pastdagi sxemani chizmangiz bilan solishtiring; xato bo'lsa «✏️ Xonalar va metrlarni tekshirish» ni ochib to'g'rilang. Uslub, tom, rang va boshqasini savollarda tanlaysiz.`);
+  else { yerMsg("AI hozir chizmani o'qiy olmadi. Xonalarni metrlari bilan o'zingiz kiriting: «✏️ Xonalarni o'zim kiritaman» ni bosing."); } };
 /* ===== Maket tanlash: 10 xil shakl, oq maket ko'rinishida ===== */
 const MAKETS=[
   {id:'kub',n:'Ixcham kub',d:"Oddiy to'rtburchak, tejamkor",layout:'ixcham',b:[[0,0,10,10,6.6]]},
