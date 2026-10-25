@@ -2872,7 +2872,7 @@ async function makePdf(){
     let y=30; info.forEach(([k,x])=>{ doc.setFont('helvetica','normal'); doc.text(pt(k),14,y); doc.setFont('helvetica','bold'); doc.text(pt(x),70,y); y+=7; });
     doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text(pt("Eslatma: bu eskiz loyiha. Qurilishdan oldin arxitektor va konstruktor tayyorlagan ishchi loyiha (AR, KR) va tuproq tekshiruvi talab qilinadi."),14,H-14,{maxWidth:170});
     // maket page
-    try{ const mm=MAKETS.find(x=>x.id===(v.mk||A.massing))||MAKETS[0], sb=SUBS[v.sub||''], wc=sb&&/^#/.test(sb.svg[1])?sb.svg[1]:({zamonaviy:'#ECEBE6',klassik:'#E8DCC4',milliy:'#D9C07C'}[v.style]||'#D9C07C');
+    if(A.layout!=='custom') try{ const mm=MAKETS.find(x=>x.id===(v.mk||A.massing))||MAKETS[0], sb=SUBS[v.sub||''], wc=sb&&/^#/.test(sb.svg[1])?sb.svg[1]:({zamonaviy:'#ECEBE6',klassik:'#E8DCC4',milliy:'#D9C07C'}[v.style]||'#D9C07C');
       const u=mkImage(styMaket(mm,v.style,v.sub||''),v.roof.shape,wc,'pdf_'+mm.id,{st:v.style,sub:v.sub||''}); if(u){ frame('Maket (3D massa modeli)','1.1 Maket'); doc.addImage(u,'JPEG',14,24,190,142.5);
         table(214,30,['Maket','Qiymat'],[['Shakl',mm.n],['Uslub',stN(v)],['Tom',ROOFSH[v.roof.shape]||''],['Qavatlar',String(v.floors.length)],['Gabarit',`${fmt1(v.W)} x ${fmt1(v.D)} m`]],[24,46]); } }catch(e){ console.warn('pdf maket',e); }
     // 3D views: floors, dollhouse, karkas, podval, construction stages
