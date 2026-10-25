@@ -202,7 +202,9 @@ T.yer = () => {
 
 const style = S.style || 'klassik';
 if (!T[style]) throw new Error('Noma\'lum style: ' + style + ' (bor: ' + Object.keys(T).join(', ') + ')');
-const { css, html, D } = T[style]();
+const { css, html, D: D0 } = T[style]();
+// minDur: diktor ovozi uzunroq bo'lsa, butun animatsiya sekinlashtiriladi (vaqt cho'ziladi)
+const D = Math.max(D0, +S.minDur || 0), TK = D0 / D;
 // Ovoz: o'zimiz yaratgan fon musiqasi (music.py), uslubga mos; seed — fayl nomidan (har video boshqacha)
 const seed = S.seed != null ? S.seed : [...path.basename(outPath)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);
 const wav = outPath.replace(/\.mp4$/, '') + '.music.wav';
@@ -234,7 +236,7 @@ const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '21', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', outPath]);
   const N = Math.round(D * FPS);
   for (let f = 0; f < N; f++) {
-    await p.evaluate(t => document.getAnimations().forEach(a => { a.currentTime = t; }), f * 1000 / FPS);
+    await p.evaluate(t => document.getAnimations().forEach(a => { a.currentTime = t; }), f * 1000 / FPS * TK);
     const buf = await p.screenshot({ type: 'jpeg', quality: 88 });
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
   }
