@@ -202,6 +202,10 @@ T.yer = () => {
 const style = S.style || 'klassik';
 if (!T[style]) throw new Error('Noma\'lum style: ' + style + ' (bor: ' + Object.keys(T).join(', ') + ')');
 const { css, html, D } = T[style]();
+// Ovoz: o'zimiz yaratgan fon musiqasi (music.py), uslubga mos; seed — fayl nomidan (har video boshqacha)
+const seed = S.seed != null ? S.seed : [...path.basename(outPath)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);
+const wav = outPath.replace(/\.mp4$/, '') + '.music.wav';
+require('child_process').execFileSync('python3', [path.join(__dirname, 'music.py'), wav, String(D), style, String(seed)]);
 const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css}</style></head><body>${html}</body></html>`;
 (async () => {
   const b = await chromium.launch();
@@ -210,7 +214,7 @@ const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css
   await p.waitForTimeout(300);
   await p.evaluate(() => document.getAnimations().forEach(a => a.pause()));
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-',
-    '-f', 'lavfi', '-t', String(D), '-i', 'anullsrc=r=44100:cl=stereo',
+    '-i', wav,
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '21', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-movflags', '+faststart', outPath]);
   const N = Math.round(D * FPS);
   for (let f = 0; f < N; f++) {
@@ -220,6 +224,7 @@ const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css
   }
   ff.stdin.end();
   await new Promise(r => ff.on('close', r));
+  try { fs.unlinkSync(wav); } catch (e) {}
   await b.close();
   console.log('ok', style, outPath, D.toFixed(1) + 's');
 })();
