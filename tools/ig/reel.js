@@ -200,6 +200,57 @@ T.yer = () => {
   return { css, html, D };
 };
 
+// ---------------- yangilik (sayt yangiligi: qo'lda chizilgan reja → AI o'qiydi → toza reja → uslub → uy) ----------------
+// spec: hook, rooms:[[nom, x, y, w, h]] (metr, uy chap-old burchagidan), houseW, houseD, styles:[..], cta, voice
+T.yangilik = () => {
+  let FONT = '';
+  try { FONT = 'data:font/woff2;base64,' + fs.readFileSync(path.join(__dirname, 'caveat.woff2')).toString('base64'); } catch (e) {}
+  const R = S.rooms, HW = S.houseW, HD = S.houseD, sc = 70, pad = 40;
+  const VW = HW * sc + pad * 2, VH = HD * sc + pad * 2;
+  const X = m => pad + m * sc, Y = m => pad + m * sc;
+  let sd = 7; const rnd = () => (sd = (sd * 9301 + 49297) % 233280) / 233280 - .5;
+  const wob = (x1, y1, x2, y2) => { const mx = (x1 + x2) / 2 + rnd() * 9, my = (y1 + y2) / 2 + rnd() * 9; return `M${x1 + rnd() * 6} ${y1 + rnd() * 6} Q${mx} ${my} ${x2 + rnd() * 6} ${y2 + rnd() * 6}`; };
+  const fmt = n => String(Math.round(n * 10) / 10).replace('.', ',');
+  const segs = []; R.forEach(r => { const [, x, y, w, h] = r; segs.push([X(x), Y(y), X(x + w), Y(y)], [X(x + w), Y(y), X(x + w), Y(y + h)], [X(x + w), Y(y + h), X(x), Y(y + h)], [X(x), Y(y + h), X(x), Y(y)]); });
+  const T1 = 3.2, T2 = 9.6, T3 = 13.6, T4 = 18.6, D = 22.2;
+  const sketch = `<svg viewBox="0 0 ${VW} ${VH}">${segs.map((g, i) => `<path d="${wob(...g)}" pathLength="1" style="fill:none;stroke:#1d2a4a;stroke-width:6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .5s ${T1 + .5 + i * (2.6 / segs.length)}s forwards"/>`).join('')}
+${R.map((r, i) => `<text x="${X(r[1] + r[3] / 2)}" y="${Y(r[2] + r[4] / 2)}" text-anchor="middle" class="hw" style="animation:pop .35s ${T1 + 3.1 + i * .18}s both"><tspan x="${X(r[1] + r[3] / 2)}" dy="-8">${r[0]}</tspan><tspan x="${X(r[1] + r[3] / 2)}" dy="60">${fmt(r[3])}×${fmt(r[4])}</tspan></text>`).join('')}</svg>`;
+  const clean = `<svg viewBox="0 0 ${VW} ${VH}"><defs><pattern id="gr" width="${sc / 2}" height="${sc / 2}" patternUnits="userSpaceOnUse"><path d="M${sc / 2} 0H0V${sc / 2}" fill="none" stroke="#dfe3ea" stroke-width="1.5"/></pattern></defs><rect width="${VW}" height="${VH}" fill="url(#gr)"/>
+${R.map(r => `<rect x="${X(r[1])}" y="${Y(r[2])}" width="${r[3] * sc}" height="${r[4] * sc}" fill="#eceef2" stroke="#2b2f36" stroke-width="10"/>`).join('')}
+${R.map((r, i) => `<text x="${X(r[1] + r[3] / 2)}" y="${Y(r[2] + r[4] / 2) - 6}" text-anchor="middle" class="cn">${r[0]}</text><text x="${X(r[1] + r[3] / 2)}" y="${Y(r[2] + r[4] / 2) + 34}" text-anchor="middle" class="cm" style="animation:pop .35s ${T2 + 1 + i * .3}s both">${fmt(r[3] * r[4])} m²</text>`).join('')}</svg>`;
+  const styles = S.styles || ['Zamonaviy', 'Klassik', 'Milliy', 'Hi-tech', 'Minimalizm'], pick = S.pick != null ? S.pick : 2;
+  const css = `${FONT ? `@font-face{font-family:Hand;src:url(${FONT})}` : ''}
+@keyframes on{to{background:#FFC93C;color:#1A1300;border-color:#FFC93C;transform:scale(1.08)}}
+@keyframes press{0%,100%{transform:scale(1)}40%{transform:scale(.92)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,201,60,.6)}50%{box-shadow:0 0 0 26px rgba(255,201,60,0)}}
+body{background:radial-gradient(ellipse at 50% 35%,#16306b,#0A1532 60%,#060c1d);font-family:Inter,sans-serif;color:#fff}
+.hk{position:absolute;left:50px;right:50px;top:520px;text-align:center}
+.nw{display:inline-block;background:#FFC93C;color:#1A1300;font-weight:900;font-size:56px;padding:14px 38px;border-radius:60px;letter-spacing:2px}
+.big{font-weight:900;font-size:110px;line-height:1.05;letter-spacing:-2px;margin-top:50px} .big em{color:#FFC93C}
+.hwb{font-family:Hand,cursive;font-size:84px;color:#9cc0ff;margin-top:40px}
+.tt{position:absolute;left:60px;right:60px;top:150px;font-weight:900;font-size:70px;line-height:1.08;letter-spacing:-1px} .tt em{color:#FFC93C}
+.paper{position:absolute;left:60px;right:60px;top:420px;height:900px;border-radius:24px;background:#FBF6E9;background-image:repeating-linear-gradient(#FBF6E9 0 58px,#cfd9ee 58px 60px);box-shadow:0 30px 60px rgba(0,0,0,.45);transform:rotate(-2deg);overflow:hidden;display:flex;align-items:center;justify-content:center;padding:40px}
+.paper svg,.cl svg{width:100%;height:100%} .hw{font-family:Hand,cursive;font-size:66px;fill:#1d2a4a;font-weight:700}
+.scan{position:absolute;left:0;right:0;height:14px;background:linear-gradient(90deg,transparent,#3DF2B0,transparent);box-shadow:0 0 40px 10px rgba(61,242,176,.55)}
+.ai{position:absolute;left:0;right:0;margin:0 auto;width:fit-content;top:1360px;white-space:nowrap;background:#3DF2B0;color:#052b1d;font-weight:900;font-size:46px;padding:18px 40px;border-radius:60px}
+.det{position:absolute;left:60px;right:60px;top:1480px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center} .det div{background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:22px;padding:14px 24px;font-size:38px;font-weight:800}
+.cl{position:absolute;left:60px;right:60px;top:420px;height:980px;background:#fff;border-radius:30px;padding:40px;box-shadow:0 30px 60px rgba(0,0,0,.45)}
+.cn{font-size:38px;font-weight:800;fill:#2b2f36} .cm{font-size:40px;font-weight:900;fill:#1F5FE0}
+.sub2{position:absolute;left:60px;right:60px;top:1450px;text-align:center;font-size:46px;font-weight:800;color:#cfe0ff}
+.lb{position:absolute;left:60px;font-size:44px;font-weight:800;color:#9cc0ff}
+.sg{position:absolute;left:60px;right:60px;display:flex;flex-wrap:wrap;gap:18px} .sg div{border:3px solid rgba(255,255,255,.45);border-radius:26px;padding:20px 32px;font-size:46px;font-weight:800;color:#fff}
+.bt{position:absolute;left:90px;right:90px;top:1330px;background:#1F5FE0;border-radius:80px;text-align:center;font-weight:900;font-size:60px;padding:40px 0}
+.url{position:absolute;left:90px;right:90px;top:900px;background:#FFC93C;color:#1A1300;border-radius:80px;text-align:center;font-weight:900;font-size:50px;padding:34px 0}
+.path{position:absolute;left:60px;right:60px;top:1080px;text-align:center;font-size:48px;font-weight:800;color:#cfe0ff;line-height:1.5}`;
+  const hook = split(S.hook || "QO'LDA CHIZGAN|<em>REJANGIZ</em> BORMI?");
+  const cta = split(S.cta || "CHIZMANGIZNI|<em>UYGA AYLANTIRING</em>");
+  const html = scene('s1', 0, T1, `<div class="hk"><div class="nw" style="animation:pop .5s .1s both">🆕 YANGILIK</div><div class="big">${hook.map((l, i) => `<div style="animation:slam .5s ${.5 + i * .5}s both">${l}</div>`).join('')}</div><div class="hwb" style="animation:fadeIn .5s 1.8s both">${S.hand || 'daftardagi chizma ham bo\'ladi ✍️'}</div></div>`)
+    + scene('s2', T1, T2, `<div class="tt" style="animation:up .5s ${T1 + .1}s both">${S.title2 || 'Chizmangizni <em>yuklang</em> 📐'}</div><div class="paper" style="animation:pop .5s ${T1 + .2}s both">${sketch}<div class="scan" style="animation:scan 1.6s linear ${T1 + 4}s both"></div></div><div class="ai" style="animation:pop .4s ${T1 + 4}s both">🤖 AI o'qiyapti…</div><div class="det">${[...new Set(R.map(r => r[0]))].map((r, i) => `<div style="animation:pop .35s ${T1 + 4.6 + i * .25}s both">✔ ${r}</div>`).join('')}</div>`)
+    + scene('s3', T2, T3, `<div class="tt" style="animation:up .5s ${T2 + .1}s both">${S.title3 || 'Aynan <em>sizning metrlaringiz</em>da'}</div><div class="cl" style="animation:wipe .8s ${T2 + .2}s both">${clean}</div><div class="sub2" style="animation:fadeIn .5s ${T2 + 1.6}s both">${S.sub3 || 'Xonalar, metrlar — o\'zgarmaydi ✅'}</div>`)
+    + scene('s4', T3, T4, `<div class="tt" style="animation:up .5s ${T3 + .1}s both">${S.title4 || 'Qolgani — <em>2 ta bosish</em>'}</div><div class="lb" style="top:420px;animation:fadeIn .4s ${T3 + .3}s both">2. Uslubni tanlang</div><div class="sg" style="top:500px">${styles.map((t, i) => `<div style="animation:pop .35s ${T3 + .5 + i * .22}s both${i === pick ? `, on .3s ${T3 + 2}s forwards` : ''}">${t}</div>`).join('')}</div><div class="lb" style="top:860px;animation:fadeIn .4s ${T3 + 2.2}s both">3. Necha qavat?</div><div class="sg" style="top:940px"><div style="animation:pop .35s ${T3 + 2.4}s both">1 qavat</div><div style="animation:pop .35s ${T3 + 2.6}s both, on .3s ${T3 + 3}s forwards">2 qavat</div></div><div class="bt" style="animation:pop .45s ${T3 + 3.4}s both, press .4s ${T3 + 4.2}s, glow 1s ${T3 + 4.2}s 2">🏠 Uyimni tayyorla</div>`)
+    + scene('s5', T4, D, `<div class="hk" style="top:300px"><div class="big" style="font-size:96px;margin:0">${cta.map((l, i) => `<div style="animation:slam .45s ${T4 + .1 + i * .35}s both">${l}</div>`).join('')}</div></div><div class="url" style="animation:pop .5s ${T4 + .9}s both">🌐 ${URL}</div><div class="path" style="animation:fadeIn .5s ${T4 + 1.3}s both">Loyiha boshlash → <b style="color:#FFC93C">📐 Chizmam bor</b><br>havola profilda 👆</div>`, true);
+  return { css, html, D };
+};
 const style = S.style || 'klassik';
 if (!T[style]) throw new Error('Noma\'lum style: ' + style + ' (bor: ' + Object.keys(T).join(', ') + ')');
 const { css, html, D: D0 } = T[style]();

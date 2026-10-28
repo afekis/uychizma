@@ -12,6 +12,7 @@ P = {
   'tur':     dict(bpm=78, root=55, prog=[0, 9, 5, 7], wave='piano', drums='none'),
   'fakt':    dict(bpm=128, root=52, prog=[0, 0, 3, 10], wave='saw', drums='hard', minor=True),
   'yer':     dict(bpm=90, root=53, prog=[0, 5, 7, 5], wave='pad', drums='soft'),
+  'yangilik': dict(bpm=110, root=58, prog=[0, 7, 9, 5], wave='pluck', drums='pop'),
 }[style]
 keys = [0, 2, -3, 5, -2, 3]
 root = P['root'] + keys[seed % len(keys)]
