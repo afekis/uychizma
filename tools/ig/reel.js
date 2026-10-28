@@ -203,27 +203,32 @@ T.yer = () => {
 const style = S.style || 'klassik';
 if (!T[style]) throw new Error('Noma\'lum style: ' + style + ' (bor: ' + Object.keys(T).join(', ') + ')');
 const { css, html, D: D0 } = T[style]();
-// minDur: diktor ovozi uzunroq bo'lsa, butun animatsiya sekinlashtiriladi (vaqt cho'ziladi)
-const D = Math.max(D0, +S.minDur || 0), TK = D0 / D;
+// AI diktor ovozi (o'zbekcha, edge-tts: uz-UZ-SardorNeural / uz-UZ-MadinaNeural) — avval yasaladi, video uzunligi ovozga moslanadi.
+// Tarmoq ruxsat bermasa — jim o'tkazib yuboriladi, faqat musiqa qoladi (VOICE_STATUS konsolga chiqadi).
+const cp = require('child_process');
+let VOICE_STATUS = 'yoq', VDUR = 0;
+const mp3 = outPath.replace(/\.mp4$/, '') + '.voice.mp3', mixed = outPath.replace(/\.mp4$/, '') + '.mix.wav';
+if (S.voice) {
+  const tts = () => cp.execFileSync('python3', [path.join(__dirname, 'tts.py'), '--voice', S.voiceName || 'uz-UZ-SardorNeural', '--rate', S.voiceRate || '+0%', '--text', S.voice, '--write-media', mp3], { stdio: 'pipe', timeout: 60000 });
+  try {
+    try { tts(); } catch (e) { cp.execFileSync('pip', ['install', '-q', 'edge-tts', '--break-system-packages'], { stdio: 'pipe', timeout: 120000 }); tts(); }
+    VDUR = +cp.execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp3]).toString().trim();
+    if (!(VDUR > 0.5)) throw new Error('bo\'sh ovoz fayli');
+    VOICE_STATUS = 'bor';
+  } catch (e) { VOICE_STATUS = 'XATO: ' + String(e.stderr || e.message).slice(-200); }
+}
+// minDur yoki diktor ovozi uzunroq bo'lsa, butun animatsiya sekinlashtiriladi (vaqt cho'ziladi)
+const D = Math.max(D0, +S.minDur || 0, VDUR ? VDUR + 1.5 : 0), TK = D0 / D;
 // Ovoz: o'zimiz yaratgan fon musiqasi (music.py), uslubga mos; seed — fayl nomidan (har video boshqacha)
 const seed = S.seed != null ? S.seed : [...path.basename(outPath)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);
 const wav = outPath.replace(/\.mp4$/, '') + '.music.wav';
-require('child_process').execFileSync('python3', [path.join(__dirname, 'music.py'), wav, String(D), style, String(seed)]);
-// AI diktor ovozi (o'zbekcha, edge-tts: uz-UZ-SardorNeural / uz-UZ-MadinaNeural). spec.voice — o'qiladigan matn (≤ D*2.2 so'z).
-// Tarmoq ruxsat bermasa — jim o'tkazib yuboriladi, faqat musiqa qoladi (VOICE_STATUS konsolga chiqadi).
-let VOICE_STATUS = 'yoq';
-if (S.voice) {
-  const cp = require('child_process');
-  const mp3 = outPath.replace(/\.mp4$/, '') + '.voice.mp3', mixed = outPath.replace(/\.mp4$/, '') + '.mix.wav';
-  const tts = () => cp.execFileSync('python3', ['-m', 'edge_tts', '--voice', S.voiceName || 'uz-UZ-SardorNeural', '--rate', S.voiceRate || '+8%', '--text', S.voice, '--write-media', mp3], { stdio: 'pipe', timeout: 60000 });
-  try {
-    try { tts(); } catch (e) { cp.execFileSync('pip', ['install', '-q', 'edge-tts', '--break-system-packages'], { stdio: 'pipe', timeout: 120000 }); tts(); }
-    cp.execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', wav, '-i', mp3, '-filter_complex',
-      '[0]volume=0.22[m];[1]adelay=500|500,volume=1.8[v];[m][v]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95', mixed]);
-    fs.renameSync(mixed, wav); VOICE_STATUS = 'bor';
-  } catch (e) { VOICE_STATUS = 'XATO: ' + String(e.stderr || e.message).slice(0, 200); }
-  try { fs.unlinkSync(mp3); } catch (e) {}
+cp.execFileSync('python3', [path.join(__dirname, 'music.py'), wav, String(D), style, String(seed)]);
+if (VOICE_STATUS === 'bor') {
+  cp.execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', wav, '-i', mp3, '-filter_complex',
+    '[0]volume=0.22[m];[1]adelay=500|500,volume=1.8[v];[m][v]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95', mixed]);
+  fs.renameSync(mixed, wav);
 }
+try { fs.unlinkSync(mp3); } catch (e) {}
 const page = `<!doctype html><html><head><meta charset="utf-8"><style>${KF}${css}</style></head><body>${html}</body></html>`;
 (async () => {
   const b = await chromium.launch();
