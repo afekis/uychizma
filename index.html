@@ -116,7 +116,7 @@ section[data-screen]{display:flex;flex-direction:column;gap:28px}
 .catbar{display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap}.catbar input{flex:1;min-width:200px}.maket .catno{position:absolute;left:8px;top:8px;background:rgba(8,14,28,.75);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px}.maket{position:relative}
 .gpats{display:flex;flex-wrap:wrap;gap:8px}.gpats button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border:2px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer;font-size:12px;min-width:84px}.gpats button[aria-pressed="true"]{border-color:var(--accent)}
 .disc{font-size:12px;line-height:1.45;background:#FFF6E0;color:#6A4A00;border:1px solid #F0D9A0;border-radius:10px;padding:8px 10px;margin:8px 0 0}
-.qmode{display:grid;grid-template-columns:1fr 1fr;gap:10px}.qm{display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:14px;background:var(--paper);cursor:pointer}.qm b{font-size:16px}.qm small{color:var(--muted,#6b7280);font-size:12.5px}.qm[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,95,224,.12)}
+.qmode{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.qm{display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 14px;border:2px solid var(--line);border-radius:14px;background:var(--paper);cursor:pointer}.qm b{font-size:16px}.qm small{color:var(--muted,#6b7280);font-size:12.5px}.qm[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,95,224,.12)}
 .quick{display:flex;flex-direction:column;gap:14px}
 .wskip{margin-right:auto}
 @media (max-width:640px){.qmode{grid-template-columns:1fr}}
@@ -507,10 +507,12 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <div class="eyebrow" id="stepLabel">1 / 6 · Yer uchastkasi</div>
 
       <div data-step="0" class="field" style="gap:16px">
-        <div class="qmode" role="group" aria-label="Rejim"><button type="button" class="qm" data-m="tez" aria-pressed="true"><b>⚡ Tez</b><small>6 ta savol, 1 daqiqa</small></button><button type="button" class="qm" data-m="toliq" aria-pressed="false"><b>🧩 To'liq sozlash</b><small>9 qadam, hamma narsani o'zingiz tanlaysiz</small></button></div>
+        <div class="qmode" role="group" aria-label="Rejim"><button type="button" class="qm" data-m="tez" aria-pressed="true"><b>⚡ Tez</b><small>6 ta savol, 1 daqiqa</small></button><button type="button" class="qm" data-m="toliq" aria-pressed="false"><b>🧩 To'liq sozlash</b><small>9 qadam, hamma narsani o'zingiz tanlaysiz</small></button><button type="button" class="qm" data-m="chizma" aria-pressed="false"><b>📐 Chizmam bor</b><small>Chizmangiz bo'yicha uy, 1 daqiqa</small></button></div>
+        <div class="cplan" id="cplan" hidden>
+          <h2 style="font-size:22px;margin:0">📐 Chizmangiz bo'yicha uy</h2>
         <div class="dream" id="yerBox">
-          <div class="dream-h"><b>📐 Uy chizmangiz bormi?</b><span class="opt">ixtiyoriy</span></div>
-          <p>Uy (yoki yer) chizmangizni rasm yoki PDF qilib yuklang — sayt xonalar va metrlarni o'qib, uyni aynan shu shakl va o'lchamda chizadi. Uslub, tom, rang va boshqasini pastdagi savollarda tanlaysiz.</p>
+          <div class="dream-h"><b>1. Uy chizmangizni yuklang</b></div>
+          <p>Uy (yoki yer) chizmangizni rasm yoki PDF qilib yuklang — sayt xonalar va metrlarni o'qib, uyni aynan shu shakl va o'lchamda chizadi. </p>
           <div class="dream-row">
             <label class="btn ghost small" for="yerFile">📄 Chizma yuklash</label><input type="file" id="yerFile" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
             <img id="yerPrev" class="dream-prev" alt="Yuklangan chizma" hidden>
@@ -545,6 +547,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
             </details>
             <button class="btn back small" id="cpOff" type="button" style="justify-self:start">✕ Chizmani bekor qilish</button>
           </div>
+        </div>
+          <div class="field"><span class="flabel">2. Uslubni tanlang</span><div class="seg" id="cpStyle"><button type="button" data-v="zamonaviy">Zamonaviy</button><button type="button" data-v="klassik">Klassik</button><button type="button" data-v="milliy">Milliy</button><button type="button" data-v="haytek">Hi-tech</button><button type="button" data-v="minimal">Minimalizm</button></div></div>
+          <div class="field"><span class="flabel">3. Necha qavat?</span><div class="seg" id="cpFl"><button type="button" data-v="1">1 qavat</button><button type="button" data-v="2">2 qavat</button></div></div>
+          <p class="note" id="cpNeed" style="margin:0"></p>
+          <button class="btn primary" id="cpBuild" type="button" style="min-height:52px;font-size:17px" disabled>🏠 Uyimni tayyorla</button>
         </div>
         <div class="quick" id="quick">
           <h2 style="font-size:22px">Uyingiz haqida bir necha savol</h2><p style="margin:-4px 0 6px"><a href="#vguide" id="qVid" style="font-weight:600">📹 Qanday ishlaydi? Video qo'llanmani ko'rish</a></p>
@@ -3171,8 +3178,30 @@ $('#yerGo').onclick=async()=>{ if(!S.yerImg||S.yerBusy) return; const btn=$('#ye
       const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:S.yerImg,prompt:CP_PROMPT}),signal:ctl?ctl.signal:undefined}); clearTimeout(tm);
       if(r.ok&&/json/.test(r.headers.get('content-type')||'')){ const j=await r.json(); P=cpParse(j.text); } }catch(e){ console.warn(e); } }
   btn.disabled=false; S.yerBusy=false; const k=cpFromAi(P);
-  if(k) yerMsg(`✅ Chizmangizdan ${k} ta xona o'qildi — uy aynan shu shakl va metrlarda chiziladi. Pastdagi sxemani chizmangiz bilan solishtiring; xato bo'lsa «✏️ Xonalar va metrlarni tekshirish» ni ochib to'g'rilang. Uslub, tom, rang va boshqasini savollarda tanlaysiz.`);
+  if(k) yerMsg(`✅ Chizmangizdan ${k} ta xona o'qildi — uy aynan shu shakl va metrlarda chiziladi. Pastdagi sxemani chizmangiz bilan solishtiring; xato bo'lsa «✏️ Xonalar va metrlarni tekshirish» ni ochib to'g'rilang. Endi pastda <b>uslub</b> va <b>qavat</b>ni tanlang.`);
   else { yerMsg("AI hozir chizmani o'qiy olmadi. Xonalarni metrlari bilan o'zingiz kiriting: «✏️ Xonalarni o'zim kiritaman» ni bosing."); } };
+
+/* ===== 📐 Chizmam bor bo'limi: chizma + uslub + qavat → uy ===== */
+S.cpSt=S.cpSt||''; S.cpFl=S.cpFl||0;
+function cpNeedSync(){ const ok1=S.A.layout==='custom'&&!!S.A.custom, ok2=!!S.cpSt, ok3=S.cpFl===1||S.cpFl===2;
+  $$('#cpStyle button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.cpSt))); $$('#cpFl button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===S.cpFl)));
+  const miss=[!ok1?'chizmani yuklang':'',!ok2?'uslubni tanlang':'',!ok3?'qavat sonini tanlang':''].filter(Boolean);
+  const n=$('#cpNeed'); if(n) n.textContent=miss.length?'Qoldi: '+miss.join(', ')+'.':"✅ Hammasi tayyor — «Uyimni tayyorla» ni bosing.";
+  const b=$('#cpBuild'); if(b) b.disabled=!!miss.length||!!S.yerBusy; }
+$('#cpStyle').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.cpSt=b.dataset.v; cpNeedSync(); });
+$('#cpFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.cpFl=+b.dataset.v; cpNeedSync(); });
+setInterval(()=>{ try{ if(!$('#cplan').hidden) cpNeedSync(); }catch(e){} },700);
+$('#cpBuild').onclick=()=>{ const A=S.A; if(S.yerBusy) return; const C=cpClean(A.custom); if(!C){ cpNeedSync(); return; }
+  let fl=C.fl.map(f=>f.map(r=>r.slice()));
+  if(S.cpFl===1) fl=[fl[0]];
+  else if(S.cpFl===2&&fl.length===1){ const up=fl[0].map(r=>{ const q=r.slice(); if(q[1]==='zal'){ q[0]='Hol'; q[1]='circ'; } else if(q[1]==='kitchen'){ q[0]='Yotoqxona'; q[1]='bed'; } else if(q[1]==='garage'){ q[0]='Xona'; q[1]='util'; } return q; });
+    if(!fl[0].some(r=>r[1]==='stair')){ const z=fl[0].filter(r=>r[1]==='zal'||r[1]==='circ').sort((a,b)=>b[4]*b[5]-a[4]*a[5])[0]||fl[0][0]; const sw=Math.min(2.6,z[4]*0.45), sh=Math.min(4,z[5]*0.5), st=['Zina','stair',Math.round((z[2]+z[4]-sw)*100)/100,Math.round((z[3]+z[5]-sh)*100)/100,Math.round(sw*100)/100,Math.round(sh*100)/100,1]; fl[0].push(st); up.push(st.slice()); }
+    fl=[fl[0],up]; }
+  A.custom=Object.assign({},C,{fl}); A.layout='custom'; A.massing='auto'; A.floors=fl.length;
+  const sub=SUBS[S.cpSt]?S.cpSt:''; A.sub=sub; A.style=sub?SUBS[sub].b:S.cpSt; A.styleFixed=true; A.rateManual=false; A.roofShape='auto';
+  const nb=fl.reduce((s,f)=>s+f.filter(r=>r[1]==='bed').length,0); A.beds=Math.min(6,Math.max(2,nb||2));
+  if(!A.seed) A.seed=1+Math.floor(Math.random()*90000); try{ syncInputs(); saveDraft(); }catch(e){}
+  if(!payGate(()=>{ generate(); show('result'); })) return; generate(); show('result'); };
 /* ===== Maket tanlash: 10 xil shakl, oq maket ko'rinishida ===== */
 const MAKETS=[
   {id:'kub',n:'Ixcham kub',d:"Oddiy to'rtburchak, tejamkor",layout:'ixcham',b:[[0,0,10,10,6.6]]},
@@ -3525,12 +3554,12 @@ const CONTACT_TG=TG_USER;
   document.querySelectorAll('.cf-tel').forEach(a=>{ a.href=tel||tg; if(!tel){ a.target='_blank'; a.innerHTML='✈️ Yoki hoziroq Telegramda yozing: @'+CONTACT_TG; } a.hidden=false; });
   if(tg){ const t=b.querySelector('.ct-tg'); t.href=tg; t.textContent='✈️ Telegram: @'+CONTACT_TG; t.hidden=false; } })();
 /* ===== Tez rejim: 4 savol ===== */
-function syncQuick(){ const A=S.A; if(S.qmode!=='toliq') S.qmode='tez'; const m=S.qmode; $$('.qm').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));
-  const q=$('#quick'), f=$('#fullStart'); if(q) q.hidden=m!=='tez'; if(f) f.hidden=m!=='toliq'; const cpn=$('#cplan'); if(cpn){ const was=cpn.hidden; cpn.hidden=m!=='chizma'; if(was&&!cpn.hidden) try{ cpOpen(); }catch(e){ console.error(e); } } const nr=document.querySelector('[data-screen="wizard"] .navrow'); if(nr) nr.hidden=(m!=='toliq'&&S.step===0); const qz=(m!=='toliq'&&S.step===0); $('#prog').hidden=qz; $('#stepLabel').hidden=qz;
+function syncQuick(){ const A=S.A; if(S.qmode!=='toliq'&&S.qmode!=='chizma') S.qmode='tez'; const m=S.qmode; $$('.qm').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));
+  const q=$('#quick'), f=$('#fullStart'); if(q) q.hidden=m!=='tez'; if(f) f.hidden=m!=='toliq'; const cpn=$('#cplan'); if(cpn){ const was=cpn.hidden; cpn.hidden=m!=='chizma'; if(was&&!cpn.hidden&&S.cp) try{ cpOpen(); }catch(e){ console.error(e); } try{ cpNeedSync(); }catch(e){} } const nr=document.querySelector('[data-screen="wizard"] .navrow'); if(nr) nr.hidden=(m!=='toliq'&&S.step===0); const qz=(m!=='toliq'&&S.step===0); $('#prog').hidden=qz; $('#stepLabel').hidden=qz;
   if(document.activeElement!==$('#qW')) $('#qW').value=A.plotW; if(document.activeElement!==$('#qL')) $('#qL').value=A.plotL;
   $$('#qFloors button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===A.floors))); $$('#qBeds button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===A.beds))); $$('#qStyle button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===A.style&&!A.sub)));
   const sk=$('#wizSkip'); if(sk) sk.hidden=S.step<1||S.step>=NSTEP-1; }
-document.addEventListener('click',e=>{ const m=e.target.closest('.qm'); if(m){ S.qmode=m.dataset.m; syncQuick(); return; }
+document.addEventListener('click',e=>{ const m=e.target.closest('.qm'); if(m){ S.qmode=m.dataset.m; if(S.qmode!=='chizma'&&S.A.layout==='custom'){ S.A.layout='auto'; try{ syncMakets(); }catch(_){} } syncQuick(); return; }
   const b=e.target.closest('#qFloors button,#qBeds button,#qStyle button'); if(!b) return; const A=S.A, p=b.parentElement.id;
   if(p==='qFloors') A.floors=+b.dataset.v; else if(p==='qBeds') A.beds=+b.dataset.v; else { A.style=b.dataset.v; A.sub=''; A.rateManual=false; } syncInputs(); syncQuick(); });
 ['qW','qL'].forEach(id=>$('#'+id).addEventListener('input',e=>{ const v=parseFloat(String(e.target.value).replace(',','.')); if(!isNaN(v)){ if(id==='qW') S.A.plotW=v; else S.A.plotL=v; } }));
