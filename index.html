@@ -1226,10 +1226,11 @@ function buildRandom(A){
     v.facade = A.facade&&A.facade!=='auto' ? A.facade : (i===0 ? 'auto' : pick({klassik:['gisht','travertin','kombi','gisht'],zamonaviy:['suvoq','yogoch','travertin','kombi'],milliy:['gisht','suvoq','tosh','kombi']}[v.style]));
     v.rv={shape:wpick(ROOFP[v.style]),mat:pick(['metall','metall','keramik','yumshoq','profnastil']),col:pick(['grafit','grafit','jigar','qizil','yashil','kok'])};
     v.sub=''; if(v.style===A.style&&A.sub&&SUBS[A.sub]) applySub(v,A,A.sub); else if(i===0&&v.prefSub&&!A.styleFixed&&SUBS[v.prefSub]){ v.style=SUBS[v.prefSub].b; applySub(v,A,v.prefSub); } else if(i>0&&v.prefSub&&!A.styleFixed){ const alt=['haytek','minimal'][i-1]; if(SUBS[alt]) applySub(v,A,alt); } else if(i>0&&!A.styleFixed&&R()<0.75){ const L=SUBS_OF(v.style); if(L.length) applySub(v,A,L[Math.floor(R()*L.length)]); }
-    if(A.layout==='custom'){ const st=v.style, sb=v.sub||'';
-      const LOOK=[[null,null,null,"asosiy ko'rinish"],['#E0CCA9','travertin',{zamonaviy:'ikki',klassik:'ikki',milliy:'ikki'}[st],'bej travertin'],['#8F6B55','gisht',{zamonaviy:'tort',klassik:'mansard',milliy:'tort'}[st],"g'isht"]][i]||[null,null,null,''];
-      if(i>0){ if(!A.wallFixed) v.wall=sb==='haytek'?(['#2E3033','#C8BFAE'][i-1]):(sb==='minimal'?(['#F3EFE6','#6F6A64'][i-1]):LOOK[0]); if(!A.facade||A.facade==='auto') v.facade=sb==='haytek'?(['metall','kombi'][i-1]):(sb==='minimal'?(['suvoq','yogoch'][i-1]):LOOK[1]); if(!sb&&LOOK[2]) v.rv=Object.assign({},v.rv,{shape:LOOK[2]}); v.forceRoof=true; }
-      v.desc=(i===0?'Tanlangan uslub':'Boshqa tashqi ko\'rinish')+' · '+(sb==='haytek'?['oq beton','qora metall','kulrang kombi'][i]:sb==='minimal'?['oq suvoq','sutrang','yog\'och qoplama'][i]:LOOK[3]); }
+    if(A.layout==='custom'){ const ORD=['milliy','zamonaviy','haytek','klassik','minimal'], ch=A.sub||A.style, oth=ORD.filter(x=>x!==ch), key=i===0?ch:oth[i-1];
+      if(i>0){ if(SUBS[key]){ v.style=SUBS[key].b; v.sub=''; v.wall=SUBS[key].wall; v.facade=SUBS[key].fac; applySub(v,Object.assign({},A,{wallFixed:false,facade:'auto'}),key); }
+        else { v.sub=''; v.style=key; v.wall=({milliy:'#E0CCA9',zamonaviy:'#EDEAE3',klassik:'#EDE3D2'})[key]||'#EDEAE3'; v.facade=({milliy:'gisht',zamonaviy:'suvoq',klassik:'travertin'})[key]||'auto'; v.rv=Object.assign({},v.rv,{shape:BASE_RV[key]||'tort'}); }
+        v.forceRoof=true; }
+      v.desc=(i===0?'Siz tanlagan uslub':'Boshqa uslub')+' · '+(SUBS[key]?SUBS[key].n:STYLE_NAME[key]); }
     finalize(v,A); if(out.fallback && v.name.indexOf(A.layout+'-')!==0) v.notes.unshift(`${out.fallback} uchun yer o'lchami yetmadi, shu sababli o'xshash boshqa shakl berildi.`); });
   return out;
 }
@@ -1414,6 +1415,7 @@ function placeYard(v,A){
   cost.pave=Math.round((W*SB+ (v.car?20:0))*12);
   { const gw=+A.gateW||4, gh=+A.gateH||2.4; cost.gate=Math.round(gw*gh*({ochiladigan:70,surma:95,naqshli:160}[A.gateType]||70)*({oddiy:1,yaxlit:1,panjara:1.45,kvadrat:1.05,shamol:1.25,arka:1.2,naqsh:1}[A.gatePat||'oddiy']||1)+(A.kalitka?350:0)); }
   { const per=Math.round(2*(+A.plotW+ +A.plotL)); cost.fence=Math.round(per*({gisht:55,panjara:48,yaxlit:28,yoq:0}[A.fence||'gisht']||0)); if(A.fence==='yoq') cost.gate=0; }
+  if(A.layout==='custom'){ items.length=0; Object.keys(cost).forEach(k=>cost[k]=0); missing.length=0; }
   const total=Object.values(cost).reduce((a,b)=>a+b,0);
   return {items,hx0,hy0,P,backStart,gateX,cost:total,costs:cost,missing,trees:placed};
 }
@@ -2481,31 +2483,31 @@ function buildHouse(v,A){
   const [fx0,fy0]=PH(0,0);
   plane(site,320,320,fx0+pw/2,-0.06,Z(fy0+pl/2),M.grass2);
   const stW=A.street==='katta'?14:(A.street==='tor'?4.5:6.5);
-  plane(site,pw+80,stW,fx0+pw/2,-0.02,Z(fy0-1.3-stW/2),M.asph);
-  if(A.street==='katta'){ for(let x=-38;x<pw+38;x+=4) plane(site,2,0.15,fx0+x,-0.01,Z(fy0-1.3-stW/2),M.white); plane(site,pw+80,2.4,fx0+pw/2,0.0,Z(fy0-1.3-stW-1.2),matT('pave2',paveTex(),{roughness:0.6})); }
-  { const lampM=mat(0x3A3F44,{roughness:0.4,metalness:0.6}); for(let x=-12;x<pw+12;x+=(A.street==='katta'?14:20)){ cyl(site,0.07,5.2,fx0+x,2.6,Z(fy0-0.35),lampM,8); box(site,0.9,0.08,0.18,fx0+x-0.4,5.15,Z(fy0-0.35),lampM); box(site,0.35,0.06,0.2,fx0+x-0.8,5.08,Z(fy0-0.35),M.led,false); } }
-  { const nb=A.neighbors||'ikki'; const NB=[]; if(nb==='ikki'||nb==='bir') NB.push(-1); if(nb==='ikki') NB.push(1); const R2=rnd(Math.round(pw*7+pl*3));
+  if(!(A.layout==='custom')) plane(site,pw+80,stW,fx0+pw/2,-0.02,Z(fy0-1.3-stW/2),M.asph);
+  if(A.street==='katta'&&!(A.layout==='custom')){ for(let x=-38;x<pw+38;x+=4) plane(site,2,0.15,fx0+x,-0.01,Z(fy0-1.3-stW/2),M.white); plane(site,pw+80,2.4,fx0+pw/2,0.0,Z(fy0-1.3-stW-1.2),matT('pave2',paveTex(),{roughness:0.6})); }
+  if(!(A.layout==='custom')){ const lampM=mat(0x3A3F44,{roughness:0.4,metalness:0.6}); for(let x=-12;x<pw+12;x+=(A.street==='katta'?14:20)){ cyl(site,0.07,5.2,fx0+x,2.6,Z(fy0-0.35),lampM,8); box(site,0.9,0.08,0.18,fx0+x-0.4,5.15,Z(fy0-0.35),lampM); box(site,0.35,0.06,0.2,fx0+x-0.8,5.08,Z(fy0-0.35),M.led,false); } }
+  { const nb=(A.layout==='custom')?'yoq':(A.neighbors||'ikki'); const NB=[]; if(nb==='ikki'||nb==='bir') NB.push(-1); if(nb==='ikki') NB.push(1); const R2=rnd(Math.round(pw*7+pl*3));
     const ncols=['#E7DCC8','#D9D2C4','#EFE9DE','#CDBFA8','#E4D6BF'], rcols=['#5A4636','#4A4F55','#7A3F2E','#56606A'];
     NB.forEach(sd=>{ const nw=8+R2()*2.5, nd=8+R2()*2, nh=3.4+R2()*0.8, x0=sd<0?fx0-nw-7:fx0+pw+7, y0=fy0+9+R2()*3; const nm=mat(parseInt(ncols[Math.floor(R2()*5)].slice(1),16),{roughness:0.9}); const rm=mat(parseInt(rcols[Math.floor(R2()*4)].slice(1),16),{roughness:0.6,metalness:0.2});
       box(site,nw,nh,nd,x0+nw/2,nh/2,Z(y0+nd/2),nm); const r=hipRoof(x0-0.5,Z(y0+nd)-0.5,nw+1,nd+1,0.5,rm); r.position.y=nh; site.add(r);
       const gm=mat(0x2C3A44,{roughness:0.1,metalness:0.6}); for(let fl=0;fl<(nh>5?2:1);fl++) for(let i=0;i<3;i++) box(site,1.2,1.4,0.06,x0+nw*(i+0.5)/3,1.4+fl*3,Z(y0)+0.03,gm,false);
       const fx=sd<0?fx0-0.2:fx0+pw+0.2; box(site,0.22,2.0,pl*0.8,fx+(sd<0?-0.15:0.15),1.0,Z(fy0+pl*0.45),nm); }); }
-  { const vw=A.view||'shahar', R3=rnd(97);
+  if(!(A.layout==='custom')){ const vw=A.view||'shahar', R3=rnd(97);
     if(vw==='tog'){ const mm=mat(0x7D8A99,{roughness:1}), sn=mat(0xF4F6F8,{roughness:0.9}); for(let i=0;i<9;i++){ const a=-Math.PI/2+(i-4)*0.22+(R3()-0.5)*0.1, d=200+R3()*45, hgt=45+R3()*55, rad=55+R3()*45; const cx=Math.cos(a)*d+fx0+pw/2, cz=Math.sin(a)*d+Z(fy0+pl/2);
         const c=new THREE.Mesh(new THREE.ConeGeometry(rad,hgt,7,1),mm); c.position.set(cx,hgt/2-2,cz); c.rotation.y=R3()*3; site.add(c); const s=new THREE.Mesh(new THREE.ConeGeometry(rad*0.28,hgt*0.28,7,1),sn); s.position.set(cx,hgt-2-hgt*0.14+0.5,cz); s.rotation.y=c.rotation.y; site.add(s); } }
     else if(vw==='shahar'){ const bm=[mat(0xA9B4C0,{roughness:0.6,metalness:0.2}),mat(0xC9CED4,{roughness:0.7}),mat(0x8D99A6,{roughness:0.4,metalness:0.4})]; for(let i=0;i<26;i++){ const a=-Math.PI/2+(R3()-0.5)*1.6, d=210+R3()*60, hgt=10+R3()*35, w=10+R3()*14; box(site,w,hgt,w,Math.cos(a)*d+fx0+pw/2,hgt/2,Math.sin(a)*d+Z(fy0+pl/2),bm[i%3],false); } }
     else { const tm=mat(0x4F6F3A,{roughness:1}); for(let i=0;i<60;i++){ const a=-Math.PI/2+(R3()-0.5)*3, d=90+R3()*120, s=4+R3()*5; const c=new THREE.Mesh(new THREE.SphereGeometry(s,8,6),tm); c.position.set(Math.cos(a)*d+fx0+pw/2,s*0.8,Math.sin(a)*d+Z(fy0+pl/2)); c.scale.y=0.8; site.add(c); } } }
-  plane(site,pw+80,2.2,fx0+pw/2,0.0,Z(fy0-0.6),matT('pave2',paveTex(),{roughness:0.6}));
+  if(!(A.layout==='custom')) plane(site,pw+80,2.2,fx0+pw/2,0.0,Z(fy0-0.6),matT('pave2',paveTex(),{roughness:0.6}));
   { const sh=new THREE.Shape(); Yd.P.forEach(([px,py],i)=>{ const [x,y]=PH(px,py); if(i===0) sh.moveTo(x,y); else sh.lineTo(x,y); });
     const geo=new THREE.ShapeGeometry(sh); const uv=geo.attributes.uv, p=geo.attributes.position; for(let i=0;i<p.count;i++) uv.setXY(i,p.getX(i)/3,p.getY(i)/3);
     const me=new THREE.Mesh(geo,M.grass); me.rotation.x=-Math.PI/2; me.position.y=0.005; me.receiveShadow=true; site.add(me); }
-  plane(site,pw-0.6,SB+0.1,fx0+pw/2,0.02,Z(fy0+SB/2),M.pave);
+  if(!(A.layout==='custom')) plane(site,pw-0.6,SB+0.1,fx0+pw/2,0.02,Z(fy0+SB/2),M.pave);
   Yd.items.filter(i=>i.type==='drive').forEach(i=>{ const [x,y]=PH(i.x,i.y); plane(site,i.w,i.h,x+i.w/2,0.022,Z(y+i.h/2),M.pave); });
   // fence along polygon edges
   const yardG=new THREE.Group(), fenceG=new THREE.Group(); site.add(yardG,fenceG);
   const fenceH=lux==='oddiy'?1.8:2.1; const gmF=mat(parseInt((/^#/.test(A.gateCol||'')?A.gateCol:(GATE_COL[A.gateCol]||'#2B2F33')).slice(1),16),{roughness:0.4,metalness:0.5});
   const pillar=(x,z,h)=>{ box(fenceG,0.45,h,0.45,x,h/2,z,wallMat); box(fenceG,0.56,0.08,0.56,x,h+0.04,z,M.white); };
-  const fenceSeg=(ax,ay,bx,by,h,front)=>{ const [x0,y0]=PH(ax,ay),[x1,y1]=PH(bx,by); const X0=x0,Z0=Z(y0),X1=x1,Z1=Z(y1); const L=Math.hypot(X1-X0,Z1-Z0); if(L<0.3) return;
+  const fenceSeg=(ax,ay,bx,by,h,front)=>{ const [x0,y0]=PH(ax,ay),[x1,y1]=PH(bx,by); const X0=x0,Z0=Z(y0),X1=x1,Z1=Z(y1); const L=Math.hypot(X1-X0,Z1-Z0); if(L<0.3||(A.layout==='custom')) return;
     const n=Math.max(1,Math.round(L/3.2)); if((A.fence||'gisht')!=='yoq'&&A.fence!=='yaxlit') for(let i=0;i<=n;i++){ const t=i/n; pillar(X0+(X1-X0)*t,Z0+(Z1-Z0)*t,h+0.25); }
     const grp=new THREE.Group(); grp.position.set((X0+X1)/2,0,(Z0+Z1)/2); grp.rotation.y=-Math.atan2(Z1-Z0,X1-X0); fenceG.add(grp);
     const FT=A.fence||'gisht'; if(FT==='yoq'){ return; }
@@ -2517,7 +2519,7 @@ function buildHouse(v,A){
   const P=Yd.P, gx=Yd.gateX, gw=Math.max(2.6,Math.min(+A.gateW||4,pw*0.5,7)), gx0=Math.max(0.6,Math.min(gx-gw/2,pw-0.6-gw-kw-0.5)), gx1=gx0+gw;
   fenceSeg(0,0,gx0,0,fenceH,true); fenceSeg(gx1+(kw?kw+0.45:0),0,pw,0,fenceH,true);
   for(let i=1;i<P.length;i++){ const a=P[i], b=P[(i+1)%P.length]; fenceSeg(a[0],a[1],b[0],b[1],fenceH,false); }
-  if((A.fence||'gisht')!=='yoq'){ const [ga]=PH(gx0,0),[gb]=PH(gx1,0), zz=Z(fy0), ph=gH+0.35; pillar(ga,zz,ph); pillar(gb,zz,ph);
+  if((A.fence||'gisht')!=='yoq'&&!(A.layout==='custom')){ const [ga]=PH(gx0,0),[gb]=PH(gx1,0), zz=Z(fy0), ph=gH+0.35; pillar(ga,zz,ph); pillar(gb,zz,ph);
     const GC=/^#/.test(A.gateCol||'')?A.gateCol:(GATE_COL[A.gateCol]||'#1E2023'), PAT=A.gatePat||'oddiy';
     const L=gb-ga-0.5, x0=ga+0.25, gm=A.gateType==='naqshli'?M.wood:mat(parseInt(GC.slice(1),16),{roughness:0.35,metalness:0.55}), gold=mat(0xB08A3E,{roughness:0.3,metalness:0.8}), bar=mat(new THREE.Color(GC).multiplyScalar(0.8).getHex(),{roughness:0.35,metalness:0.6});
     const leafPat=(cx,lw,i)=>{ const y0=0.06, Fz=zz, fr=0.06; const frame=()=>{ box(fenceG,lw,fr,0.08,cx,y0+fr/2,Fz,gm); box(fenceG,lw,fr,0.08,cx,y0+gH-fr/2,Fz,gm); box(fenceG,fr,gH,0.08,cx-lw/2+fr/2,y0+gH/2,Fz,gm); box(fenceG,fr,gH,0.08,cx+lw/2-fr/2,y0+gH/2,Fz,gm); };
