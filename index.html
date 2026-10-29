@@ -1226,14 +1226,24 @@ function buildRandom(A){
     v.facade = A.facade&&A.facade!=='auto' ? A.facade : (i===0 ? 'auto' : pick({klassik:['gisht','travertin','kombi','gisht'],zamonaviy:['suvoq','yogoch','travertin','kombi'],milliy:['gisht','suvoq','tosh','kombi']}[v.style]));
     v.rv={shape:wpick(ROOFP[v.style]),mat:pick(['metall','metall','keramik','yumshoq','profnastil']),col:pick(['grafit','grafit','jigar','qizil','yashil','kok'])};
     v.sub=''; if(v.style===A.style&&A.sub&&SUBS[A.sub]) applySub(v,A,A.sub); else if(i===0&&v.prefSub&&!A.styleFixed&&SUBS[v.prefSub]){ v.style=SUBS[v.prefSub].b; applySub(v,A,v.prefSub); } else if(i>0&&v.prefSub&&!A.styleFixed){ const alt=['haytek','minimal'][i-1]; if(SUBS[alt]) applySub(v,A,alt); } else if(i>0&&!A.styleFixed&&R()<0.75){ const L=SUBS_OF(v.style); if(L.length) applySub(v,A,L[Math.floor(R()*L.length)]); }
-    if(A.layout==='custom'){ const ORD=['milliy','zamonaviy','haytek','klassik','minimal'], ch=A.sub||A.style, oth=ORD.filter(x=>x!==ch), key=i===0?ch:oth[i-1];
-      if(i>0){ if(SUBS[key]){ v.style=SUBS[key].b; v.sub=''; v.wall=SUBS[key].wall; v.facade=SUBS[key].fac; applySub(v,Object.assign({},A,{wallFixed:false,facade:'auto'}),key); }
-        else { v.sub=''; v.style=key; v.wall=({milliy:'#E0CCA9',zamonaviy:'#EDEAE3',klassik:'#EDE3D2'})[key]||'#EDEAE3'; v.facade=({milliy:'gisht',zamonaviy:'suvoq',klassik:'travertin'})[key]||'auto'; v.rv=Object.assign({},v.rv,{shape:BASE_RV[key]||'tort'}); }
-        v.forceRoof=true; }
+    if(A.layout==='custom'){ const ch=A.sub||A.style, key=i===0?ch:(CP_PAIR[ch]||['milliy','haytek'])[i-1];
+      if(i>0||CP_LOOK[key]){ cpLook(v,key); v.forceRoof=true; }
       v.desc=(i===0?'Siz tanlagan uslub':'Boshqa uslub')+' · '+(SUBS[key]?SUBS[key].n:STYLE_NAME[key]); }
     finalize(v,A); if(out.fallback && v.name.indexOf(A.layout+'-')!==0) v.notes.unshift(`${out.fallback} uchun yer o'lchami yetmadi, shu sababli o'xshash boshqa shakl berildi.`); });
   return out;
 }
+// Chizmam bor: har bir uslub uchun aniq farq qiladigan ko'rinish (devor, fasad, tom shakli/rangi)
+const CP_LOOK={
+  zamonaviy:{wall:'#EDEAE3',fac:'yogoch',rv:{shape:'tekis',mat:'metall',col:'grafit'}},
+  haytek:{wall:'#6F6A64',fac:'metall',rv:{shape:'tekis',mat:'metall',col:'grafit'}},
+  milliy:{wall:'#E0CCA9',fac:'gisht',rv:{shape:'tort',mat:'keramik',col:'jigar'}},
+  klassik:{wall:'#E8DCC8',fac:'travertin',rv:{shape:'tort',mat:'metall',col:'grafit'}},
+  minimal:{wall:'#F3EFE6',fac:'suvoq',rv:{shape:'ikki',mat:'metall',col:'grafit'}}};
+const CP_PAIR={zamonaviy:['milliy','haytek'],milliy:['zamonaviy','haytek'],haytek:['milliy','minimal'],klassik:['zamonaviy','haytek'],minimal:['milliy','haytek']};
+function cpLook(v,k){ const L=CP_LOOK[k];
+  if(SUBS[k]){ v.style=SUBS[k].b; v.sub=k; } else { v.style=k; v.sub=''; }
+  if(L){ v.wall=L.wall; v.facade=L.fac; v.rv=Object.assign({},L.rv); }
+  else if(SUBS[k]){ v.wall=SUBS[k].wall; v.facade=SUBS[k].fac; v.rv=Object.assign({},SUBS[k].rv); } }
 function buildVariants(A){
   if(A.layout==='custom'){ const C=cpClean(A.custom); if(C) A.floors=C.fl.length; else A.layout='auto'; }
   if(A.seed>0 || (A.layout&&A.layout!=='auto')){ const r=buildRandom(A);
@@ -1261,7 +1271,7 @@ function restyle(v,A,style){ if(SUBS[style]) applySub(v,A,style); else { v.style
 const MKPREF={zamtosh:['ochiq','kub','L','garaj'],klassik:['porch','erker','U','L'],zamonaviy:['kub','L','orqaL','garaj'],milliy:['ayvon','orqaU','orqaL','U'],haytek:['L','garaj','kub','orqaL'],minimal:['kub','orqaL','L'],loft:['kub','garaj','L'],barnhaus:['kub','orqaL','garaj'],skandi:['kub','L','orqaL'],shale:['ayvon','L','kub'],provans:['porch','L','orqaL'],amerika:['ayvon','garaj','L'],ingliz:['porch','erker','kub'],saroy:['U','porch','erker'],sharq:['orqaU','ayvon','orqaL'],buxoro:['orqaU','ayvon','U']};
 const BASE_RV={zamonaviy:'tekis',klassik:'tort',milliy:'tort'};
 function restyleNew(v,A,s){ const sub=SUBS[s]?s:'', st=sub?SUBS[s].b:s; S.rsN=(S.rsN||0)+1;
-  if(A.layout==='custom'){ if(SUBS[s]){ applySub(v,Object.assign({},A,{wallFixed:false,facade:'auto'}),s); } else { v.style=s; v.sub=''; v.wall=({milliy:'#E0CCA9',zamonaviy:'#EDEAE3',klassik:'#EDE3D2'})[s]||v.wall; v.facade=({milliy:'gisht',zamonaviy:'suvoq',klassik:'travertin'})[s]||'auto'; v.rv=Object.assign({},v.rv,{shape:BASE_RV[s]||'tort',mat:s==='zamonaviy'?'metall':(v.rv&&v.rv.mat)||'metall'}); }
+  if(A.layout==='custom'){ cpLook(v,s);
     v.desc='Uslub · '+(SUBS[s]?SUBS[s].n:(STYLE_NAME[s]||s)); v.forceRoof=true; finalize(v,Object.assign({},A,{roofShape:'auto',roofMat:'auto',roofCol:'auto'})); return v; }
   const pref=(MKPREF[s]||['kub']).filter(x=>x!==v.mk); const tries=pref.length?pref:(MKPREF[s]||['kub']);
   for(let t=0;t<tries.length;t++){ const mk=tries[(S.rsN+t)%tries.length], M=MAKETS.find(x=>x.id===mk);
