@@ -69,6 +69,16 @@ body{background:#0d1426;font-family:Inter,sans-serif}
 .rw{font-family:Typ;font-weight:700;font-size:44px;color:#1b1b1b;margin-top:34px;line-height:1.25;padding-left:8px}.rw b{display:inline-block;width:56px}.rw .no{color:#d1352b}.rw .ok{color:#2f9e5b}
 .vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.6) 100%)}
 .grain{position:absolute;inset:0;pointer-events:none;opacity:.10;mix-blend-mode:overlay}`;
+  const PAL = { tun: ['#22345e', '#111b33', '#070b16', '#1a2541', '#0b1120', '#f1e6cf', '#d1352b'],
+    bordo: ['#6b1b2a', '#3a0d16', '#170408', '#5a1624', '#22060c', '#f6e7d2', '#f2b134'],
+    zumrad: ['#1f6b5a', '#0f3b33', '#04140f', '#185447', '#06201a', '#eef3e2', '#ff7a45'],
+    qahva: ['#7a4a2a', '#3d2414', '#170c05', '#5e3920', '#1f120a', '#f7e6c8', '#e0453a'],
+    binafsha: ['#4b2d80', '#25144a', '#0d0620', '#3d2569', '#140a2c', '#f3e9ff', '#ffcc33'],
+    komir: ['#3d3d3d', '#1e1e1e', '#080808', '#333333', '#111111', '#f5f5f0', '#ff6b1a'],
+    okean: ['#1b6f86', '#0d3b4a', '#03161d', '#155b6e', '#061f28', '#eaf6f7', '#ffd166'],
+    qizil: ['#a3262a', '#5e1214', '#220506', '#8a1f22', '#2e0809', '#fff1e0', '#ffd23f'] };
+  const pc = PAL[S.palette] || PAL.tun;
+  const palCss = `body{background:${pc[2]}}.night{background:radial-gradient(ellipse at 50% 30%,${pc[0]} 0%,${pc[1]} 55%,${pc[2]} 100%)}.navy{background:radial-gradient(ellipse at 50% 45%,${pc[3]},${pc[4]} 75%)}.big,.q{color:${pc[5]}}.q em{color:${pc[6]}}.stamp:not(.green){color:${pc[6]};border-color:${pc[6]}}.pt:before{background:${pc[2]}}`;
   const grain = `<svg class="grain" viewBox="0 0 1080 1920"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="1080" height="1920" filter="url(#n)"/></svg>`;
-  return { css, html: body + `<div class="vig"></div>` + grain, D };
+  return { css: css + palCss, html: body + `<div class="vig"></div>` + grain, D };
 };
