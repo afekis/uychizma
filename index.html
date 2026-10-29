@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="uz"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
   <h3 style="margin:0 0 6px">Sayt sizga yoqdimi?</h3><p class="note" style="margin:0 0 8px">Fikringiz saytdagi «Odamlar fikri» bo'limida hammaga ko'rinadi. Telefon raqamingiz ko'rinmaydi.</p>
@@ -8,6 +8,10 @@
   <p class="note" id="fbMsg" role="status"></p></div></div>
 
 <title>UyChizma</title>
+<meta name="description" content="Uyingizni qurishdan oldin 3D-da ko'ring: yer o'lchami yoki chizmangiz bo'yicha 3 xil uy loyihasi, reja, 3D va narx.">
+<meta property="og:type" content="website"><meta property="og:site_name" content="UyChizma"><meta property="og:title" content="UyChizma — uyingizni 3D-da ko'ring">
+<meta property="og:description" content="Yer o'lchami yoki chizmangiz bo'yicha 3 xil uy loyihasi: reja, 3D va qurilish narxi.">
+<meta property="og:url" content="https://afekis.github.io/uychizma/"><meta name="theme-color" content="#0A1120">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -514,7 +518,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
           <div class="dream-h"><b>1. Uy chizmangizni yuklang</b></div>
           <p>Uy (yoki yer) chizmangizni rasm yoki PDF qilib yuklang — sayt xonalar va metrlarni o'qib, uyni aynan shu shakl va o'lchamda chizadi. </p>
           <div class="dream-row">
-            <label class="btn ghost small" for="yerFile">📄 Chizma yuklash</label><input type="file" id="yerFile" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
+            <label class="btn ghost small" for="yerFile">📄 Chizma yuklash</label><input type="file" id="yerFile" accept="image/*,application/pdf" hidden>
             <img id="yerPrev" class="dream-prev" alt="Yuklangan chizma" hidden>
             <button class="btn primary small" id="yerGo" type="button" disabled>📏 Chizmani o'qish</button>
             <button class="btn ghost small" id="cpManual" type="button">✏️ Xonalarni o'zim kiritaman</button>
@@ -3199,18 +3203,23 @@ function cpFromAi(P){ if(!P||!Array.isArray(P.floors)) return 0; const n=v=>{ v=
   try{ $('#qW').value=A.plotW; $('#qL').value=A.plotL; }catch(e){}
   cpOpen(); cpApply(); return fl.reduce((s,f)=>s+f.length,0); }
 function yerMsg(h){ const o=$('#yerOut'); o.hidden=!h; o.innerHTML=h||''; }
+// Ko'p sahifali PDF: reja (xona nomlari va o'lcham raqamlari ko'p) bo'lgan sahifani tanlaydi
+async function cpBestPage(doc){ const N=Math.min(doc.numPages||1,20); if(N<2) return 1; let best=1,bs=-1;
+  const RW=/yotoq|спальн|zal\b|зал|гостин|mehmon|oshxona|кухн|hammom|ванн|санузел|с\/у|hojat|туалет|dahliz|koridor|коридор|прихож|холл|hol\b|xona|комнат|кабинет|гардероб|kotel|котель|lestnits|лестниц|zina|tambur|тамбур|terras|террас|plan|план/i;
+  for(let i=1;i<=N;i++){ try{ const pg=await doc.getPage(i); const tc=await pg.getTextContent(); let sc=0; for(const it of tc.items){ const t=String(it.str||'').trim(); if(!t) continue; if(RW.test(t)) sc+=3; if(/^\d{3,5}$/.test(t.replace(/\s/g,''))) sc+=1; if(/фасад|facade|fasad|разрез|kesim|section|3d|визуал/i.test(t)) sc-=4; } if(sc>bs){ bs=sc; best=i; } }catch(e){} }
+  return best; }
 $('#yerFile').addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; $('#yerGo').disabled=true; yerMsg('Chizma ochilmoqda…');
   try{ let url;
-    if(/pdf/.test(f.type)||/\.pdf$/i.test(f.name)){ const L=await cpPdf(); const doc=await L.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const pg=await doc.getPage(1); const vp0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:Math.min(4,2000/Math.max(vp0.width,vp0.height))}); const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:x,viewport:vp}).promise; url=c.toDataURL('image/png'); }
+    if(/pdf/.test(f.type)||/\.pdf$/i.test(f.name)){ const L=await cpPdf(); const doc=await L.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const pg=await doc.getPage(await cpBestPage(doc)); const vp0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:Math.min(4,2000/Math.max(vp0.width,vp0.height))}); const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:x,viewport:vp}).promise; url=c.toDataURL('image/png'); }
     else url=URL.createObjectURL(f);
     S.yerImg=await cpToJpeg(url,1600); $('#yerPrev').src=S.yerImg; $('#yerPrev').hidden=false; $('#yerGo').disabled=false; $('#yerGo').click();
-  }catch(err){ console.error(err); yerMsg("Faylni ochib bo'lmadi. JPG yoki PNG rasm yuklab ko'ring."); } });
+  }catch(err){ console.error(err); yerMsg(/heic|heif/i.test(f.type+f.name)?"Bu brauzer HEIC rasmni ocha olmadi. Chizmani skrinshot qilib yoki JPG qilib yuklang.":"Faylni ochib bo'lmadi. JPG yoki PNG rasm yuklab ko'ring."); } });
 $('#yerGo').onclick=async()=>{ if(!S.yerImg||S.yerBusy) return; const btn=$('#yerGo'); btn.disabled=true; S.yerBusy=true; yerMsg(`<div class="qum"><span class="qum-i">⏳</span><div><b>AI chizmangizni o'qiyapti…</b><br><small>Xonalar va metrlar aniqlanmoqda, 10–30 soniya. Iltimos, kuting.</small></div></div>`);
   let P=null;
   try{ const sample=await getSample(); if(sample){ const lim=await sample.limits().catch(()=>null); if(lim&&lim.images){ const blob=await (await fetch(S.yerImg)).blob(); P=await sample.json(CP_PROMPT,{images:[new File([blob],'chizma.jpg',{type:'image/jpeg'})]}); } } }catch(e){ console.warn(e); P=null; }
   if(!P||!Array.isArray(P.floors)){ try{ const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),90000);
-      const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:S.yerImg,prompt:CP_PROMPT}),signal:ctl?ctl.signal:undefined}); clearTimeout(tm);
-      if(r.ok&&/json/.test(r.headers.get('content-type')||'')){ const j=await r.json(); P=cpParse(j.text); } }catch(e){ console.warn(e); } }
+      for(let t=0;t<2&&!(P&&Array.isArray(P.floors));t++){ try{ const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:S.yerImg,prompt:CP_PROMPT}),signal:ctl?ctl.signal:undefined});
+        if(r.ok&&/json/.test(r.headers.get('content-type')||'')){ const j=await r.json(); P=cpParse(j.text); } }catch(e){ console.warn(e); if(e&&e.name==='AbortError') break; } } clearTimeout(tm); }catch(e){ console.warn(e); } }
   btn.disabled=false; S.yerBusy=false; const k=cpFromAi(P);
   if(k) yerMsg(`✅ Chizmangizdan ${k} ta xona o'qildi — uy aynan shu shakl va metrlarda chiziladi. Pastdagi sxemani chizmangiz bilan solishtiring; xato bo'lsa «✏️ Xonalar va metrlarni tekshirish» ni ochib to'g'rilang. Endi pastda <b>uslub</b> va <b>qavat</b>ni tanlang.`);
   else { yerMsg("AI hozir chizmani o'qiy olmadi. Xonalarni metrlari bilan o'zingiz kiriting: «✏️ Xonalarni o'zim kiritaman» ni bosing."); } };
