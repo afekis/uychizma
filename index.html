@@ -841,6 +841,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   .callfab{right:12px;bottom:calc(68px + env(safe-area-inset-bottom,0px))}
   body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 }
+
+/* Natija sahifasi: kam ishlatiladigan bo'limlar ochib-yopiladi */
+.panel.fold .fx{display:none!important}
+.panel .foldbtn{margin-left:auto}
+.panel .fhd{cursor:pointer}
 </style>
   </section>
   <section data-screen="projects" hidden>
@@ -4538,5 +4543,13 @@ const PAY={ card:'5614 6818 7414 6230', holder:'', price:"5 000 so'm", free:0, p
     fb.innerHTML=''; const c=svg.cloneNode(true); const wide=innerWidth<700; c.style.width=wide?'200%':'100%'; c.style.height='auto'; c.style.maxWidth='none'; fb.appendChild(c);
     fv.hidden=false; document.body.style.overflow='hidden'; fv.scrollTop=0; fv.scrollLeft=wide?(fb.scrollWidth-innerWidth)/2:0; });
 })();
+
+/* Natija sahifasini qisqartirish: smeta/material, xonalar, sozlash, usta loyihasi, arxitektor — boshida yopiq */
+(function(){ const mt=document.getElementById('matTable'); const ps=['#roomEdit','#roomsPanel','#ustaPanel','#archPanel'].map(q=>document.querySelector(q)).concat(mt?[mt.closest('.panel')]:[]).filter(Boolean);
+  ps.forEach(p=>{ const kids=[...p.children]; let h=kids.findIndex(c=>c.tagName==='H2'||c.querySelector('h2')); if(h<0) return; const hd=kids[h]; const b=document.createElement('button'); b.type='button'; b.className='btn ghost small foldbtn';
+    if(hd.tagName==='H2') hd.insertAdjacentElement('afterend',b); else hd.appendChild(b);
+    const set=open=>{ p.classList.toggle('fold',!open); b.textContent=open?'▴ Yopish':'▾ Ochish'; b.setAttribute('aria-expanded',String(open)); };
+    [...p.children].forEach((c,k)=>{ if(k>h&&c!==b) c.classList.add('fx'); }); const h2=hd.tagName==='H2'?hd:hd.querySelector('h2'); h2.classList.add('fhd');
+    const tog=()=>set(p.classList.contains('fold')); b.onclick=tog; h2.onclick=tog; set(false); }); })();
 </script>
 </body></html>
