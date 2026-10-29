@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 Fikr</button>
+<button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
   <h3 style="margin:0 0 6px">Sayt sizga yoqdimi?</h3><p class="note" style="margin:0 0 8px">Fikringiz saytdagi «Odamlar fikri» bo'limida hammaga ko'rinadi. Telefon raqamingiz ko'rinmaydi.</p>
   <div class="fbstars" id="fbStars"><button type="button" data-v="1">★</button><button type="button" data-v="2">★</button><button type="button" data-v="3">★</button><button type="button" data-v="4">★</button><button type="button" data-v="5">★</button></div>
@@ -730,7 +730,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <button class="btn primary small" id="dlAll" type="button">⬇ Hammasini yuklab olish</button>
       </div>
     </div>
-    <button class="dlfab" id="dlFab" type="button" aria-label="Hammasini yuklab olish">⬇ Hammasini yuklab olish</button>
+    <button class="dlfab" id="dlFab" type="button" aria-label="Hammasini yuklab olish">⬇ <span>Hammasini yuklab olish</span></button>
     <div class="morebar"><button class="btn primary small" id="moreVar" type="button">🎲 Yana 3 ta yangi variant</button><small id="seedInfo">Har bosganda yangi shakl, uslub, rang va tom bilan boshqa uylar chiqadi, cheklov yo'q.</small></div>
     <div class="vtabs" role="tablist" id="vtabs"></div>
     <div class="resgrid">
@@ -827,7 +827,17 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       .rxrow{display:flex;gap:8px}.rxrow input{flex:1;min-width:0}
       .rxn{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}.rxn td{padding:5px 4px;border-top:1px solid var(--line,#E3E8F0);vertical-align:top}
       .rxn td:first-child{width:22px}
-    </style>
+    
+/* Telefon: suzuvchi tugmalar kichik dumaloq bo'lib, matnni yopmasin */
+@media (max-width:640px){
+  .fbfab,.callfab,.dlfab{width:48px;height:48px;min-height:48px;padding:0;display:grid;place-items:center;font-size:20px;line-height:1}
+  .fbfab span,.callfab span,.dlfab span{display:none}
+  .fbfab[hidden],.callfab[hidden],.dlfab[hidden]{display:none}
+  .fbfab{left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .callfab{right:12px;bottom:calc(68px + env(safe-area-inset-bottom,0px))}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+}
+</style>
   </section>
   <section data-screen="projects" hidden>
     <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-end">
@@ -3573,7 +3583,7 @@ const CONTACT_PHONE=''; // masalan '+998 90 123 45 67'
 const CONTACT_TG=TG_USER;
 (function(){ if(!CONTACT_PHONE&&!CONTACT_TG) return; const tg=CONTACT_TG?'https://t.me/'+CONTACT_TG:''; const tel=CONTACT_PHONE?'tel:'+CONTACT_PHONE.replace(/[^\d+]/g,''):'';
   const lab=CONTACT_PHONE||('@'+CONTACT_TG); document.querySelectorAll('.cf-num').forEach(e=>e.textContent=lab);
-  const f=$('#callFab'); f.href=tel||tg; if(!tel){ f.target='_blank'; f.rel='noopener'; f.innerHTML='✈️ Telegram'; f.style.background='#229ED9'; f.setAttribute('aria-label','Telegram orqali yozish'); } f.hidden=false;
+  const f=$('#callFab'); f.href=tel||tg; if(!tel){ f.target='_blank'; f.rel='noopener'; f.innerHTML='✈️ <span>Telegram</span>'; f.style.background='#229ED9'; f.setAttribute('aria-label','Telegram orqali yozish'); } f.hidden=false;
   const b=$('#ctBar'); b.hidden=false; const ph=b.querySelector('.ct-phone'); if(tel) ph.href=tel; else ph.remove();
   document.querySelectorAll('.cf-tel').forEach(a=>{ a.href=tel||tg; if(!tel){ a.target='_blank'; a.innerHTML='✈️ Yoki hoziroq Telegramda yozing: @'+CONTACT_TG; } a.hidden=false; });
   if(tg){ const t=b.querySelector('.ct-tg'); t.href=tg; t.textContent='✈️ Telegram: @'+CONTACT_TG; t.hidden=false; } })();
@@ -3792,6 +3802,15 @@ async function aiGen(PR){ const mcp=await getMcp(); if(!mcp){ if(FREE_AI){ try{ 
   const g=plOf(gen)||{}; const nodeId=g.nodeId||g.node_id; if(!nodeId) throw {code:'no_node'};
   const sh=await mcp.callTool('Figma','get_screenshot',{fileKey:fk,nodeId:String(nodeId),maxDimension:1600,enableBase64Response:true});
   const im=(sh.content||[]).find(c=>c.type==='image'); if(!im) throw {code:'no_image'}; return `data:${im.mimeType||'image/png'};base64,${im.data}`; }
+/* Chizmam bor: 3D modeldan haqiqiy foto (OpenRouter rasm modeli, worker mode:'render') */
+function renderPrompt(v,A){ const st=(v.sub&&SUBS[v.sub]&&SUBS[v.sub].ai)||({klassik:'classic European style',zamonaviy:'contemporary modern style',milliy:'Uzbek national style with carved wooden columns'}[v.style]||'contemporary style');
+  const fac=FAC_EN[v.facade&&v.facade!=='auto'?v.facade:'']||'', wall=/^#/.test(v.wall)?`main walls in colour ${v.wall}`:`${WALL_EN[v.wall]||'light'} walls`;
+  return `Turn this 3D model screenshot into a photorealistic, high-end architectural photograph of EXACTLY the same house. Keep unchanged: the footprint and proportions, number of floors, roof shape, the position, size and count of every window and door, the entrance porch and its columns, and any pool or flower beds shown. Do not add floors, wings, balconies, fences, gates, neighbouring buildings or a street. Architecture: ${st}; ${wall}${fac?', '+fac:''}. Rich real materials (natural stone cladding, warm wood panels, large glass with thin black frames where the model has glazing). Lighting: blue-hour dusk, warm interior light glowing through the windows, soft LED lights under the eaves and porch, uplit young trees. Neat landscaping: trimmed lawn, low shrubs and grasses along the facade, stone walkway to the entrance. Clear evening sky. Eye-level three-quarter view, 35 mm lens, ultra detailed, 4K, no text, no watermark.`; }
+async function aiRender(v,A){ if(!(resV&&resV.ok)) throw {code:'no_3d'}; let shot=null; try{ shot=resV.shot({w:1280,h:960,kind:'ext',th:Math.PI*0.14,ph:1.42,rk:0.72}); }catch(e){ console.error(e); } if(!shot) throw {code:'no_shot'};
+  shot=await new Promise(res=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement('canvas'); c.width=1280; c.height=960; c.getContext('2d').drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.88)); }; im.onerror=()=>res(shot); im.src=shot; });
+  const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),120000); let r;
+  try{ r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'render',image:shot,prompt:renderPrompt(v,A)}),signal:ctl?ctl.signal:undefined}); } finally{ clearTimeout(tm); }
+  if(!r.ok||!/json/.test(r.headers.get('Content-Type')||'')) throw {code:'render_http',status:r.status}; const j=await r.json(); if(!j||!/^data:image\//.test(j.image||'')) throw {code:'render_empty',err:j&&j.error}; return j.image; }
 const AIC={}, AILAST={}; let aiQ=Promise.resolve(), aiCur='';
 const AIK=[['ext','Tashqi ko\'rinish'],['cut','Kesim (dollhouse)'],['int','Mehmonxona interyeri']];
 const aiPromptK=(k,v,A)=>k==='ext'?aiPrompt(v,A,false):(k==='cut'?aiPromptCut(v,A):aiPromptInt(v,A));
@@ -3813,7 +3832,7 @@ async function aiAuto(force){
   if(AIK.every(([k])=>!force&&AIC[key+'#'+k])){ msg.textContent=''; return; }
   msg.textContent=(mcp?'Figma AI chizmoqda, har bir rasm 20–60 soniya…':'AI chizmoqda… har bir rasm ~5 soniya.'); aiBusyKey=key; let aiFails=0; window.__aiWait=s=>{ if(aiCur===key) msg.textContent=`AI navbatda: keyingi rasm ~${s} soniyada chiziladi…`; };
   aiQ=aiQ.then(async()=>{ for(const [k,n] of AIK){ if(aiCur!==key) return; if(!force&&AIC[key+'#'+k]) continue;
-      try{ const url=await aiGen(aiPromptK(k,v,A)); AIC[key+'#'+k]=url; if(aiCur===key) aiCard(k,'ok',url); }
+      try{ let url=null; if(k==='ext'&&A.layout==='custom'&&FREE_AI){ try{ url=await aiRender(v,A); }catch(e){ console.warn('render',e); } } if(!url) url=await aiGen(aiPromptK(k,v,A)); AIC[key+'#'+k]=url; if(aiCur===key) aiCard(k,'ok',url); }
       catch(e){ aiFails++; const c=e&&e.code; if(!mcp){ if(aiCur===key) aiCard(k,'idle',null,"AI xizmati javob bermadi, «Qayta chizish»ni bosing."); console.error(e); continue; } const t=c==='not_granted'||c==='denied'||c==='server_not_connected'?"Figma'ga ruxsat berilmadi.":(c==='no_ai'?"Figma akkauntida AI yoqilmagan.":"Chizib bo'lmadi, «Qayta chizish»ni bosing."); if(aiCur===key) aiCard(k,'idle',null,t); console.error(e); if(c==='not_granted'||c==='denied'||c==='no_ai') break; } }
     if(aiCur===key){ aiBusyKey=''; if(!mcp&&aiFails>=AIK.length){ msg.textContent="AI xizmati hozir javob bermadi, rasmlar 3D modeldan chizildi."; aiGal3D(); } else msg.textContent="Tayyor. Rasmlarni sun'iy intellekt chizdi, mayda detallar 3D rejadan farq qilishi mumkin."; } });
 }
