@@ -85,7 +85,7 @@ section[data-screen]{display:flex;flex-direction:column;gap:28px}
 .vhint{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.88);color:#15212C;font-size:12px;padding:4px 8px;border-radius:6px}
 .vzoom{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px}
 .vzoom .vbtn{width:36px;padding:0}
-.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.steps4{grid-template-columns:repeat(4,minmax(0,1fr))}.steps4 .step3{align-items:center;text-align:center}@media (max-width:760px){.steps3.steps4{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.steps4 .step3{padding:12px}.steps4 .step3 svg{width:44px;height:44px}}
 .step3{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:6px}
 .step3 b{font-family:var(--f-mono);color:var(--accent);font-size:13px}
 .step3 h3{font-size:16px}
@@ -446,32 +446,32 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     </div>
     <div class="hero">
       <div class="copy">
-        <div class="eyebrow">Uy loyihasi · 3D · reja · smeta</div>
-        <h1>Orzuingizdagi uyni qurishdan oldin 3D-da ko'ring</h1>
-        <p>Yer o'lchami, oilangiz va didingiz haqidagi savollarga javob bering. UyChizma sizga 3 xil variant tayyorlaydi: aylantirib ko'rsa bo'ladigan 3D model, har qavatning rejasi, xonalar maydoni va qancha material ketishi.</p>
+        <div class="eyebrow">🏠 Uy · 3D · reja · narx</div>
+        <h1>Uyingizni qurishdan oldin 3D-da ko'ring</h1>
+        <p>Yeringiz o'lchamini yozing yoki chizmangizni yuklang. 1 daqiqada uyning rejasi, 3D ko'rinishi va narxi tayyor.</p>
         <div class="actions">
           <button class="btn primary" data-go="start">Loyiha boshlash</button>
           <button class="btn ghost" data-go="projects">Mening loyihalarim</button>
         </div>
-        <p class="note">Namuna: 18 × 30 m yer, 2 qavat, 4 yotoqxona, darvozaxonali klassik uy.</p>
+        <p class="note">👆 3D uyni barmoq bilan aylantirib ko'ring.</p>
       </div>
       <div class="viewer" id="heroViewer">
         <span class="vhint">Barmoq yoki sichqoncha bilan aylantiring</span>
       </div>
     </div>
-    <div class="steps3">
-      <div class="step3"><b>1-qadam</b><h3>Ro'yxatdan o'ting</h3><p>Ism va telefon raqamingizni kiriting. Loyihalaringiz shu nom bilan saqlanadi.</p></div>
-      <div class="step3"><b>2-qadam</b><h3>Savollarga javob bering</h3><p>Yer, qavatlar, yotoqxonalar, zal, uslub, garaj va byudjet: 5 ta qisqa bo'lim.</p></div>
-      <div class="step3"><b>3-qadam</b><h3>3 variantni solishtiring</h3><p>3D model, qavat rejalari, eksplikatsiya, material hisobi va taxminiy narx.</p></div>
+    <div class="steps3 steps4">
+      <div class="step3"><svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="10" y="8" width="44" height="48" rx="8" fill="#E8F0FE"/><circle cx="32" cy="26" r="8" fill="#2D6BE4"/><path d="M18 48c2-8 8-12 14-12s12 4 14 12" fill="#2D6BE4"/></svg><b>1</b><h3>Ro'yxatdan o'ting</h3><p>Ism va telefon.</p></div>
+      <div class="step3"><svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="8" y="8" width="48" height="48" rx="10" fill="#FFF4D6"/><path d="M14 40 32 24 50 40V52H14Z" fill="#F2A93B"/><path d="M10 41 32 21 54 41" stroke="#8A5A12" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="28" y="40" width="8" height="12" fill="#8A5A12"/></svg><b>2</b><h3>Uyingizni tanlang</h3><p>Yer, qavat, xonalar, uslub.</p></div>
+      <div class="step3"><svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="8" y="8" width="48" height="48" rx="10" fill="#E9F7EF"/><rect x="16" y="18" width="32" height="28" fill="none" stroke="#1F7A4D" stroke-width="3"/><path d="M32 18v14H16M32 32h16" stroke="#1F7A4D" stroke-width="3"/><path d="M16 52h32M16 50v4M48 50v4" stroke="#1F7A4D" stroke-width="2"/></svg><b>yoki</b><h3>Chizmangizni yuklang</h3><p>AI o'qib, uyni o'zi chizadi.</p></div>
+      <div class="step3"><svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="4" y="8" width="56" height="48" rx="10" fill="#F1ECFE"/><path d="M8 40 18 31 28 40V50H8Z" fill="#7C5CE6"/><path d="M24 36 34 26 44 36V50H24Z" fill="#9B82F0"/><path d="M38 40 47 32 56 40V50H38Z" fill="#BBA8F7"/></svg><b>3</b><h3>3 xil uy oling</h3><p>3D, reja va narx.</p></div>
     </div>
     <div class="vguide" id="vguide">
       <div class="eyebrow">Video qo'llanma</div>
-      <h2 style="font-size:clamp(22px,3vw,30px);margin:4px 0 10px">Saytdan qanday foydalaniladi</h2>
-      <p class="note" style="margin:0 0 12px">Ro'yxatdan o'tishdan PDF kitobgacha — hammasi qisqa videoda.</p>
+      <h2 style="font-size:clamp(22px,3vw,30px);margin:4px 0 10px">Qanday ishlaydi? Videoni ko'ring</h2>
       <video controls playsinline preload="none" poster="img/qollanma.jpg" src="video/qollanma.mp4" style="width:100%;max-width:400px;aspect-ratio:400/820;border-radius:18px;background:#0A1120;display:block;margin:0 auto;box-shadow:0 18px 40px -20px rgba(0,0,0,.5)"></video>
     </div>
     <div class="showcase">
-      <div class="sc-head"><div class="eyebrow">Namunaviy natija</div><h2 style="font-size:clamp(22px,3vw,30px)">Sayt sizga shunday dizayn chiqarib beradi</h2><p class="note">Bu rasmlar yuqoridagi namunaviy uy uchun sun'iy intellekt yordamida chizilgan. Sizning javoblaringiz bo'yicha xuddi shunday rasmlar o'z uyingiz uchun chiqadi.</p></div>
+      <div class="sc-head"><div class="eyebrow">Namunaviy natija</div><h2 style="font-size:clamp(22px,3vw,30px)">Natija shunday bo'ladi</h2><p class="note">Sizning uyingiz uchun ham shunday rasmlar chiqadi.</p></div>
       <div class="sc-grid"><figure class="sc-card"><img alt="Tashqi ko'rinish" loading="lazy" src="img/namuna-1.webp"><figcaption><b>Tashqi ko'rinish</b><span>Qurilib bitgandagi fotodek ko'rinish</span></figcaption></figure><figure class="sc-card"><img alt="Kesim (dollhouse)" loading="lazy" src="img/namuna-2.webp"><figcaption><b>Kesim (dollhouse)</b><span>Tomi olingan, xonalar jihozlari bilan</span></figcaption></figure><figure class="sc-card"><img alt="Mehmonxona interyeri" loading="lazy" src="img/namuna-3.webp"><figcaption><b>Mehmonxona interyeri</b><span>Ichki dizayn</span></figcaption></figure></div>
     </div>
   </section>
