@@ -253,6 +253,7 @@ body{background:radial-gradient(ellipse at 50% 35%,#16306b,#0A1532 60%,#060c1d);
     + scene('s5', T4, D, `<div class="hk" style="top:300px"><div class="big" style="font-size:96px;margin:0">${cta.map((l, i) => `<div style="animation:slam .45s ${T4 + .1 + i * .35}s both">${l}</div>`).join('')}</div></div><div class="url" style="animation:pop .5s ${T4 + .9}s both">🌐 ${URL}</div><div class="path" style="animation:fadeIn .5s ${T4 + 1.3}s both">Loyiha boshlash → <b style="color:#FFC93C">📐 Chizmam bor</b><br>havola profilda 👆</div>`, true);
   return { css, html, D };
 };
+T.hikoya = () => require(path.join(__dirname, 'hikoya.js'))(S, { scene, URL });
 const style = S.style || 'klassik';
 if (!T[style]) throw new Error('Noma\'lum style: ' + style + ' (bor: ' + Object.keys(T).join(', ') + ')');
 const { css, html, D: D0 } = T[style]();
