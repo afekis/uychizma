@@ -6,9 +6,9 @@ const fs = require('fs'), path = require('path');
 module.exports = (S, { scene, URL }) => {
   const f64 = n => 'data:font/woff2;base64,' + fs.readFileSync(path.join(__dirname, n)).toString('base64');
   const SC = S.scenes, words = SC.map(s => Math.max(4, String(s.say || '').split(/\s+/).filter(Boolean).length));
-  const per = words.map(w => Math.max(3.2, w * 0.5)), starts = [];
+  const per = words.map((w, i) => SC[i].dur || Math.max(3.2, w * 0.5)), starts = [];
   let t = 0; per.forEach(p => { starts.push(t); t += p; }); const D = t + 0.6;
-  if (!S.voice) S.voice = SC.map(s => s.say).join(' ');
+  if (!S.voice && !S.noVoice) S.voice = SC.map(s => s.say).join(' ');
   const tag = (txt, st = '') => `<div class="tg" style="${st}">${txt}</div>`;
   const ptag = `<div class="pt"><b>UC</b></div>`;
   const clock = (a, d) => `<svg viewBox="0 0 200 200" class="ico"><circle cx="100" cy="100" r="86" fill="none" stroke="#f1e6cf" stroke-width="8"/>${Array.from({ length: 12 }, (_, i) => `<line x1="100" y1="22" x2="100" y2="${i % 3 ? 34 : 42}" stroke="#f1e6cf" stroke-width="${i % 3 ? 4 : 8}" transform="rotate(${i * 30} 100 100)"/>`).join('')}<line x1="100" y1="100" x2="100" y2="58" stroke="#f1e6cf" stroke-width="9" stroke-linecap="round"/><g style="transform-origin:100px 100px;animation:spin ${d}s linear ${a}s both"><line x1="100" y1="112" x2="100" y2="30" stroke="#d1352b" stroke-width="5" stroke-linecap="round"/></g><circle cx="100" cy="100" r="9" fill="#d1352b"/></svg>`;
