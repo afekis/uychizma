@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560">
+<defs>
+<pattern id="st" width="28" height="10" patternUnits="userSpaceOnUse"><rect width="28" height="10" fill="#1f5c8f"/><rect width="9" height="10" fill="#2f7fc0"/><rect x="14" width="4" height="10" fill="#e8b53a"/></pattern>
+</defs>
+<!-- oyoqlar -->
+<rect x="150" y="490" width="40" height="55" rx="10" fill="#3b2a20"/><rect x="210" y="490" width="40" height="55" rx="10" fill="#3b2a20"/>
+<ellipse cx="166" cy="548" rx="30" ry="12" fill="#2a1d15"/><ellipse cx="234" cy="548" rx="30" ry="12" fill="#2a1d15"/>
+<!-- chopon -->
+<path d="M120 290 Q200 262 280 290 L312 505 Q200 528 88 505 Z" fill="url(#st)" stroke="#173f63" stroke-width="5"/>
+<path d="M200 285 L200 512" stroke="#173f63" stroke-width="5"/>
+<path d="M170 288 L200 360 L230 288" fill="#f4efe4" stroke="#173f63" stroke-width="4"/>
+<!-- belbog' -->
+<path d="M104 392 Q200 412 296 392 L299 420 Q200 440 101 420 Z" fill="#c8322b"/>
+<path d="M188 418 l-10 50 l14 -6 l6 10 l6 -54 z" fill="#a8261f"/>
+<!-- o'ng qo'l: salom -->
+<path d="M282 300 Q330 300 345 238" stroke="#1f5c8f" stroke-width="40" fill="none" stroke-linecap="round"/>
+<circle cx="350" cy="214" r="26" fill="#f2c9a0" stroke="#c99a6e" stroke-width="3"/>
+<path d="M336 196 l-6 -22 M348 190 l-2 -24 M360 192 l4 -22 M370 202 l10 -16" stroke="#f2c9a0" stroke-width="11" stroke-linecap="round"/>
+<!-- chap qo'l: chizma o'rami -->
+<path d="M118 300 Q80 340 96 400" stroke="#1f5c8f" stroke-width="40" fill="none" stroke-linecap="round"/>
+<rect x="40" y="380" width="120" height="34" rx="17" fill="#cfe4ff" stroke="#2b6cb0" stroke-width="4" transform="rotate(-25 100 397)"/>
+<path d="M60 390 l90 -42" stroke="#2b6cb0" stroke-width="3" stroke-dasharray="8 6"/>
+<circle cx="100" cy="404" r="24" fill="#f2c9a0" stroke="#c99a6e" stroke-width="3"/>
+<!-- bosh -->
+<ellipse cx="200" cy="170" rx="82" ry="90" fill="#f2c9a0" stroke="#c99a6e" stroke-width="4"/>
+<ellipse cx="118" cy="178" rx="14" ry="20" fill="#eab48a"/><ellipse cx="282" cy="178" rx="14" ry="20" fill="#eab48a"/>
+<!-- soqol -->
+<path d="M122 188 Q120 300 200 318 Q280 300 278 188 Q268 236 236 244 Q200 228 164 244 Q132 236 122 188 Z" fill="#f7f7f2" stroke="#d9d9d0" stroke-width="4"/>
+<path d="M160 270 q8 18 0 34 M200 280 q6 18 0 32 M240 270 q-8 18 0 34" stroke="#dcdcd2" stroke-width="4" fill="none"/>
+<!-- mo'ylov -->
+<path d="M200 214 Q170 202 148 226 Q172 230 200 222 Q228 230 252 226 Q230 202 200 214 Z" fill="#ffffff" stroke="#d9d9d0" stroke-width="3"/>
+<!-- burun, ko'z, qosh -->
+<ellipse cx="200" cy="196" rx="14" ry="12" fill="#e7a97c"/>
+<path d="M156 160 q14 -10 28 0" stroke="#3a2a20" stroke-width="6" fill="none" stroke-linecap="round"/>
+<path d="M216 160 q14 -10 28 0" stroke="#3a2a20" stroke-width="6" fill="none" stroke-linecap="round"/>
+<path d="M150 140 q20 -14 40 -4" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"/>
+<path d="M210 136 q20 -10 40 4" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"/>
+<circle cx="146" cy="190" r="12" fill="#f19a8e" opacity=".55"/><circle cx="254" cy="190" r="12" fill="#f19a8e" opacity=".55"/>
+<path d="M186 232 q14 8 28 0" stroke="#9c4a3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<!-- do'ppi -->
+<path d="M122 112 Q124 52 200 48 Q276 52 278 112 Q200 96 122 112 Z" fill="#1b1b1f" stroke="#000" stroke-width="3"/>
+<path d="M122 112 Q200 96 278 112 L276 122 Q200 106 124 122 Z" fill="#2a2a30"/>
+<g fill="#fff">
+<path d="M150 98 q-6 -26 14 -34 q-8 14 2 32 q-8 6 -16 2z"/>
+<path d="M190 90 q-6 -28 14 -36 q-8 14 2 34 q-8 6 -16 2z"/>
+<path d="M232 92 q-6 -28 14 -34 q-8 14 2 32 q-8 6 -16 2z"/>
+</g>
+</svg>

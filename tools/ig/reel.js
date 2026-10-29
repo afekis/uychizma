@@ -14,7 +14,9 @@ const fs = require('fs');
 const path = require('path');
 const [, , specPath, outPath] = process.argv;
 const S = JSON.parse(fs.readFileSync(specPath, 'utf8'));
-const MASCOT = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, 'mascot.png')).toString('base64');
+// spec.mascot: 'mascot.png' (quruvchi, standart) yoki 'bobo.svg' (bobo personaj)
+const MFILE = path.join(__dirname, S.mascot || 'mascot.png');
+const MASCOT = (MFILE.endsWith('.svg') ? 'data:image/svg+xml;base64,' : 'data:image/png;base64,') + fs.readFileSync(MFILE).toString('base64');
 const FPS = 30;
 const URL = 'afekis.github.io/uychizma';
 const split = s => String(s || '').split('|');
@@ -59,7 +61,7 @@ T.klassik = () => {
 #s2 .m{position:absolute;right:20px;bottom:-50px;width:250px}
 #s3 .h{position:absolute;left:40px;right:40px;top:300px;font-size:96px;line-height:1.15}
 .btn{position:absolute;left:110px;right:110px;top:640px;background:#2563EB;color:#fff;font-weight:800;font-size:50px;text-align:center;padding:34px 0;border-radius:70px;box-shadow:0 0 0 8px rgba(37,99,235,.25),0 18px 40px rgba(0,0,0,.4)}
-.sub{position:absolute;left:0;right:0;top:820px;text-align:center;color:#FBE7C2;font-size:44px;font-weight:700} #s3 .m{position:absolute;left:300px;top:960px;width:480px}`;
+.sub{position:absolute;left:0;right:0;top:820px;text-align:center;color:#FBE7C2;font-size:44px;font-weight:700} #s3 .m{position:absolute;left:300px;top:960px;width:480px}${S.bg ? `body{background:${S.bg}}` : ''}`;
   const cta = split(S.cta || 'SAYTGA KIRING|VA BOSHLANG!');
   const html = `<div class="bk">${bokeh}</div>`
     + scene('s1', 0, T1, `<div class="h">${split(S.hook).map((l, i) => `<div class="${i ? 'a' : ''}" style="animation:pop .6s ${0.1 + i * 0.6}s both">${l}</div>`).join('')}</div>${mascot('m', .3)}`)
@@ -260,7 +262,7 @@ const cp = require('child_process');
 let VOICE_STATUS = 'yoq', VDUR = 0;
 const mp3 = outPath.replace(/\.mp4$/, '') + '.voice.mp3', mixed = outPath.replace(/\.mp4$/, '') + '.mix.wav';
 if (S.voice) {
-  const tts = () => cp.execFileSync('python3', [path.join(__dirname, 'tts.py'), '--voice', S.voiceName || 'uz-UZ-SardorNeural', '--rate', S.voiceRate || '+0%', '--text', S.voice, '--write-media', mp3], { stdio: 'pipe', timeout: 60000 });
+  const tts = () => cp.execFileSync('python3', [path.join(__dirname, 'tts.py'), '--voice', S.voiceName || 'uz-UZ-SardorNeural', '--rate=' + (S.voiceRate || '+0%'), '--pitch=' + (S.voicePitch || '+0Hz'), '--text', S.voice, '--write-media', mp3], { stdio: 'pipe', timeout: 60000 });
   try {
     try { tts(); } catch (e) { cp.execFileSync('pip', ['install', '-q', 'edge-tts', '--break-system-packages'], { stdio: 'pipe', timeout: 120000 }); tts(); }
     VDUR = +cp.execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp3]).toString().trim();
