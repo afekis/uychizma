@@ -3274,6 +3274,10 @@ function cpTidy(f){ if(f.length<2) return f; const R=v=>Math.round(v*100)/100, o
   for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ if(cov[j*NX+i]) continue; let l=0,r=0,u=0,d=0; for(let k=1;k<=L;k++){ if(!l&&c(i-k,j)) l=1; if(!r&&c(i+k,j)) r=1; if(!u&&c(i,j-k)) u=1; if(!d&&c(i,j+k)) d=1; } if((l&&r)||(u&&d)) fill[j*NX+i]=1; }
   let n=0; for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ if(!fill[j*NX+i]) continue; let w=0; while(i+w<NX&&fill[j*NX+i+w]) w++; let h=1; outer: for(;j+h<NY;h++){ for(let k=0;k<w;k++) if(!fill[(j+h)*NX+i+k]) break outer; }
     for(let jj=j;jj<j+h;jj++) for(let k=0;k<w;k++) fill[jj*NX+i+k]=0; if(w*h*st*st>=0.8&&Math.min(w,h)*st>=0.7) f.push([n++?"Yo'lak "+(n):"Yo'lak",'circ',R(x0+i*st),R(y0+j*st),R(w*st),R(h*st),0]); }
+  // sanuzel tashqi devorda bo'lishi kerak: yo'lak tashqi devorda, hojatxonalar ichkarida qolgan bo'lsa — joyini almashtiradi
+  f.filter(c=>c[1]==='circ'&&/^Yo'lak/.test(c[0])&&c[6]===0).forEach(c=>{ const E=0.06, inY=r=>r[3]>=c[3]-E&&r[3]+r[5]<=c[3]+c[5]+E;
+    if(Math.abs(c[2]+c[4]-x1)<E){ const G=f.filter(r=>r!==c&&Math.abs(r[2]+r[4]-c[2])<E&&inY(r)); if(G.length&&G.every(r=>r[1]==='wet')){ const gx=Math.min(...G.map(r=>r[2])); G.forEach(r=>{ r[2]=R(r[2]+c[4]); }); c[2]=R(gx); } }
+    else if(Math.abs(c[2]-x0)<E){ const G=f.filter(r=>r!==c&&Math.abs(r[2]-(c[2]+c[4]))<E&&inY(r)); if(G.length&&G.every(r=>r[1]==='wet')){ const gw=Math.max(...G.map(r=>r[2]+r[4]))-c[2]-c[4]; G.forEach(r=>{ r[2]=R(r[2]-c[4]); }); c[2]=R(c[2]+gw); } } });
   return cpSnap(f,0.12); }
 function cpFromAi(P){ if(!P||!Array.isArray(P.floors)) return 0; const n=v=>{ if(v==null||v==='') return null; v=+v; return isFinite(v)?Math.round(v*100)/100:null; };
   const NOT=/pool|basseyn|бассейн|landsh|ландш|garden|bog'|yard|hovli|двор|dvor|gulzor|maysa|lawn|flower|клумб|газон|tap[cč]an|top[cč]an|тапчан|топчан|leti|лети|летн|summer|yozgi|darvoza|vorot|ворот|gate|naves|навес|canopy|fence|zabor|забор/i, TN={zal:'Zal',kitchen:'Oshxona',bed:'Yotoqxona',wet:'Hammom',circ:'Hol',stair:'Zina',util:'Xona',garage:'Garaj'};
