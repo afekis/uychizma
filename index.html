@@ -3329,7 +3329,12 @@ async function cpReadOne(img){ let P=null; const OUT=cpOutline(img);
   if(!P||!Array.isArray(P.floors)){ try{ const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),90000);
       for(let t=0;t<2&&!(P&&Array.isArray(P.floors));t++){ try{ const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:img,prompt:CP_PROMPT}),signal:ctl?ctl.signal:undefined});
         if(r.ok&&/json/.test(r.headers.get('content-type')||'')){ const j=await r.json(); P=cpParse(j.text); } }catch(e){ console.warn(e); if(e&&e.name==='AbortError') break; } } clearTimeout(tm); }catch(e){ console.warn(e); } }
-  if(P&&Array.isArray(P.floors)){ const o=await OUT; if(o) P.outline=o; return P; } return null; }
+  if(P&&Array.isArray(P.floors)){ let o=await OUT; if(!cpOutOk(o,P)) o=await cpOutline(img); if(cpOutOk(o,P)) P.outline=o; return P; } return null; }
+// Kontur to'g'rimi: kamida 4 burchak, hamma devor to'g'ri burchakli, o'lchami xonalarga yaqin, takror chiziqsiz
+function cpOutOk(o,P){ try{ if(!Array.isArray(o)||o.length<4) return false; const pts=o.map(p=>[+p[0],+p[1]]); if(pts.some(p=>!isFinite(p[0])||!isFinite(p[1]))) return false;
+    for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; if(Math.abs(a[0]-b[0])>0.15&&Math.abs(a[1]-b[1])>0.15) return false; const c=pts[(i+2)%pts.length]; const v1=[b[0]-a[0],b[1]-a[1]], v2=[c[0]-b[0],c[1]-b[1]]; if(v1[0]*v2[0]+v1[1]*v2[1]<-0.01) return false; }
+    let ar=0; for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; ar+=a[0]*b[1]-b[0]*a[1]; } ar=Math.abs(ar)/2;
+    const R=((P.floors[0]&&P.floors[0].rooms)||[]).filter(r=>+r.w>0&&+r.h>0); const ra=R.reduce((s,r)=>s+r.w*r.h,0); return ar>0&&ra>0&&ar>=ra*0.85&&ar<=ra*1.8; }catch(e){ return false; } }
 // 2-qavat rasmidagi xonalarni 1-qavat koordinatasiga moslaydi (bir xil tashqi kontur)
 function cpMerge2(P1,P2){ const f1=(P1.floors[0]&&P1.floors[0].rooms)||[], f2=(P2.floors[0]&&P2.floors[0].rooms)||[]; if(!f2.length) return P1;
   const bb=f=>{ let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity; f.forEach(r=>{ x0=Math.min(x0,+r.x||0); y0=Math.min(y0,+r.y||0); x1=Math.max(x1,(+r.x||0)+(+r.w||0)); y1=Math.max(y1,(+r.y||0)+(+r.h||0)); }); return {x0,y0,x1,y1}; };
@@ -4123,7 +4128,7 @@ async function makePromoImages(){
 $('#pdfBtn').onclick=makePdf; $('#linkBtn').onclick=copyLink; $('#dlAll').onclick=dlAllRun; $('#dlFab').onclick=dlAllRun;
 /* boot */
 renderUser(); syncInputs(); initGoogle();
-(function(){ const hs=(location.hash||'').slice(1); const pr=hs?decProject(hs):null; if(pr){ S.A=pr.A; const sh=()=>{ generate(); show('result'); const v=S.variants[pr.vi]; if(v&&pr.st&&pr.st!==v.style) restyle(v,S.A,pr.st); const t=$('#vtabs').children[pr.vi]; if(t) t.click(); }; setTimeout(()=>{ if(window.payGate&&payGate(sh)) sh(); },0); return; generate(); show('result'); const v=S.variants[pr.vi]; if(v&&pr.st&&pr.st!==v.style) restyle(v,S.A,pr.st); const t=$('#vtabs').children[pr.vi]; if(t) t.click(); } })();
+(function(){ const hs=(location.hash||'').slice(1); const pr=hs?decProject(hs):null; if(pr){ S.A=pr.A; const sh=()=>{ generate(); show('result'); const v=S.variants[pr.vi]; if(v&&pr.st&&pr.st!==v.style) restyle(v,S.A,pr.st); const t=$('#vtabs').children[pr.vi]; if(t) t.click(); }; let tries=0; const tryOpen=()=>{ if(window.payGate){ if(payGate(sh)) sh(); } else if(++tries<50) setTimeout(tryOpen,100); else sh(); }; setTimeout(tryOpen,0); return; generate(); show('result'); const v=S.variants[pr.vi]; if(v&&pr.st&&pr.st!==v.style) restyle(v,S.A,pr.st); const t=$('#vtabs').children[pr.vi]; if(t) t.click(); } })();
 buildPromo();
 try{ heroV=new Viewer($('#heroViewer'),{auto:true}); const HA=Object.assign({},DEF,{pool:true,trees:8,gazebo:true}); const hv=buildVariants(HA); heroV.load(hv[0],HA); heroV._A=HA; }catch(e){ console.error(e); }
 setTimeout(()=>{ makePromoImages(); },2600);
