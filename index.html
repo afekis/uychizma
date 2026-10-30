@@ -2557,7 +2557,7 @@ function buildHouse(v,A){
   if(!CF) for(let i=1;i<P.length;i++){ const a=P[i], b=P[(i+1)%P.length]; fenceSeg(a[0],a[1],b[0],b[1],fenceH,false); }
   else { // old zabor uyga ulanadi: yon tomonlardan uyning old devorigacha
     let yF=Infinity,xL=Infinity,xR=-Infinity; v.floors[0].blocks.forEach(b=>{ yF=Math.min(yF,b.y); xL=Math.min(xL,b.x); xR=Math.max(xR,b.x+b.w); }); yF+=hy0; xL+=hx0; xR+=hx0;
-    if(isFinite(yF)&&yF>0.3){ fenceSeg(0,0,0,yF+0.3,fenceH,true); fenceSeg(pw,0,pw,yF+0.3,fenceH,true); if(xL>0.3) fenceSeg(0,yF+0.3,xL,yF+0.3,fenceH,true); if(xR<pw-0.3) fenceSeg(xR,yF+0.3,pw,yF+0.3,fenceH,true); } }
+    if(isFinite(yF)&&yF>0.3){ const yL=xL>0.3?yF:yF-0.12, yR=xR<pw-0.3?yF:yF-0.12; fenceSeg(0,0,0,yL,fenceH,true); fenceSeg(pw,0,pw,yR,fenceH,true); if(xL>0.3) fenceSeg(0,yF,xL-0.12,yF,fenceH,true); if(xR<pw-0.3) fenceSeg(xR+0.12,yF,pw,yF,fenceH,true); } }
   if(CF||((A.fence||'gisht')!=='yoq'&&A.layout!=='custom')){ const [ga]=PH(gx0,0),[gb]=PH(gx1,0), zz=Z(fy0), ph=gH+0.35; pillar(ga,zz,ph); pillar(gb,zz,ph);
     const GC=/^#/.test(A.gateCol||'')?A.gateCol:(GATE_COL[A.gateCol]||'#1E2023'), PAT=A.gatePat||'oddiy';
     const L=gb-ga-0.5, x0=ga+0.25, gm=A.gateType==='naqshli'?M.wood:mat(parseInt(GC.slice(1),16),{roughness:0.35,metalness:0.55}), gold=mat(0xB08A3E,{roughness:0.3,metalness:0.8}), bar=mat(new THREE.Color(GC).multiplyScalar(0.8).getHex(),{roughness:0.35,metalness:0.6});
