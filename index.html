@@ -516,10 +516,10 @@ input[type=range]{width:100%;accent-color:var(--accent)}
           <h2 style="font-size:22px;margin:0">📐 Chizmangiz bo'yicha uy</h2>
         <div class="dream" id="yerBox">
           <div class="dream-h"><b>1. Uy chizmangizni yuklang</b></div>
-          <p>Uy (yoki yer) chizmangizni rasm yoki PDF qilib yuklang — sayt xonalar va metrlarni o'qib, uyni aynan shu shakl va o'lchamda chizadi. </p>
+          <p>Uy (yoki yer) chizmangizni rasm yoki PDF qilib yuklang — sayt xonalar va metrlarni o'qib, uyni aynan shu shakl va o'lchamda chizadi. Uy 2 qavatli bo'lsa, <b>2 ta rasmni birga tanlang</b>: avval 1-qavat, keyin 2-qavat.</p>
           <div class="dream-row">
-            <label class="btn ghost small" for="yerFile">📄 Chizma yuklash</label><input type="file" id="yerFile" accept="image/*,application/pdf" hidden>
-            <img id="yerPrev" class="dream-prev" alt="Yuklangan chizma" hidden>
+            <label class="btn ghost small" for="yerFile">📄 Chizma yuklash</label><input type="file" id="yerFile" accept="image/*,application/pdf" multiple hidden>
+            <img id="yerPrev" class="dream-prev" alt="Yuklangan chizma" hidden><img id="yerPrev2" class="dream-prev" alt="2-qavat chizmasi" hidden>
             <button class="btn primary small" id="yerGo" type="button" disabled>📏 Chizmani o'qish</button>
             <button class="btn ghost small" id="cpManual" type="button">✏️ Xonalarni o'zim kiritaman</button>
           </div>
@@ -3250,20 +3250,32 @@ async function cpBestPage(doc){ const N=Math.min(doc.numPages||1,20); if(N<2) re
   const RW=/yotoq|спальн|zal\b|зал|гостин|mehmon|oshxona|кухн|hammom|ванн|санузел|с\/у|hojat|туалет|dahliz|koridor|коридор|прихож|холл|hol\b|xona|комнат|кабинет|гардероб|kotel|котель|lestnits|лестниц|zina|tambur|тамбур|terras|террас|plan|план/i;
   for(let i=1;i<=N;i++){ try{ const pg=await doc.getPage(i); const tc=await pg.getTextContent(); let sc=0; for(const it of tc.items){ const t=String(it.str||'').trim(); if(!t) continue; if(RW.test(t)) sc+=3; if(/^\d{3,5}$/.test(t.replace(/\s/g,''))) sc+=1; if(/фасад|facade|fasad|разрез|kesim|section|3d|визуал/i.test(t)) sc-=4; } if(sc>bs){ bs=sc; best=i; } }catch(e){} }
   return best; }
-$('#yerFile').addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; $('#yerGo').disabled=true; yerMsg('Chizma ochilmoqda…');
-  try{ let url;
-    if(/pdf/.test(f.type)||/\.pdf$/i.test(f.name)){ const L=await cpPdf(); const doc=await L.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const pg=await doc.getPage(await cpBestPage(doc)); const vp0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:Math.min(4,2000/Math.max(vp0.width,vp0.height))}); const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:x,viewport:vp}).promise; url=c.toDataURL('image/png'); }
-    else url=URL.createObjectURL(f);
-    S.yerImg=await cpToJpeg(url,1600); $('#yerPrev').src=S.yerImg; $('#yerPrev').hidden=false; $('#yerGo').disabled=false; $('#yerGo').click();
-  }catch(err){ console.error(err); yerMsg(/heic|heif/i.test(f.type+f.name)?"Bu brauzer HEIC rasmni ocha olmadi. Chizmani skrinshot qilib yoki JPG qilib yuklang.":"Faylni ochib bo'lmadi. JPG yoki PNG rasm yuklab ko'ring."); } });
-$('#yerGo').onclick=async()=>{ if(!S.yerImg||S.yerBusy) return; const btn=$('#yerGo'); btn.disabled=true; S.yerBusy=true; yerMsg(`<div class="qum"><span class="qum-i">⏳</span><div><b>AI chizmangizni o'qiyapti…</b><br><small>Xonalar va metrlar aniqlanmoqda, 10–30 soniya. Iltimos, kuting.</small></div></div>`);
-  let P=null;
-  try{ const sample=await getSample(); if(sample){ const lim=await sample.limits().catch(()=>null); if(lim&&lim.images){ const blob=await (await fetch(S.yerImg)).blob(); P=await sample.json(CP_PROMPT,{images:[new File([blob],'chizma.jpg',{type:'image/jpeg'})]}); } } }catch(e){ console.warn(e); P=null; }
+async function cpFileToImg(f){ let url;
+  if(/pdf/.test(f.type)||/\.pdf$/i.test(f.name)){ const L=await cpPdf(); const doc=await L.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise; const pg=await doc.getPage(await cpBestPage(doc)); const vp0=pg.getViewport({scale:1}), vp=pg.getViewport({scale:Math.min(4,2000/Math.max(vp0.width,vp0.height))}); const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:x,viewport:vp}).promise; url=c.toDataURL('image/png'); }
+  else url=URL.createObjectURL(f);
+  return await cpToJpeg(url,1600); }
+$('#yerFile').addEventListener('change',async e=>{ const fs=[...(e.target.files||[])].slice(0,2); if(!fs.length) return; $('#yerGo').disabled=true; yerMsg(fs.length>1?'2 ta chizma ochilmoqda (1-qavat va 2-qavat)…':'Chizma ochilmoqda…');
+  try{ const imgs=[]; for(const f of fs){ try{ imgs.push(await cpFileToImg(f)); }catch(err){ console.error(err); throw {f}; } }
+    S.yerImg=imgs[0]; S.yerImg2=imgs[1]||null; $('#yerPrev').src=S.yerImg; $('#yerPrev').hidden=false; const p2=$('#yerPrev2'); if(S.yerImg2){ p2.src=S.yerImg2; p2.hidden=false; } else { p2.hidden=true; p2.removeAttribute('src'); }
+    $('#yerGo').disabled=false; $('#yerGo').click();
+  }catch(err){ const f=(err&&err.f)||fs[0]; console.error(err); yerMsg(/heic|heif/i.test(f.type+f.name)?"Bu brauzer HEIC rasmni ocha olmadi. Chizmani skrinshot qilib yoki JPG qilib yuklang.":"Faylni ochib bo'lmadi. JPG yoki PNG rasm yuklab ko'ring."); } });
+async function cpReadOne(img){ let P=null;
+  try{ const sample=await getSample(); if(sample){ const lim=await sample.limits().catch(()=>null); if(lim&&lim.images){ const blob=await (await fetch(img)).blob(); P=await sample.json(CP_PROMPT,{images:[new File([blob],'chizma.jpg',{type:'image/jpeg'})]}); } } }catch(e){ console.warn(e); P=null; }
   if(!P||!Array.isArray(P.floors)){ try{ const ctl=('AbortController' in window)?new AbortController():null; const tm=setTimeout(()=>ctl&&ctl.abort(),90000);
-      for(let t=0;t<2&&!(P&&Array.isArray(P.floors));t++){ try{ const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:S.yerImg,prompt:CP_PROMPT}),signal:ctl?ctl.signal:undefined});
+      for(let t=0;t<2&&!(P&&Array.isArray(P.floors));t++){ try{ const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'plan',image:img,prompt:CP_PROMPT}),signal:ctl?ctl.signal:undefined});
         if(r.ok&&/json/.test(r.headers.get('content-type')||'')){ const j=await r.json(); P=cpParse(j.text); } }catch(e){ console.warn(e); if(e&&e.name==='AbortError') break; } } clearTimeout(tm); }catch(e){ console.warn(e); } }
+  return P&&Array.isArray(P.floors)?P:null; }
+// 2-qavat rasmidagi xonalarni 1-qavat koordinatasiga moslaydi (bir xil tashqi kontur)
+function cpMerge2(P1,P2){ const f1=(P1.floors[0]&&P1.floors[0].rooms)||[], f2=(P2.floors[0]&&P2.floors[0].rooms)||[]; if(!f2.length) return P1;
+  const bb=f=>{ let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity; f.forEach(r=>{ x0=Math.min(x0,+r.x||0); y0=Math.min(y0,+r.y||0); x1=Math.max(x1,(+r.x||0)+(+r.w||0)); y1=Math.max(y1,(+r.y||0)+(+r.h||0)); }); return {x0,y0,x1,y1}; };
+  const a=bb(f1), b=bb(f2), dx=a.x0-b.x0, dy=a.y0-b.y0; const up=f2.map(r=>Object.assign({},r,{x:(+r.x||0)+dx,y:(+r.y||0)+dy}));
+  return Object.assign({},P1,{floors:[{rooms:f1},{rooms:up}]}); }
+$('#yerGo').onclick=async()=>{ if(!S.yerImg||S.yerBusy) return; const btn=$('#yerGo'); btn.disabled=true; S.yerBusy=true; const two=!!S.yerImg2;
+  yerMsg(`<div class="qum"><span class="qum-i">⏳</span><div><b>AI ${two?'2 ta chizmangizni':'chizmangizni'} o'qiyapti…</b><br><small>Xonalar va metrlar aniqlanmoqda, ${two?'20–60':'10–30'} soniya. Iltimos, kuting.</small></div></div>`);
+  let P=await cpReadOne(S.yerImg);
+  if(two){ const P2=await cpReadOne(S.yerImg2); if(P&&P2) P=cpMerge2(P,P2); else if(!P&&P2) P=P2; }
   btn.disabled=false; S.yerBusy=false; const k=cpFromAi(P);
-  if(k) yerMsg(`✅ Chizmangizdan ${k} ta xona o'qildi — uy aynan shu shakl va metrlarda chiziladi. Pastdagi sxemani chizmangiz bilan solishtiring; xato bo'lsa «✏️ Xonalar va metrlarni tekshirish» ni ochib to'g'rilang. Endi pastda <b>uslub</b> va <b>qavat</b>ni tanlang.`);
+  if(k&&S.cp&&S.cp.fl.length===2){ S.cpFl=2; try{ cpNeedSync(); }catch(e){} } if(k) yerMsg(`✅ ${S.cp&&S.cp.fl.length===2?'1- va 2-qavat chizmalaringizdan':'Chizmangizdan'} ${k} ta xona o'qildi — uy aynan shu shakl va metrlarda chiziladi. Pastdagi sxemani chizmangiz bilan solishtiring; xato bo'lsa «✏️ Xonalar va metrlarni tekshirish» ni ochib to'g'rilang. Endi pastda <b>uslub</b> va <b>qavat</b>ni tanlang.`);
   else { yerMsg("AI hozir chizmani o'qiy olmadi. Xonalarni metrlari bilan o'zingiz kiriting: «✏️ Xonalarni o'zim kiritaman» ni bosing."); } };
 
 /* ===== 📐 Chizmam bor bo'limi: chizma + uslub + qavat → uy ===== */
