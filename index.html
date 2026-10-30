@@ -1445,14 +1445,14 @@ function placeYard(v,A){
   { const gw=+A.gateW||4, gh=+A.gateH||2.4; cost.gate=Math.round(gw*gh*({ochiladigan:70,surma:95,naqshli:160}[A.gateType]||70)*({oddiy:1,yaxlit:1,panjara:1.45,kvadrat:1.05,shamol:1.25,arka:1.2,naqsh:1}[A.gatePat||'oddiy']||1)+(A.kalitka?350:0)); }
   { const per=Math.round(2*(+A.plotW+ +A.plotL)); const FT=A.fence||'gisht'; cost.fence=Math.round(per*({gisht:55,panjara:48,yaxlit:28,yoq:0}[FT]||0)); if(FT==='yoq') cost.gate=0; }
   if(A.layout==='custom'){ const C=cpClean(A.custom)||{fl:[],pz:[],gz:[]}; let ox=Infinity,oy=Infinity; C.fl.forEach(f=>f.forEach(r=>{ ox=Math.min(ox,r[2]); oy=Math.min(oy,r[3]); })); if(C.po) ox=Math.min(ox,C.po[0]); if(!isFinite(ox)) ox=oy=0;
-    const auto=items.filter(i=>i.type==='pool'), pc=cost.pool, fc=[cost.fence,cost.gate]; items.length=0; occ.length=0; v.floors.forEach(f=>f.blocks.concat(f.open).forEach(b=>{ const [x,y]=toP(b.x,b.y); occ.push({x:x-0.4,y:y-0.4,w:b.w+0.8,h:b.h+0.8}); })); Object.keys(cost).forEach(k=>cost[k]=0); missing.length=0; if(C.fz){ const per=Math.round(+A.plotW+2*(hy0+v.minY)); cost.fence=Math.round(per*({gisht:55,panjara:48,yaxlit:28}[C.ft]||55)); cost.gate=fc[1]||Math.round((C.gw||4)*2.4*70); }
-    const hit=(x,y,w,h)=>occ.some(o=>x<o.x+o.w&&x+w>o.x&&y<o.y+o.h&&y+h>o.y)||items.some(o=>x<o.x+o.w+0.3&&x+w+0.3>o.x&&y<o.y+o.h+0.3&&y+h+0.3>o.y);
+    const auto=items.filter(i=>i.type==='pool'), pc=cost.pool, fc=[cost.fence,cost.gate]; items.length=0; occ.length=0; v.floors.forEach(f=>f.blocks.concat(f.open).forEach(b=>{ const [x,y]=toP(b.x,b.y); occ.push({x:x+0.05,y:y+0.05,w:b.w-0.1,h:b.h-0.1}); })); Object.keys(cost).forEach(k=>cost[k]=0); missing.length=0; if(C.fz){ const per=Math.round(+A.plotW+2*(hy0+v.minY)); cost.fence=Math.round(per*({gisht:55,panjara:48,yaxlit:28}[C.ft]||55)); cost.gate=fc[1]||Math.round((C.gw||4)*2.4*70); }
+    const hit=(x,y,w,h)=>occ.some(o=>x<o.x+o.w&&x+w>o.x&&y<o.y+o.h&&y+h>o.y)||items.some(o=>x<o.x+o.w+0.1&&x+w+0.1>o.x&&y<o.y+o.h+0.1&&y+h+0.1>o.y);
     const put=(type,r,keep)=>{ const w=Math.min(r[2],W-0.4), h=Math.min(r[3],L-0.4), [x0,y0]=toP(r[0]-ox,r[1]-oy); let x=Math.max(0.2,Math.min(W-w-0.2,x0)), y=Math.max(0.2,Math.min(L-h-0.2,y0));
       if(keep&&(hit(x,y,w,h)||y0<0||y0+h>L||x0<0||x0+w>W)) return null; if(hit(x,y,w,h)){ const front=v.minY+hy0, back=v.maxY+hy0; const cand=[front-0.6-h, back+0.6, y0]; let ok=null; for(const yy of cand){ if(yy<0.2||yy+h>L-0.2) continue; for(const xx of [x, ...Array.from({length:Math.max(1,Math.floor((W-w)/0.5))},(_,k)=>0.2+k*0.5)]){ if(xx<0.2||xx+w>W-0.2) continue; if(!hit(xx,yy,w,h)){ ok=[xx,yy]; break; } } if(ok) break; } if(!ok) return null; [x,y]=ok; }
       const it={type,x,y,w,h}; items.push(it); return it; };
     if(C.pz&&C.pz.length) C.pz.forEach(r=>{ const it=put('pool',r); if(it) cost.pool+=Math.round(it.w*it.h*470); });
     else if(A.pool&&auto.length){ items.push(auto[0]); cost.pool=pc; }
-    (C.gz||[]).forEach(r=>{ const it=put('bog',r); if(it) cost.gulzor+=Math.round(it.w*it.h*20); }); (C.cr||[]).forEach(r=>{ put('car',r); }); (C.od||[]).forEach(o=>{ const t={tapchan:'supa',yozgi:'yozgi',gazebo:'gazebo',carport:'car'}[o[0]]; const it=put(t,o.slice(1)); if(it){ if(t==='supa') cost.supa+=600; if(t==='gazebo') cost.gazebo+=2500; if(t==='yozgi') cost.gazebo+=Math.round(it.w*it.h*250); } }); (C.st||[]).forEach(o=>{ const [x,y]=toP(o[0]-ox,o[1]-oy); items.push({type:'step',x,y,w:o[2],h:o[3],n:o[4]}); }); C.fl[0].filter(r=>r[1]==='garage'&&r[4]>=2.3&&r[5]>=2.3).slice(0,2).forEach(r=>{ const [x,y]=toP(r[2]-ox,r[3]-oy); items.push({type:'car',x,y,w:r[4],h:r[5],in:1}); }); (C.tr||[]).forEach((t,k)=>{ const it=put('tree',[t[0]-0.5,t[1]-0.5,1,1],1); if(it){ it.s=0.85+(k%3)*0.1; cost.trees+=40; } }); }
+    (C.gz||[]).forEach(r=>{ const it=put('bog',r); if(it) cost.gulzor+=Math.round(it.w*it.h*20); }); (C.cr||[]).forEach(r=>{ put('car',r); }); (C.od||[]).forEach(o=>{ const t={tapchan:'supa',yozgi:'yozgi',gazebo:'gazebo',carport:'car'}[o[0]]; const r=o.slice(1); if(t==='supa'){ const w=Math.min(r[2],3.5), h=Math.min(r[3],3); r[0]+= (r[2]-w)/2; r[1]+=(r[3]-h)/2; r[2]=w; r[3]=h; } const it=put(t,r); if(it){ if(t==='supa') cost.supa+=600; if(t==='gazebo') cost.gazebo+=2500; if(t==='yozgi') cost.gazebo+=Math.round(it.w*it.h*250); } }); if(C.fz&&C.gx!=null&&!items.some(i=>i.type==='car')){ const cw=2.6, ch=Math.min(5,Math.max(0,(v.minY+hy0)-0.8)), cxp=Math.max(0.2,Math.min(W-cw-0.2,C.gx-cw/2)); if(ch>=4&&!hit(cxp,0.4,cw,ch)) items.push({type:'car',x:cxp,y:0.4,w:cw,h:ch}); } (C.st||[]).forEach(o=>{ const [x,y]=toP(o[0]-ox,o[1]-oy); items.push({type:'step',x,y,w:o[2],h:o[3],n:o[4]}); }); C.fl[0].filter(r=>r[1]==='garage'&&r[4]>=2.3&&r[5]>=2.3).slice(0,2).forEach(r=>{ const [x,y]=toP(r[2]-ox,r[3]-oy); items.push({type:'car',x,y,w:r[4],h:r[5],in:1}); }); (C.tr||[]).forEach((t,k)=>{ const it=put('tree',[t[0]-0.5,t[1]-0.5,1,1],1); if(it){ it.s=0.85+(k%3)*0.1; cost.trees+=40; } }); }
   const total=Object.values(cost).reduce((a,b)=>a+b,0);
   return {items,hx0,hy0,P,backStart,gateX,cost:total,costs:cost,missing,trees:placed};
 }
@@ -3263,7 +3263,7 @@ function cpFromAi(P){ if(!P||!Array.isArray(P.floors)) return 0; const n=v=>{ if
   if(n(P.houseFromLeft)!=null) C.hx=n(P.houseFromLeft); if(n(P.houseFromStreet)!=null) C.hy=Math.max(C.hy||0,n(P.houseFromStreet));
   const A=S.A; if(n(P.plotW)>=9&&n(P.plotW)<=60){ A.plotW=n(P.plotW); A.plotShape='rect'; } if(n(P.plotL)>=15&&n(P.plotL)<=80) A.plotL=n(P.plotL);
   if(P.pool===true) A.pool=true;
-  const B=cpBox(C); if(B.W>A.plotW){ A.plotW=Math.min(60,Math.ceil(B.W*2)/2); } if(B.D+(C.hy||SB)+3>A.plotL) A.plotL=Math.min(80,Math.max(A.plotL,Math.ceil(B.D+(C.hy||SB)+6)));
+  const B=cpBox(C); if(B.W>A.plotW){ A.plotW=Math.min(60,Math.ceil(B.W*2)/2); } { const need=B.D+(C.hy||SB); const given=n(P.plotL)>=10; if(given?need>A.plotL+0.05:need+3>A.plotL) A.plotL=Math.min(80,Math.max(A.plotL,Math.ceil(need+(given?0.5:6)))); }
   try{ $('#qW').value=A.plotW; $('#qL').value=A.plotL; }catch(e){}
   cpOpen(); cpApply(); return fl.reduce((s,f)=>s+f.length,0); }
 function yerMsg(h){ const o=$('#yerOut'); o.hidden=!h; o.innerHTML=h||''; }
@@ -3310,12 +3310,20 @@ function cpNeedSync(){ const ok1=S.A.layout==='custom'&&!!S.A.custom, ok2=!!S.cp
 $('#cpStyle').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.cpSt=b.dataset.v; cpNeedSync(); });
 $('#cpFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.cpFl=+b.dataset.v; cpNeedSync(); });
 setInterval(()=>{ try{ if(!$('#cplan').hidden) cpNeedSync(); }catch(e){} },700);
+// Zina boshqa xona ichiga tushsa: o'sha xonani zina atrofida bo'laklarga ajratadi (ochiq, devorsiz) — ustma-ust tushmasin
+function cpCarve(f){ const R=v=>Math.round(v*100)/100; f.filter(r=>r[1]==='stair').forEach(st=>{ for(let i=f.length-1;i>=0;i--){ const h=f[i]; if(h===st||h[1]==='stair') continue;
+    const ix0=Math.max(h[2],st[2]), iy0=Math.max(h[3],st[3]), ix1=Math.min(h[2]+h[4],st[2]+st[4]), iy1=Math.min(h[3]+h[5],st[3]+st[5]); if(ix1-ix0<0.05||iy1-iy0<0.05) continue;
+    const hx1=h[2]+h[4], hy1=h[3]+h[5], P=[]; const add=(x0,y0,x1,y1)=>{ if(x1-x0>=0.3&&y1-y0>=0.3) P.push([x0,y0,x1,y1]); };
+    add(h[2],h[3],ix0,hy1); add(ix1,h[3],hx1,hy1); add(ix0,h[3],ix1,iy0); add(ix0,iy1,ix1,hy1);
+    P.sort((a,b)=>(b[2]-b[0])*(b[3]-b[1])-(a[2]-a[0])*(a[3]-a[1])); const parts=P.map((q,k)=>[h[0],h[1],R(q[0]),R(q[1]),R(q[2]-q[0]),R(q[3]-q[1]),1]);
+    f.splice(i,1,...parts); st[6]=1; } }); return f; }
 $('#cpBuild').onclick=()=>{ const A=S.A; if(S.yerBusy) return; const C=cpClean(A.custom); if(!C){ cpNeedSync(); return; }
   let fl=C.fl.map(f=>f.map(r=>r.slice()));
   if(S.cpFl===1) fl=[fl[0]];
   else if(S.cpFl===2&&fl.length===1){ const up=fl[0].map(r=>{ const q=r.slice(); if(q[1]==='zal'){ q[0]='Hol'; q[1]='circ'; } else if(q[1]==='kitchen'){ q[0]='Yotoqxona'; q[1]='bed'; } else if(q[1]==='garage'){ q[0]='Xona'; q[1]='util'; } return q; });
     if(!fl[0].some(r=>r[1]==='stair')){ const z=fl[0].filter(r=>r[1]==='zal'||r[1]==='circ').sort((a,b)=>b[4]*b[5]-a[4]*a[5])[0]||fl[0][0]; const sw=Math.min(2.6,z[4]*0.45), sh=Math.min(4,z[5]*0.5), st=['Zina','stair',Math.round((z[2]+z[4]-sw)*100)/100,Math.round((z[3]+z[5]-sh)*100)/100,Math.round(sw*100)/100,Math.round(sh*100)/100,1]; fl[0].push(st); up.push(st.slice()); }
     fl=[fl[0],up]; }
+  fl.forEach(cpCarve);
   A.custom=Object.assign({},C,{fl}); A.layout='custom'; A.massing='auto'; A.floors=fl.length;
   const sub=SUBS[S.cpSt]?S.cpSt:''; A.sub=sub; A.style=sub?SUBS[sub].b:S.cpSt; A.styleFixed=true; A.rateManual=false; A.roofShape='auto';
   const nb=fl.reduce((s,f)=>s+f.filter(r=>r[1]==='bed').length,0); A.beds=Math.min(6,Math.max(2,nb||2));
