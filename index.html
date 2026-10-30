@@ -3253,6 +3253,12 @@ function cpMainBlock(f){ if(f.length<2) return f; const g=0.6, near=(a,b)=>a[2]<
   for(let i=0;i<f.length;i++){ if(comp[i]>=0) continue; const q=[i], m=[]; comp[i]=i; while(q.length){ const k=q.pop(); m.push(k); for(let j=0;j<f.length;j++) if(comp[j]<0&&near(f[k],f[j])){ comp[j]=i; q.push(j); } }
     const ar=m.reduce((s,k)=>s+f[k][4]*f[k][5],0); if(ar>bestA){ bestA=ar; best=m; } }
   return best.sort((a,b)=>a-b).map(k=>f[k]); }
+// Yaqin chiziqlarni bitta chiziqqa tekislaydi (0.3 m gacha farq) — ingichka bo'shliq/ustma-ust tushish qolmasin
+function cpSnap(f,tol){ tol=tol||0.3; const R=v=>Math.round(v*100)/100; const fix=(gi,si)=>{ const vals=[]; f.forEach(r=>{ vals.push(r[gi],r[gi]+r[si]); }); const u=[...new Set(vals.map(R))].sort((a,b)=>a-b), map=new Map(); let grp=[];
+    const flush=()=>{ if(!grp.length) return; const m=R(grp.reduce((a,b)=>a+b,0)/grp.length); grp.forEach(v=>map.set(v,m)); grp=[]; };
+    u.forEach(v=>{ if(grp.length&&v-grp[0]>tol) flush(); grp.push(v); }); flush();
+    f.forEach(r=>{ const a=map.get(R(r[gi])), b=map.get(R(r[gi]+r[si])); if(b-a>=0.3){ r[gi]=a; r[si]=R(b-a); } }); };
+  fix(2,4); fix(3,5); return f; }
 // AI xonalarni ichki o'lchamda beradi: devor bo'shliqlarini yopadi va xonalar orasidagi yopiq bo'shliqni yo'lak qiladi
 function cpTidy(f){ if(f.length<2) return f; const R=v=>Math.round(v*100)/100, ov=(a0,a1,b0,b1)=>Math.min(a1,b1)-Math.max(a0,b0);
   const E=f.map(a=>{ let r=9,l=9,u=9,d=9; f.forEach(b=>{ if(a===b) return; const oy=ov(a[3],a[3]+a[5],b[3],b[3]+b[5])>0.3, ox=ov(a[2],a[2]+a[4],b[2],b[2]+b[4])>0.3;
@@ -3260,6 +3266,7 @@ function cpTidy(f){ if(f.length<2) return f; const R=v=>Math.round(v*100)/100, o
       if(ox){ const g3=b[3]-(a[3]+a[5]); if(g3>-0.01) d=Math.min(d,g3); const g4=a[3]-(b[3]+b[5]); if(g4>-0.01) u=Math.min(u,g4); } });
     const h=g=>g>0.01&&g<=0.65?g/2:0; return [h(l),h(r),h(u),h(d)]; });
   f.forEach((a,k)=>{ const [l,r,u,d]=E[k]; a[2]=R(a[2]-l); a[4]=R(a[4]+l+r); a[3]=R(a[3]-u); a[5]=R(a[5]+u+d); });
+  cpSnap(f);
   let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity; f.forEach(r=>{ x0=Math.min(x0,r[2]); y0=Math.min(y0,r[3]); x1=Math.max(x1,r[2]+r[4]); y1=Math.max(y1,r[3]+r[5]); });
   const st=0.1, NX=Math.round((x1-x0)/st), NY=Math.round((y1-y0)/st); if(NX*NY>250000) return f; const cov=new Uint8Array(NX*NY);
   f.forEach(r=>{ for(let i=Math.round((r[2]-x0)/st);i<Math.round((r[2]+r[4]-x0)/st);i++) for(let j=Math.round((r[3]-y0)/st);j<Math.round((r[3]+r[5]-y0)/st);j++) if(i>=0&&j>=0&&i<NX&&j<NY) cov[j*NX+i]=1; });
@@ -3267,7 +3274,7 @@ function cpTidy(f){ if(f.length<2) return f; const R=v=>Math.round(v*100)/100, o
   for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ if(cov[j*NX+i]) continue; let l=0,r=0,u=0,d=0; for(let k=1;k<=L;k++){ if(!l&&c(i-k,j)) l=1; if(!r&&c(i+k,j)) r=1; if(!u&&c(i,j-k)) u=1; if(!d&&c(i,j+k)) d=1; } if((l&&r)||(u&&d)) fill[j*NX+i]=1; }
   let n=0; for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ if(!fill[j*NX+i]) continue; let w=0; while(i+w<NX&&fill[j*NX+i+w]) w++; let h=1; outer: for(;j+h<NY;h++){ for(let k=0;k<w;k++) if(!fill[(j+h)*NX+i+k]) break outer; }
     for(let jj=j;jj<j+h;jj++) for(let k=0;k<w;k++) fill[jj*NX+i+k]=0; if(w*h*st*st>=0.8&&Math.min(w,h)*st>=0.7) f.push([n++?"Yo'lak "+(n):"Yo'lak",'circ',R(x0+i*st),R(y0+j*st),R(w*st),R(h*st),0]); }
-  return f; }
+  return cpSnap(f,0.12); }
 function cpFromAi(P){ if(!P||!Array.isArray(P.floors)) return 0; const n=v=>{ if(v==null||v==='') return null; v=+v; return isFinite(v)?Math.round(v*100)/100:null; };
   const NOT=/pool|basseyn|бассейн|landsh|ландш|garden|bog'|yard|hovli|двор|dvor|gulzor|maysa|lawn|flower|клумб|газон|tap[cč]an|top[cč]an|тапчан|топчан|leti|лети|летн|summer|yozgi|darvoza|vorot|ворот|gate|naves|навес|canopy|fence|zabor|забор/i, TN={zal:'Zal',kitchen:'Oshxona',bed:'Yotoqxona',wet:'Hammom',circ:'Hol',stair:'Zina',util:'Xona',garage:'Garaj'};
   S.A.pool=false; const fl=P.floors.slice(0,2).map(f=>((f&&f.rooms)||[]).map(r=>{ const w=n(r.w), h=n(r.h); if(!(w>0.3&&h>0.3)) return null; if(r.type!=='garage'&&(NOT.test(String(r.type||''))||NOT.test(String(r.name||'')))){ if(/pool|basseyn|бассейн/i.test(String(r.type)+String(r.name))) S.A.pool=true; return null; } const t=CP_T.includes(r.type)?r.type:'util'; return [String(r.name||'').trim().slice(0,40)||TN[t],t,n(r.x)||0,n(r.y)||0,w,h,r.open?1:0]; }).filter(Boolean)).map(cpMainBlock).filter(f=>f.length); if(fl.length===1){ const f=fl[0]; for(let i=f.length-1;i>=0;i--){ const r=f[i]; if(r[1]!=='stair') continue; if(f.some(q=>q!==r&&q[1]!=='stair'&&(Math.max(0,Math.min(q[2]+q[4],r[2]+r[4])-Math.max(q[2],r[2]))*Math.max(0,Math.min(q[3]+q[5],r[3]+r[5])-Math.max(q[3],r[3])))>0.5*r[4]*r[5])) f.splice(i,1); } } fl.forEach(cpTidy);
