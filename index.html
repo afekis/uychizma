@@ -4510,7 +4510,8 @@ const PAY_ON=true; // false qilinsa sayt tekin bo'ladi (obuna o'chadi)
 const PAY={ card:'5614 6818 7414 6230', holder:'', price:"5 000 so'm", free:0, per:2 };
 (function(){
   const $p=id=>document.getElementById(id), box=$p('payBox'); let after=null, img='';
-  const sig=()=>{ const A=S.A; return [A.plotShape,A.plotW,A.plotL,A.plotBackW||0,A.floors,A.beds,A.targetArea||0].join('|'); };
+  const hsh=t=>{ let x=5381; for(let i=0;i<t.length;i++) x=((x<<5)+x+t.charCodeAt(i))|0; return (x>>>0).toString(36); };
+  const sig=()=>{ const A=S.A; const b=[A.plotShape,A.plotW,A.plotL,A.plotBackW||0,A.floors,A.beds,A.targetArea||0].join('|'); if(A.layout!=='custom'||!A.custom) return b; let c=''; try{ c=JSON.stringify((A.custom.fl||[]).map(f=>f.map(r=>[r[1],Math.round(r[2]),Math.round(r[3]),Math.round(r[4]),Math.round(r[5])]))); }catch(_){} return b+'|c'+hsh(c); };
   const cid=()=>{ let c=LS.get('cid',''); if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); LS.set('cid',c); } return c; };
   const pays=()=>LS.get('pays',[]);           // [{id,status}]
   const credits=()=>pays().filter(x=>x.status==='ok').length*PAY.per;
