@@ -4477,10 +4477,10 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
     <div class="note" id="payHolder" style="margin:4px 0 0"></div>
    </div>
    <label for="payFile" style="display:block;font-weight:700;margin-bottom:6px">Chek rasmini yuklang</label>
-   <label id="payDrop" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:130px;border:2px dashed var(--line,#C9D3E2);border-radius:14px;cursor:pointer;padding:10px;text-align:center">
+   <label id="payDrop" for="payFile" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:130px;border:2px dashed var(--line,#C9D3E2);border-radius:14px;cursor:pointer;padding:10px;text-align:center">
     <span id="payDropTxt">📷 Rasm tanlash uchun bosing<br><small class="note">Click, Payme yoki bank ilovasidagi chek skrinshoti</small></span>
     <img id="payPrev" alt="Chek" hidden style="max-width:100%;max-height:260px;border-radius:10px">
-    <input id="payFile" type="file" accept="image/*" hidden>
+    <input id="payFile" type="file" accept="image/*,.heic,.heif" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none">
    </label>
    <button type="button" class="btn primary" id="paySend" style="width:100%;min-height:50px;margin-top:12px" disabled>📤 Chekni yuborish</button>
   </div>
@@ -4536,17 +4536,22 @@ const PAY={ card:'5614 6818 7414 6230', holder:'', price:"5 000 so'm", free:0, p
   $p('payX').onclick=close; box.addEventListener('click',e=>{ if(e.target===box) close(); });
   $p('payShow').onclick=()=>{ img=''; $p('payFile').value=''; $p('payPrev').hidden=true; $p('payPrev').removeAttribute('src'); $p('payDropTxt').hidden=false; $p('paySend').disabled=true; $p('payStep1').hidden=true; $p('payStep2').hidden=false; };
   $p('payCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(PAY.card.replace(/\s/g,'')); toast('Karta raqami nusxalandi'); }catch(_){ toast(PAY.card); } };
-  function shrink(file){ return new Promise((res,rej)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>{ let w=im.naturalWidth,h=im.naturalHeight; const m=1100/Math.max(w,h); if(m<1){ w=Math.round(w*m); h=Math.round(h*m); }
-      const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,w,h); g.drawImage(im,0,0,w,h); URL.revokeObjectURL(u);
-      let q=0.8, d=c.toDataURL('image/jpeg',q); while(d.length>700000&&q>0.3){ q-=0.1; d=c.toDataURL('image/jpeg',q); } d.length>850000?rej(new Error('big')):res(d); }; im.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error('img')); }; im.src=u; }); }
+  async function shrink(file){ let src=null, w=0, h=0;
+    try{ src=await createImageBitmap(file); w=src.width; h=src.height; }catch(_){ src=null; }
+    if(!src){ src=await new Promise((res,rej)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>{ res(im); }; im.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error('img')); }; im.src=u; }); w=src.naturalWidth; h=src.naturalHeight; }
+    const m=1100/Math.max(w,h); if(m<1){ w=Math.round(w*m); h=Math.round(h*m); }
+    const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,w,h); g.drawImage(src,0,0,w,h); try{ src.close&&src.close(); }catch(_){}
+    let q=0.8, d=c.toDataURL('image/jpeg',q); while(d.length>600000&&q>0.3){ q-=0.1; d=c.toDataURL('image/jpeg',q); }
+    if(d.length>600000){ const c2=document.createElement('canvas'); c2.width=Math.round(w*0.7); c2.height=Math.round(h*0.7); c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); d=c2.toDataURL('image/jpeg',0.6); }
+    if(d.length>850000) throw new Error('big'); return d; }
   $p('payFile').addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; $p('payErr').textContent='';
     try{ img=await shrink(f); $p('payPrev').src=img; $p('payPrev').hidden=false; $p('payDropTxt').hidden=true; $p('paySend').disabled=false; }
-    catch(_){ img=''; $p('paySend').disabled=true; $p('payErr').textContent="Rasmni o'qib bo'lmadi. Boshqa rasm tanlang."; } });
+    catch(_){ img=''; $p('paySend').disabled=true; $p('payErr').innerHTML="Rasmni o'qib bo'lmadi. Chekning <b>skrinshotini</b> oling va o'shani tanlang (yoki Telegram orqali yuboring: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>)."; } });
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ if(!(await cloudReady())) throw new Error('net'); const u=S.user||{};
       const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now()});
       const l=pays(); l.push({id:ref.id,status:'pending'}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi'); }
-    catch(x){ $p('payErr').textContent="Yuborib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."; b.disabled=false; }
+    catch(x){ console.warn('pay send',x); const code=(x&&(x.code||x.message))||''; $p('payErr').innerHTML="Yuborib bo'lmadi"+(code?" ("+String(code).slice(0,40)+")":"")+". Internetni tekshirib, qayta urinib ko'ring yoki chekni Telegramga yuboring: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>"; b.disabled=false; }
     b.textContent='📤 Chekni yuborish'; };
   $p('payCheck').onclick=async()=>{ const b=$p('payCheck'); b.disabled=true; await refresh(); b.disabled=false; badge(); const k=sig();
     if(left()>0||allowed(k)){ close(); toast('✅ Ruxsat berildi!'); const f=after; after=null; if(f) f(); }
