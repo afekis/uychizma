@@ -4480,7 +4480,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
    <label id="payDrop" for="payFile" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:130px;border:2px dashed var(--line,#C9D3E2);border-radius:14px;cursor:pointer;padding:10px;text-align:center">
     <span id="payDropTxt">📷 Rasm tanlash uchun bosing<br><small class="note">Click, Payme yoki bank ilovasidagi chek skrinshoti</small></span>
     <img id="payPrev" alt="Chek" hidden style="max-width:100%;max-height:260px;border-radius:10px">
-    <input id="payFile" type="file" accept="image/*,.heic,.heif" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none">
+    <input id="payFile" type="file" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none">
    </label>
    <button type="button" class="btn primary" id="paySend" style="width:100%;min-height:50px;margin-top:12px" disabled>📤 Chekni yuborish</button>
   </div>
@@ -4545,8 +4545,11 @@ const PAY={ card:'5614 6818 7414 6230', holder:'', price:"5 000 so'm", free:0, p
     if(d.length>600000){ const c2=document.createElement('canvas'); c2.width=Math.round(w*0.7); c2.height=Math.round(h*0.7); c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height); d=c2.toDataURL('image/jpeg',0.6); }
     if(d.length>850000) throw new Error('big'); return d; }
   $p('payFile').addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; $p('payErr').textContent='';
-    try{ img=await shrink(f); $p('payPrev').src=img; $p('payPrev').hidden=false; $p('payDropTxt').hidden=true; $p('paySend').disabled=false; }
-    catch(_){ img=''; $p('paySend').disabled=true; $p('payErr').innerHTML="Rasmni o'qib bo'lmadi. Chekning <b>skrinshotini</b> oling va o'shani tanlang (yoki Telegram orqali yuboring: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>)."; } });
+    try{ img=await shrink(f); }
+    catch(_){ img=await anyFile(f); }
+    $p('payPrev').src=img; $p('payPrev').hidden=false; $p('payDropTxt').hidden=true; $p('paySend').disabled=false; });
+  function anyFile(f){ return new Promise(res=>{ const card=()=>{ const c=document.createElement('canvas'); c.width=600; c.height=260; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,600,260); g.fillStyle='#0B5FFF'; g.font='bold 30px sans-serif'; g.fillText('📎 Chek fayli',30,70); g.fillStyle='#222'; g.font='22px sans-serif'; g.fillText(String(f.name||'fayl').slice(0,40),30,130); g.fillText(Math.round((f.size||0)/1024)+' KB · '+(f.type||'noma\'lum'),30,175); g.fillText(new Date().toLocaleString(),30,220); res(c.toDataURL('image/jpeg',0.8)); };
+    if((f.size||0)>650000) return card(); const r=new FileReader(); r.onload=()=>{ const d=String(r.result||''); /^data:image\//.test(d)&&d.length<850000?res(d):card(); }; r.onerror=card; try{ r.readAsDataURL(f); }catch(_){ card(); } }); }
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ if(!(await cloudReady())) throw new Error('net'); const u=S.user||{};
       const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now()});
