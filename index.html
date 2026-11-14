@@ -3696,7 +3696,12 @@ $('#editAnswers').onclick=()=>{ S.qmode='toliq'; S.step=0; renderStep(); show('w
 
 /* ===== Arxitektor tekshiruvi arizasi + fikr bildirish (Firebase'ga yoziladi) ===== */
 const TG_USER='amirhonsh'; // Telegram username (masalan 'uychizma_admin'): ariza shu yerga ham yuboriladi
-async function cloudReady(){ for(let i=0;i<40&&FIREBASE_CONFIG&&!CLOUD.ok&&!CLOUD.failed;i++) await new Promise(r=>setTimeout(r,250)); if(FIREBASE_CONFIG&&!CLOUD.ok&&!CLOUD.failed) await cloudInit(); return CLOUD.ok; }
+let CLOUD_PROBE=null; /* server ishlayaptimi? (loyiha to'xtatilgan bo'lsa so'rovlar osilib qolmasin) */
+function cloudProbe(){ if(CLOUD_PROBE) return CLOUD_PROBE; CLOUD_PROBE=(async()=>{ try{ const c=FIREBASE_CONFIG, ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),8000);
+  const r=await fetch(`https://firestore.googleapis.com/v1/projects/${c.projectId}/databases/(default)/documents/reviews?pageSize=1&key=${c.apiKey}`,{signal:ctl.signal}); clearTimeout(t);
+  if(r.status===403){ const x=await r.text(); if(/suspend|PERMISSION_DENIED on the service|denied on the service/i.test(x)){ CLOUD.down=true; CLOUD.ok=false; CLOUD.failed=true; console.warn('Firebase loyihasi to\'xtatilgan'); return false; } } return true; }catch(_){ return true; } })(); return CLOUD_PROBE; }
+setTimeout(()=>{ try{ if(FIREBASE_CONFIG) cloudProbe(); }catch(_){} },300);
+async function cloudReady(){ for(let i=0;i<40&&FIREBASE_CONFIG&&!CLOUD.ok&&!CLOUD.failed;i++) await new Promise(r=>setTimeout(r,250)); if(FIREBASE_CONFIG&&!CLOUD.ok&&!CLOUD.failed) await cloudInit(); if(!CLOUD.ok) return false; if(!(await cloudProbe())) return false; return CLOUD.ok; }
 let arPkg='tekshiruv';
 $('#archPk').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; arPkg=b.dataset.p; $$('#archPk button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); });
 function archPrefill(){ if(S.user){ if(!$('#arName').value) $('#arName').value=S.user.name||''; if(!$('#arPhone').value) $('#arPhone').value=S.user.phone||''; } }
@@ -3729,7 +3734,7 @@ async function loadReviews(){ const L=$('#revsList'); if(!L) return; try{ if(!(a
   if(!rs.length){ L.innerHTML='<p class="note">Hali fikr yo\'q. Birinchi bo\'lib fikr qoldiring!</p>'; $('#revsAvg').textContent=''; return; }
   const avg=rs.reduce((a,r)=>a+r.rating,0)/rs.length; $('#revsAvg').innerHTML=`<b>★ ${avg.toFixed(1)}</b> · ${rs.length} ta fikr`;
   L.innerHTML=rs.map(r=>`<div class="rev"><div class="rev-top"><b>${revEsc(r.name||'Mehmon')}</b><span class="rev-st">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></div>${r.text?`<p>${revEsc(r.text)}</p>`:''}<small>${new Date(r.at||0).toLocaleDateString('uz-UZ')}</small></div>`).join('');
-  }catch(e){ L.innerHTML='<p class="note">Fikrlarni yuklab bo\'lmadi.</p>'; } }
+  }catch(e){ L.innerHTML='<p class="note">Fikrlar vaqtincha ko\'rinmayapti, tez orada qaytadi.</p>'; } }
 $('#revsAdd').onclick=()=>{ $('#fbFab').click(); };
 setTimeout(()=>{ if($('#fbName')&&S.user&&S.user.name&&!$('#fbName').value) $('#fbName').value=S.user.name; loadReviews(); },1500);
 
@@ -4200,7 +4205,7 @@ setTimeout(()=>{ makePromoImages(); },2600);
   $a('admClose').onclick=close;
   async function login(){ const err=$a('admErr'); err.textContent=''; const code=$a('admPw').value.trim();
     if(await sha('uychizma-admin:'+code)!==PW_HASH){ err.textContent="Kod noto'g'ri."; return; } pwOk=true;
-    if(!(await cloudReady())){ err.textContent="Server bilan bog'lanib bo'lmadi. Internetni tekshiring."; return; }
+    if(!(await cloudReady())){ err.textContent=CLOUD.down?"Kod to'g'ri, lekin Firebase (sayt bazasi) Google tomonidan to'xtatilgan. console.firebase.google.com ga sayt egasi akkaunti bilan kirib, loyihani tiklang.":"Server bilan bog'lanib bo'lmadi. Internetni tekshiring."; return; }
     const pw='UyChizma-admin-'+code+'-panel'; err.textContent='Kirilmoqda…';
     try{ await firebase.auth().signInWithEmailAndPassword(ADMIN_EMAIL,pw); }
     catch(x){ const c=(x&&x.code)||''; if(/user-not-found|invalid-credential|invalid-login/.test(c)){ try{ await firebase.auth().createUserWithEmailAndPassword(ADMIN_EMAIL,pw); }catch(y){ err.textContent="Kirib bo'lmadi: "+((y&&y.code)||''); return; } } else { err.textContent="Kirib bo'lmadi: "+c; return; } }
