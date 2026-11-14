@@ -4473,6 +4473,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
   <p class="note" id="payLead" style="margin:0 0 12px"></p>
   <div id="payStep1">
    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px"><b style="font-size:28px" id="payPrice"></b><span class="note">· yana 2 ta uy loyihasi</span></div>
+   <div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:10px 12px;border-radius:12px;background:#E8F7EE;border:1px solid #9BD8B3;color:#14653A;font-weight:700;font-size:15px">✅ Sizga yoqmasa, pulingiz qaytariladi</div>
    <button type="button" class="btn primary" id="payShow" style="width:100%;min-height:50px;font-size:17px">💳 To'lash</button>
   </div>
   <div id="payStep2" hidden>
@@ -4512,7 +4513,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
 /* ===== OBUNA: 1-uy tekin, keyin to'lov + chek -> admin ruxsati -> yana 2 ta uy ===== */
 const OWNER_EMAILS=['macbookmmacbook@gmail.com','amirhonjumanyozv@gmail.com']; // sayt egasi: to'lovsiz, cheksiz
 const PAY_ON=true; // false qilinsa sayt tekin bo'ladi (obuna o'chadi)
-const PAY={ card:'5614 6818 7414 6230', holder:'', price:"5 000 so'm", free:0, per:2 };
+const PAY={ card:'5614 6818 7414 6230', holder:'', price:"25 000 so'm", free:0, per:2 };
 (function(){
   const $p=id=>document.getElementById(id), box=$p('payBox'); let after=null, img='';
   const hsh=t=>{ let x=5381; for(let i=0;i<t.length;i++) x=((x<<5)+x+t.charCodeAt(i))|0; return (x>>>0).toString(36); };
