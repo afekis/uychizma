@@ -1,5 +1,5 @@
 <!doctype html><html lang="uz"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
+<button class="fbfab" id="fbFab" type="button" hidden style="display:none" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
   <h3 style="margin:0 0 6px">Sayt sizga yoqdimi?</h3><p class="note" style="margin:0 0 8px">Fikringiz saytdagi «Odamlar fikri» bo'limida hammaga ko'rinadi. Telefon raqamingiz ko'rinmaydi.</p>
   <div class="fbstars" id="fbStars"><button type="button" data-v="1">★</button><button type="button" data-v="2">★</button><button type="button" data-v="3">★</button><button type="button" data-v="4">★</button><button type="button" data-v="5">★</button></div>
@@ -858,7 +858,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 </main>
 <div class="toast" id="toast" role="status" hidden></div>
 <a class="callfab" id="callFab" hidden href="#" aria-label="Qo'ng'iroq qilish">📞 <span class="cf-num"></span></a>
-<section class="revs" id="revs"><div class="wrap">
+<section class="revs" id="revs" hidden style="display:none"><div class="wrap">
   <div class="revs-h"><h2>Odamlar fikri</h2><div class="revs-avg" id="revsAvg"></div><button class="btn primary small" id="revsAdd" type="button">✍️ Fikr qoldirish</button></div>
   <div class="revs-list" id="revsList"><p class="note">Fikrlar yuklanmoqda…</p></div></div></section>
 <footer class="ctbar" id="ctBar" hidden><div class="wrap" style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:14px 16px">
