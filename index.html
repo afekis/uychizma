@@ -3,6 +3,11 @@
 .bjblk:hover{transform:translateY(-1px)}.bjic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;font-size:24px}
 .bjtx{flex:1;min-width:0}.bjtx b{display:block;font-size:15px;color:var(--ink)}.bjtx b i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;background:var(--accent);color:#fff;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:2px}
 .bjtx small{display:block;color:var(--muted);font-size:13px;line-height:1.35;margin-top:2px}.bjar{flex:none;font-size:20px;font-weight:800;color:var(--accent)}
+
+.nav a.navbj{display:inline-flex;align-items:center;text-decoration:none;padding:8px 12px;border-radius:8px;color:var(--head-muted);font-weight:500}
+.nav a.navbj:hover{color:var(--head-ink)}
+@media (max-width:640px){.nav.nav a.navbj{padding:5px 6px;font-size:17px;white-space:nowrap}.nav.nav button{padding:7px 8px}.nav.nav{gap:2px}}
+@media (max-width:360px){.nav.nav button{padding:6px 5px;font-size:12px}}
 </style></head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
@@ -437,6 +442,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button data-go="home" aria-current="page"><span class="ln">Bosh sahifa</span><span class="sn">Bosh</span></button>
       <button data-go="start"><span class="ln">Loyiha boshlash</span><span class="sn">Boshlash</span></button>
       <button data-go="projects"><span class="ln">Mening loyihalarim</span><span class="sn">Loyihalarim</span></button>
+      <a href="bosh-joy.html" class="navbj"><span class="ln">🛋️ Bo'sh joy</span><span class="sn" aria-label="Bo'sh joy">🛋️</span></a>
     </nav>
     <button type="button" id="premBtn" style="border:0;border-radius:999px;padding:7px 12px;font:700 13px/1 inherit;background:linear-gradient(135deg,#FFC93C,#F59E0B);color:#3A2500;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(245,158,11,.8);flex:none">⭐<span class="pl"> Premium</span></button><style>@media (max-width:480px){#premBtn{padding:7px 9px}#premBtn .pl{display:none}}</style>
     <span class="chip" id="userChip" hidden></span>
