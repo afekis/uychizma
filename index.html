@@ -4389,7 +4389,10 @@ async function smetaPdf(){ if(!window.jspdf) await loadScript('https://cdnjs.clo
   function glb(scale){ const v=S.variants[S.active], A=S.A, key=(A.seed||0)+'|'+v.key+'|'+v.name+'|'+(v.sub||v.style)+'|'+v.roof.shape+'|'+scale; if(urls[key]) return Promise.resolve(urls[key]);
     const B=buildHouse(v,A), g=new THREE.Group(); g.add(B.group); B.group.position.set(-B.cx,0,-B.cz); g.scale.setScalar(scale);
     g.traverse(o=>{ if(o.isLine||o.isLineSegments||o.isPoints||o.isSprite) o.visible=false; if(o.material&&o.material.transparent&&o.material.opacity<0.05) o.visible=false; });
-    return new Promise((res,rej)=>{ try{ new THREE.GLTFExporter().parse(g,r=>{ const u=URL.createObjectURL(new Blob([r],{type:'model/gltf-binary'})); urls[key]=u; res(u); },{binary:true,onlyVisible:true,maxTextureSize:1024}); }catch(e){ rej(e); } }); }
+    /* faqat yer uchastkasi ichidagilar: uy, hovli, zabor (ko'cha, qo'shnilar, shahar olib tashlanadi) */
+    g.updateMatrixWorld(true); const PP=B.plotPts||[], x0=Math.min(...PP.map(p=>p[0]))-0.6, x1=Math.max(...PP.map(p=>p[0]))+0.6, y0=Math.min(...PP.map(p=>p[1]))-0.6, y1=Math.max(...PP.map(p=>p[1]))+0.6, bb=new THREE.Box3(), c=new THREE.Vector3(), sz=new THREE.Vector3();
+    if(PP.length) g.traverse(o=>{ if(!o.isMesh||!o.visible) return; bb.setFromObject(o); if(bb.isEmpty()) return; bb.getCenter(c); bb.getSize(sz); const lx=c.x/scale+B.cx, ly=-(c.z/scale+B.cz); if(!(lx>=x0&&lx<=x1&&ly>=y0&&ly<=y1)||Math.max(sz.x,sz.z)/scale>Math.max(x1-x0,y1-y0)+2) o.visible=false; });
+    return new Promise((res,rej)=>{ try{ new THREE.GLTFExporter().parse(g,r=>{ const u=URL.createObjectURL(new Blob([r],{type:'model/gltf-binary'})); urls[key]=u; res(u); },{binary:true,onlyVisible:true,maxTextureSize:512}); }catch(e){ rej(e); } }); }
   function box(){ let b=$a('arBox'); if(b) return b; b=document.createElement('div'); b.id='arBox'; b.hidden=true;
     b.innerHTML=`<div class="arTop"><b>📱 AR: uyingiz yeringizda</b><button class="arX" type="button" aria-label="Yopish">✕</button></div>
       <model-viewer id="arMv" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1.05" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="auto" camera-orbit="35deg 70deg auto" alt="Uy 3D modeli"><button slot="ar-button" class="arGo" type="button">📷 Kamerada ko'rish</button></model-viewer>
