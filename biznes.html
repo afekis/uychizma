@@ -92,8 +92,8 @@ textarea{min-height:80px;resize:vertical}
     <h2>Tariflar</h2><p class="sub">To'lov 1 oy uchun. Kartaga o'tkazasiz, chekni yuborasiz — tasdiqlangach ishga tushiramiz.</p>
     <div class="plans">
       <div class="plan"><h3>Start</h3><div class="price"><span id="bzStart">490 000</span> <small>so'm / oy</small></div><ul><li>30 ta loyiha oyiga</li><li>Reja, 3D, smeta, PDF</li><li>1 xodim</li></ul><button type="button" data-plan="Start">Sotib olish</button></div>
-      <div class="plan hot"><h3>Biznes</h3><div class="price"><span id="bzPro">1 200 000</span> <small>so'm / oy</small></div><ul><li>Cheksiz loyihalar</li><li>O'z logotipingiz va telefoningiz</li><li>AR, AI interyer</li><li>5 ta xodim</li></ul><button type="button" data-plan="Biznes">Sotib olish</button></div>
-      <div class="plan"><h3>Korporativ</h3><div class="price">Kelishiladi</div><ul><li>Sizning saytingizga o'rnatish</li><li>O'z domeningiz</li><li>Cheksiz xodim, shaxsiy menejer</li></ul><a class="pbtn" href="https://t.me/amirhonsh" target="_blank" rel="noopener">Bog'lanish</a></div>
+      <div class="plan hot"><h3>Biznes</h3><div class="price"><span id="bzPro">700 000</span> <small>so'm / oy</small></div><ul><li>Cheksiz loyihalar</li><li>O'z logotipingiz va telefoningiz</li><li>AR, AI interyer</li><li>5 ta xodim</li></ul><button type="button" data-plan="Biznes">Sotib olish</button></div>
+      <div class="plan"><h3>Korporativ</h3><div class="price"><span id="bzCorp">1 200 000</span> <small>so'm / oy</small></div><ul><li>Sizning saytingizga o'rnatish</li><li>O'z domeningiz</li><li>Cheksiz xodim, shaxsiy menejer</li></ul><button type="button" data-plan="Korporativ">Sotib olish</button></div>
     </div>
   </section>
 
@@ -114,11 +114,11 @@ textarea{min-height:80px;resize:vertical}
         <div><label for="bPhone">Telefon</label><input id="bPhone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67"></div>
       </div>
       <div class="row2">
-        <div><label for="bPlan">Tarif</label><select id="bPlan"><option value="Start">Start</option><option value="Biznes" selected>Biznes</option></select></div>
+        <div><label for="bPlan">Tarif</label><select id="bPlan"><option value="Start">Start</option><option value="Biznes" selected>Biznes</option><option value="Korporativ">Korporativ</option></select></div>
         <div><label for="bCity">Shahar</label><input id="bCity" placeholder="Toshkent"></div>
       </div>
       <div class="paybox">
-        <div class="payamt">To'lov: <b><span id="bAmt">1 200 000</span> so'm</b> <small>· 1 oy</small></div>
+        <div class="payamt">To'lov: <b><span id="bAmt">700 000</span> so'm</b> <small>· 1 oy</small></div>
         <div class="note">Shu kartaga o'tkazing:</div>
         <div class="cardrow"><b id="bCard">5614 6818 7414 6230</b><button type="button" id="bCopy">Nusxa</button></div>
         <label for="bFile" style="margin-top:12px">To'lov cheki (skrinshot)</label>
@@ -140,8 +140,8 @@ textarea{min-height:80px;resize:vertical}
 const FB={apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDomain:"uychizma.firebaseapp.com",projectId:"uychizma",storageBucket:"uychizma.firebasestorage.app",messagingSenderId:"475315386452",appId:"1:475315386452:web:736912ec5a93398ab315c1"};
 const $=id=>document.getElementById(id); let db=null; try{ firebase.initializeApp(FB); db=firebase.firestore(); }catch(e){ console.warn(e); }
 /* Narxlar admin paneldan (config/site) */
-let PRICE={Start:'490 000',Biznes:'1 200 000'};
-function bzCfg(c){ if(!c) return; if(c.bizStart){ PRICE.Start=c.bizStart; $('bzStart').textContent=c.bizStart; } if(c.bizPro){ PRICE.Biznes=c.bizPro; $('bzPro').textContent=c.bizPro; } if(c.card) $('bCard').textContent=c.card; showAmt(); }
+let PRICE={Start:'490 000',Biznes:'700 000',Korporativ:'1 200 000'};
+function bzCfg(c){ if(!c) return; if(c.bizStart){ PRICE.Start=c.bizStart; $('bzStart').textContent=c.bizStart; } if(c.bizPro){ PRICE.Biznes=c.bizPro; $('bzPro').textContent=c.bizPro; } if(c.bizCorp){ PRICE.Korporativ=c.bizCorp; $('bzCorp').textContent=c.bizCorp; } if(c.card) $('bCard').textContent=c.card; showAmt(); }
 function showAmt(){ $('bAmt').textContent=PRICE[$('bPlan').value]||''; }
 try{ bzCfg(JSON.parse(localStorage.getItem('uychizma:cfg')||'null')); }catch(_){}
 if(db) db.collection('config').doc('site').get().then(d=>{ if(d.exists){ bzCfg(d.data()); try{ localStorage.setItem('uychizma:cfg',JSON.stringify(d.data())); }catch(_){} } }).catch(()=>{});
