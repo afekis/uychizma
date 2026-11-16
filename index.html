@@ -544,7 +544,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
     <div class="field"><label for="fpEmail">Gmail</label><input id="fpEmail" type="email" inputmode="email" autocomplete="email" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="fpEmail"></small></div>
     <p class="err" id="fpErr1" role="alert"></p><button type="button" class="btn primary" id="fpSend">📩 Gmail'ga yuborish</button></div>
   <div id="fp2" hidden><span class="fpmail" aria-hidden="true">📨</span><h2 style="margin:0 0 6px;font-size:20px;text-align:center">Gmail'ingizni oching</h2><p style="margin:0 0 10px"><b id="fpTo"></b> ga xat yubordik.</p>
-    <ol class="fpsteps"><li>Gmail'da <b>UyChizma</b> dan kelgan xatni oching (ko'rinmasa — <b>Spam</b> papkasini qarang).</li><li>Xatdagi havolani bosing — shu sayt yangi oynada ochiladi.</li><li>Yangi parol yozasiz va akkauntga kirasiz.</li></ol>
+    <ol class="fpsteps"><li>Gmail'da <b>«Reset your password»</b> xatini oching (ko'rinmasa — <b>Spam</b> papkasini qarang).</li><li>Xatdagi havolani bosing va ochilgan oynada <b>yangi parol</b> yozib, <b>Save</b> ni bosing.</li><li><b>Continue</b> ni bosing — saytga qaytasiz va yangi parol bilan kirasiz.</li></ol>
     <a class="btn primary" href="https://mail.google.com/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">📧 Gmail'ni ochish</a><button type="button" class="btn ghost" id="fpAgain">Xat kelmadi — qayta yuborish</button></div>
   <div id="fp3" hidden><h2 style="margin:0 0 6px;font-size:20px">🔒 Yangi parol</h2><p class="note" style="margin:0 0 12px" id="fpFor"></p>
     <div class="field"><label for="fpPass">Yangi parol <small>(kamida 6 belgi)</small></label><div class="pwrow"><input id="fpPass" type="password" autocomplete="new-password" placeholder="••••••"><button type="button" class="pweye" data-for="fpPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="fpPass"></small></div>
@@ -3273,11 +3273,13 @@ $('#logForgot').onclick=()=>{ $('#fpEmail').value=$('#logEmail').value.trim(); $
 $('#fpX').onclick=()=>{ boxClose('#fpBox'); FP_N=0; }; $('#fpBox').addEventListener('click',e=>{ if(e.target.id==='fpBox'){ boxClose('#fpBox'); FP_N=0; } });
 async function fpSend(){ const email=$('#fpEmail').value.trim().toLowerCase(), b=$('#fpSend'); $('#fpErr1').textContent=''; if(!ferr('fpEmail',okEmail(email)?'':"Gmail'ni to'g'ri yozing, masalan ism@gmail.com")) return;
   b.disabled=true; b.textContent='Yuborilmoqda…';
-  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; try{ firebase.auth().languageCode='uz'; }catch(_){} await firebase.auth().sendPasswordResetEmail(email,{url:location.origin+location.pathname}); $('#fpTo').textContent=email; fpShow(2); }
+  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; try{ firebase.auth().languageCode='uz'; }catch(_){} await firebase.auth().sendPasswordResetEmail(email,{url:location.origin+location.pathname+'?login=1'}); LS.set('fpMail',email); $('#fpTo').textContent=email; fpShow(2); }
   catch(e){ $('#fpErr1').textContent=authMsg(e); } finally{ b.disabled=false; b.textContent="📩 Gmail'ga yuborish"; } }
 $('#fpSend').onclick=fpSend; $('#fpEmail').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); fpSend(); } });
 $('#fpAgain').onclick=()=>fpShow(1);
 let FP_CODE='', FP_MAIL='';
+/* Firebase sahifasida yangi parol saqlangach 'Continue' -> saytga qaytadi: kirish oynasi ochiladi */
+(()=>{ const q=new URLSearchParams(location.search); if(q.get('login')!=='1') return; try{ history.replaceState(null,'',location.pathname); }catch(_){} setTimeout(()=>{ if(S.user&&S.user.uid) return; show('register'); accTab(true); const m=LS.get('fpMail',''); if(m) $('#logEmail').value=m; $('#logErr').style.color='#1F7A4D'; $('#logErr').textContent='✅ Yangi parolingiz bilan kiring.'; setTimeout(()=>$('#logPass').focus(),100); },600); })();
 (async()=>{ const q=new URLSearchParams(location.search); if(q.get('mode')!=='resetPassword'||!q.get('oobCode')) return; FP_CODE=q.get('oobCode'); try{ history.replaceState(null,'',location.pathname); }catch(_){}
   fpShow(3); $('#fpFor').textContent='Tekshirilmoqda…';
   try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; FP_MAIL=await firebase.auth().verifyPasswordResetCode(FP_CODE); $('#fpFor').innerHTML='Akkaunt: <b>'+esc(FP_MAIL)+'</b>'; setTimeout(()=>$('#fpPass').focus(),50); }
