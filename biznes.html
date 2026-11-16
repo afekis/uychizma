@@ -36,6 +36,10 @@ h2{font-family:var(--fd);font-size:clamp(18px,4vw,24px);margin:0 0 6px}.sub{colo
 .plan h3{margin:0;font-size:17px}.price{font-family:var(--fd);font-size:26px;margin:8px 0 2px}.price small{font-family:var(--fb);font-size:14px;color:var(--muted)}
 .plan ul{padding-left:18px;margin:10px 0 14px;flex:1}.plan li{margin:4px 0}
 .trybtn{display:inline-block;margin:0 0 14px;font-weight:700;text-decoration:none;background:#1F7A4D;color:#fff;padding:11px 16px;border-radius:12px}
+.pbtn{font-weight:700;border-radius:12px;padding:12px;background:var(--soft);color:var(--accent);text-decoration:none;text-align:center}
+.paybox{margin-top:14px;background:var(--soft);border-radius:14px;padding:14px}.payamt{font-size:17px;margin-bottom:6px}.payamt small{color:var(--muted)}
+.cardrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}.cardrow b{font-family:var(--fd);font-size:20px;letter-spacing:.04em}.cardrow button{font:inherit;font-weight:700;border:1.5px solid var(--accent);color:var(--accent);background:var(--card);border-radius:10px;padding:6px 12px;cursor:pointer}
+.drop{display:grid;place-items:center;min-height:110px;border:2px dashed var(--line);border-radius:12px;background:var(--card);cursor:pointer;margin:0;font-weight:600;color:var(--muted);text-align:center;padding:10px}.drop img{max-width:100%;max-height:260px;border-radius:8px}
 .plan button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px;background:var(--soft);color:var(--accent);cursor:pointer}
 .plan.hot button{background:var(--accent);color:#fff}
 label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}label small{color:var(--muted);font-weight:500}
@@ -56,7 +60,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="top"><a href="./">← UyChizma</a><span class="badge">BIZNES</span></div>
   <h1>Mijozingizga uyini 1 daqiqada ko'rsating — o'z logotipingiz bilan</h1>
   <p class="lead">Quruvchi firmalar, rieltorlar va arxitektorlar uchun: reja, 3D, AR, smeta va ustaga tayyor PDF. Mijoz uchrashuvdayoq uyini ko'radi va shartnoma tezroq imzolanadi.</p>
-  <a class="cta" href="#ariza">📩 Ariza qoldirish →</a>
+  <a class="cta" href="#ariza">💳 Tarifni sotib olish →</a>
 </div></header>
 
 <main class="wrap">
@@ -85,22 +89,22 @@ textarea{min-height:80px;resize:vertical}
   </section>
 
   <section class="card">
-    <h2>Tariflar</h2><p class="sub">Oylik to'lov. Sinov uchun <b id="bzFree">1</b> ta uy loyihasini bepul qilib ko'ring — yoqsa, tarifni tanlaysiz.</p><a href="./" class="trybtn">🎁 Bepul sinab ko'rish — 1 ta loyiha</a>
+    <h2>Tariflar</h2><p class="sub">To'lov 1 oy uchun. Kartaga o'tkazasiz, chekni yuborasiz — tasdiqlangach ishga tushiramiz.</p>
     <div class="plans">
-      <div class="plan"><h3>Start</h3><div class="price"><span id="bzStart">490 000</span> <small>so'm / oy</small></div><ul><li>30 ta loyiha oyiga</li><li>Reja, 3D, smeta, PDF</li><li>1 xodim</li></ul><button type="button" data-plan="Start">Tanlash</button></div>
-      <div class="plan hot"><h3>Biznes</h3><div class="price"><span id="bzPro">1 490 000</span> <small>so'm / oy</small></div><ul><li>Cheksiz loyihalar</li><li>O'z logotipingiz va telefoningiz</li><li>AR, AI interyer</li><li>5 ta xodim</li></ul><button type="button" data-plan="Biznes">Tanlash</button></div>
-      <div class="plan"><h3>Korporativ</h3><div class="price">Kelishiladi</div><ul><li>Sizning saytingizga o'rnatish</li><li>O'z domeningiz</li><li>Cheksiz xodim, shaxsiy menejer</li></ul><button type="button" data-plan="Korporativ">Bog'lanish</button></div>
+      <div class="plan"><h3>Start</h3><div class="price"><span id="bzStart">490 000</span> <small>so'm / oy</small></div><ul><li>30 ta loyiha oyiga</li><li>Reja, 3D, smeta, PDF</li><li>1 xodim</li></ul><button type="button" data-plan="Start">Sotib olish</button></div>
+      <div class="plan hot"><h3>Biznes</h3><div class="price"><span id="bzPro">1 200 000</span> <small>so'm / oy</small></div><ul><li>Cheksiz loyihalar</li><li>O'z logotipingiz va telefoningiz</li><li>AR, AI interyer</li><li>5 ta xodim</li></ul><button type="button" data-plan="Biznes">Sotib olish</button></div>
+      <div class="plan"><h3>Korporativ</h3><div class="price">Kelishiladi</div><ul><li>Sizning saytingizga o'rnatish</li><li>O'z domeningiz</li><li>Cheksiz xodim, shaxsiy menejer</li></ul><a class="pbtn" href="https://t.me/amirhonsh" target="_blank" rel="noopener">Bog'lanish</a></div>
     </div>
   </section>
 
   <section class="card">
     <h2>Qanday boshlanadi</h2>
-    <ol class="steps"><li>Ariza qoldirasiz</li><li>Biz qo'ng'iroq qilib, ko'rsatib beramiz</li><li>Logotipingizni sozlaymiz</li><li>1 ta loyihani bepul sinab ko'rasiz</li></ol>
+    <ol class="steps"><li>Tarifni tanlaysiz</li><li>Kartaga to'laysiz va chek rasmini yuborasiz</li><li>Biz tekshirib, tasdiqlaymiz</li><li>Logotipingizni sozlab, ishga tushiramiz</li></ol>
   </section>
 
   <section class="card" id="ariza">
     <div id="bForm">
-      <h2>Ariza qoldirish</h2><p class="sub">1 ish kuni ichida siz bilan bog'lanamiz.</p>
+      <h2>Tarifni sotib olish</h2><p class="sub">Ma'lumotlarni yozing, kartaga to'lang va chek rasmini yuboring.</p>
       <div class="row2">
         <div><label for="bCo">Firma nomi</label><input id="bCo" autocomplete="organization"></div>
         <div><label for="bType">Faoliyat</label><select id="bType"><option>Quruvchi firma</option><option>Rieltor / agentlik</option><option>Arxitektor / dizayner</option><option>Material do'koni</option><option>Boshqa</option></select></div>
@@ -110,15 +114,22 @@ textarea{min-height:80px;resize:vertical}
         <div><label for="bPhone">Telefon</label><input id="bPhone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67"></div>
       </div>
       <div class="row2">
-        <div><label for="bPlan">Tarif</label><select id="bPlan"><option>Start</option><option selected>Biznes</option><option>Korporativ</option></select></div>
+        <div><label for="bPlan">Tarif</label><select id="bPlan"><option value="Start">Start</option><option value="Biznes" selected>Biznes</option></select></div>
         <div><label for="bCity">Shahar</label><input id="bCity" placeholder="Toshkent"></div>
+      </div>
+      <div class="paybox">
+        <div class="payamt">To'lov: <b><span id="bAmt">1 200 000</span> so'm</b> <small>· 1 oy</small></div>
+        <div class="note">Shu kartaga o'tkazing:</div>
+        <div class="cardrow"><b id="bCard">5614 6818 7414 6230</b><button type="button" id="bCopy">Nusxa</button></div>
+        <label for="bFile" style="margin-top:12px">To'lov cheki (skrinshot)</label>
+        <label class="drop" for="bFile"><input id="bFile" type="file" accept="image/*" hidden><span id="bDropTxt">📷 Chek rasmini tanlang</span><img id="bPrev" alt="Chek" hidden></label>
       </div>
       <label for="bNote">Izoh <small>(ixtiyoriy)</small></label>
       <textarea id="bNote" placeholder="Masalan: oyiga 20–30 ta mijoz bilan ishlaymiz"></textarea>
-      <button type="button" class="btn" id="bSend">📩 Ariza yuborish</button>
+      <button type="button" class="btn" id="bSend">📤 Chekni yuborish</button>
       <p class="msg" id="bMsg" role="status"></p>
     </div>
-    <div class="done" id="bDone" hidden><div class="big">🤝</div><h2>Arizangiz qabul qilindi</h2><p class="sub">Tez orada qo'ng'iroq qilamiz. Shoshilinch bo'lsa: <a href="https://t.me/amirhonsh">@amirhonsh</a></p></div>
+    <div class="done" id="bDone" hidden><div class="big">✅</div><h2>Chek yuborildi</h2><p class="sub">Tekshirib, tasdiqlaganimizdan so'ng siz bilan bog'lanamiz va kabinetingizni ishga tushiramiz. Shoshilinch bo'lsa: <a href="https://t.me/amirhonsh">@amirhonsh</a></p></div>
   </section>
   <p class="foot">UyChizma Biznes · <a href="https://t.me/amirhonsh">@amirhonsh</a></p>
 </main>
@@ -129,17 +140,24 @@ textarea{min-height:80px;resize:vertical}
 const FB={apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDomain:"uychizma.firebaseapp.com",projectId:"uychizma",storageBucket:"uychizma.firebasestorage.app",messagingSenderId:"475315386452",appId:"1:475315386452:web:736912ec5a93398ab315c1"};
 const $=id=>document.getElementById(id); let db=null; try{ firebase.initializeApp(FB); db=firebase.firestore(); }catch(e){ console.warn(e); }
 /* Narxlar admin paneldan (config/site) */
-function bzCfg(c){ if(!c) return; if(c.bizStart) $('bzStart').textContent=c.bizStart; if(c.bizPro) $('bzPro').textContent=c.bizPro; if(c.bizFree!=null){ $('bzFree').textContent=c.bizFree; document.querySelector('.trybtn').textContent="🎁 Bepul sinab ko'rish — "+c.bizFree+' ta loyiha'; document.querySelector('.trybtn').hidden=!+c.bizFree; } }
+let PRICE={Start:'490 000',Biznes:'1 200 000'};
+function bzCfg(c){ if(!c) return; if(c.bizStart){ PRICE.Start=c.bizStart; $('bzStart').textContent=c.bizStart; } if(c.bizPro){ PRICE.Biznes=c.bizPro; $('bzPro').textContent=c.bizPro; } if(c.card) $('bCard').textContent=c.card; showAmt(); }
+function showAmt(){ $('bAmt').textContent=PRICE[$('bPlan').value]||''; }
 try{ bzCfg(JSON.parse(localStorage.getItem('uychizma:cfg')||'null')); }catch(_){}
 if(db) db.collection('config').doc('site').get().then(d=>{ if(d.exists){ bzCfg(d.data()); try{ localStorage.setItem('uychizma:cfg',JSON.stringify(d.data())); }catch(_){} } }).catch(()=>{});
+$('bPlan').onchange=showAmt; showAmt();
+$('bCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText($('bCard').textContent.replace(/\s/g,'')); $('bCopy').textContent='✓ Nusxalandi'; }catch(_){ $('bCopy').textContent='Belgilab oling'; } setTimeout(()=>$('bCopy').textContent='Nusxa',2000); };
+let IMG='';
+$('bFile').onchange=()=>{ const f=$('bFile').files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ const im=new Image(); im.onload=()=>{ const k=Math.min(1,1280/Math.max(im.width,im.height)); const c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height); IMG=c.toDataURL('image/jpeg',0.72); $('bPrev').src=IMG; $('bPrev').hidden=false; $('bDropTxt').hidden=true; }; im.onerror=()=>{ $('bMsg').className='msg err'; $('bMsg').textContent="Rasmni ochib bo'lmadi, boshqa rasm tanlang."; }; im.src=fr.result; }; fr.readAsDataURL(f); };
 const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{ $('bPlan').value=b.dataset.plan; $('ariza').scrollIntoView({behavior:'smooth'}); setTimeout(()=>$('bCo').focus(),500); });
+document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{ $('bPlan').value=b.dataset.plan; showAmt(); $('ariza').scrollIntoView({behavior:'smooth'}); setTimeout(()=>$('bCo').focus(),500); });
 $('bSend').onclick=async()=>{ const m=$('bMsg'); m.className='msg'; m.textContent=''; const co=$('bCo').value.trim(), name=$('bName').value.trim(), phone=$('bPhone').value.trim();
   if(!co||!name||String(phone).replace(/\D/g,'').length<9){ m.className='msg err'; m.textContent='Firma nomi, ism va telefonni yozing.'; return; }
+  if(!IMG){ m.className='msg err'; m.textContent="To'lov cheki rasmini yuklang."; return; }
   const b=$('bSend'); b.disabled=true; b.textContent='Yuborilmoqda…';
-  try{ if(!db) throw new Error('net'); await Promise.race([db.collection('leads').add({work:'b2b',status:'new',company:co.slice(0,80),bizType:$('bType').value,name:name.slice(0,60),phone:phone.slice(0,20),plan:$('bPlan').value,region:$('bCity').value.trim().slice(0,60),note:$('bNote').value.trim().slice(0,800),lang:window.UC_LANG||'uz',at:Date.now()}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),15000))]);
-    $('bForm').hidden=true; $('bDone').hidden=false; }
-  catch(e){ console.warn(e); m.className='msg err'; m.innerHTML="Yuborib bo'lmadi. Telegramda yozing: <a href='https://t.me/amirhonsh?text="+encodeURIComponent('UyChizma Biznes: '+co+', '+name+', '+phone+', tarif '+$('bPlan').value)+"'>@amirhonsh</a>"; b.disabled=false; b.textContent='📩 Ariza yuborish'; } };
+  try{ if(!db) throw new Error('net'); await Promise.race([db.collection('leads').add({work:'b2b',kind:'pay',status:'new',company:co.slice(0,80),bizType:$('bType').value,name:name.slice(0,60),phone:phone.slice(0,20),plan:$('bPlan').value,amount:String(PRICE[$('bPlan').value]||'').slice(0,30),months:1,img:IMG,region:$('bCity').value.trim().slice(0,60),note:$('bNote').value.trim().slice(0,800),lang:window.UC_LANG||'uz',at:Date.now()}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),20000))]);
+    $('bForm').hidden=true; $('bDone').hidden=false; $('ariza').scrollIntoView({behavior:'smooth'}); }
+  catch(e){ console.warn(e); m.className='msg err'; m.innerHTML="Yuborib bo'lmadi ("+esc(e.code||e.message||'')+"). Telegramda yozing: <a href='https://t.me/amirhonsh'>@amirhonsh</a>"; b.disabled=false; b.textContent='📤 Chekni yuborish'; } };
 </script>
 </body>
 </html>

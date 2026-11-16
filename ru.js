@@ -11,7 +11,7 @@ if(window.UC_LANG!=='ru') return;
 document.documentElement.lang='ru';
 
 /* --- Uzun jumlalar (to'liq moslik) --- */
-var S={"🏢 Biznes arizalari":"🏢 Заявки бизнеса","💰 Narxlar":"💰 Цены","1 ta loyihani bepul sinab ko'rasiz":"Бесплатно пробуете 1 проект","Loyihalar":"Проекты","Bo'sh joy":"Пустое место",
+var S={"💳 Tarifni sotib olish →":"💳 Купить тариф →","To'lov 1 oy uchun. Kartaga o'tkazasiz, chekni yuborasiz — tasdiqlangach ishga tushiramiz.":"Оплата за 1 месяц. Переводите на карту, отправляете чек — после подтверждения запускаем.","Sotib olish":"Купить","Tarifni tanlaysiz":"Выбираете тариф","Kartaga to'laysiz va chek rasmini yuborasiz":"Оплачиваете на карту и отправляете фото чека","Biz tekshirib, tasdiqlaymiz":"Мы проверяем и подтверждаем","Logotipingizni sozlab, ishga tushiramiz":"Настраиваем ваш логотип и запускаем","Tarifni sotib olish":"Покупка тарифа","Ma'lumotlarni yozing, kartaga to'lang va chek rasmini yuboring.":"Заполните данные, оплатите на карту и отправьте фото чека.","Shu kartaga o'tkazing:":"Переведите на эту карту:","Nusxa":"Копировать","To'lov cheki (skrinshot)":"Чек об оплате (скриншот)","📷 Chek rasmini tanlang":"📷 Выберите фото чека","📤 Chekni yuborish":"📤 Отправить чек","Chek yuborildi":"Чек отправлен","🏢 Biznes to'lovlari":"🏢 Платежи бизнеса","🏢 Biznes arizalari":"🏢 Заявки бизнеса","💰 Narxlar":"💰 Цены","1 ta loyihani bepul sinab ko'rasiz":"Бесплатно пробуете 1 проект","Loyihalar":"Проекты","Bo'sh joy":"Пустое место",
 "Uyingizni qurishdan oldin 3D-da ko'ring":"Увидьте свой дом в 3D до начала стройки",
 "Uyingizni qurmasdan oldin 3D-da ko'ring":"Увидьте свой дом в 3D до начала стройки",
 "Yeringiz o'lchamini yozing yoki chizmangizni yuklang. 1 daqiqada uyning rejasi, 3D ko'rinishi va narxi tayyor.":"Введите размеры участка или загрузите свой чертёж. За 1 минуту — планировка, 3D-вид и стоимость дома.",
@@ -108,6 +108,7 @@ var S={"🏢 Biznes arizalari":"🏢 Заявки бизнеса","💰 Narxlar"
 
 /* --- Iboralar va so'zlar (matn ichida almashtiriladi) --- */
 var P={
+"ta do'stingiz":"друга","To'lov:":"Оплата:","1 oy":"1 месяц",
 "Sinov uchun":"Для пробы","ta uy loyihasini bepul qilib ko'ring — yoqsa, tarifni tanlaysiz.":"проект дома бесплатно — понравится, выберете тариф.","🎁 Bepul sinab ko'rish":"🎁 Попробовать бесплатно","ta loyiha":"проект",
 "ta usta topildi":"мастеров найдено","usta topildi":"мастеров найдено","boshqa saytlar":"другие сайты","Kafel, pol bo'yicha filtrlangan":"с фильтром","bo'yicha filtrlangan":"— фильтр применён","bo'limi":"раздел","Barcha bo'limlar":"Все разделы","shaharni saytda tanlang":"город выберите на сайте",
 /* menyu va asosiy */
