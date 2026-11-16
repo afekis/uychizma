@@ -11,7 +11,7 @@ if(window.UC_LANG!=='ru') return;
 document.documentElement.lang='ru';
 
 /* --- Uzun jumlalar (to'liq moslik) --- */
-var S={
+var S={"Loyihalar":"Проекты","Bo'sh joy":"Пустое место",
 "Uyingizni qurishdan oldin 3D-da ko'ring":"Увидьте свой дом в 3D до начала стройки",
 "Uyingizni qurmasdan oldin 3D-da ko'ring":"Увидьте свой дом в 3D до начала стройки",
 "Yeringiz o'lchamini yozing yoki chizmangizni yuklang. 1 daqiqada uyning rejasi, 3D ko'rinishi va narxi tayyor.":"Введите размеры участка или загрузите свой чертёж. За 1 минуту — планировка, 3D-вид и стоимость дома.",
