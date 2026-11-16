@@ -443,7 +443,6 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   .nav::-webkit-scrollbar{display:none}
   .nav button{padding:7px 11px;font-size:13.5px;white-space:nowrap}
   .nav .ln{display:none}
-  #userChip{display:none}
   .styles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .stylecard{padding:6px;gap:4px;border-radius:10px}
   .stylecard b{font-size:12.5px;line-height:1.2}
@@ -470,6 +469,24 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 }
 
 
+/* ===== Akkaunt ===== */
+#userChip{display:inline-flex!important;align-items:center;gap:6px;background:none;cursor:pointer;font:inherit;font-size:13px;flex:none;max-width:160px}
+#userChip svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#userChip span{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:640px){#userChip{padding:6px 8px}#userChip span{display:none}}
+.acctabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:4px;margin:0 0 14px}
+.acctabs button{font:inherit;font-weight:700;font-size:14px;border:0;border-radius:9px;padding:10px 6px;background:none;color:var(--muted);cursor:pointer}
+.acctabs button[aria-selected=true]{background:var(--accent);color:#fff}
+.ferr{display:block;color:#C62828;font-weight:600;min-height:0}
+.field input[aria-invalid=true]{border-color:#C62828!important;box-shadow:0 0 0 3px rgba(198,40,40,.15)}
+.pwrow{position:relative}.pwrow input{width:100%;padding-right:44px}.pweye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;font-size:17px;padding:6px}
+.acclinks{display:flex;flex-direction:column;gap:6px;margin-top:12px;align-items:flex-start}
+.linkbtn{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:4px 0;text-align:left}
+.accbox{position:fixed;inset:0;z-index:250;background:rgba(8,14,28,.55);display:grid;place-items:center;padding:16px}
+.accin{position:relative;background:var(--card);color:var(--ink);border-radius:18px;padding:22px;width:min(380px,100%);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.accin .btn{width:100%;margin-top:10px}.accx{position:absolute;right:10px;top:10px;border:0;background:none;font-size:18px;cursor:pointer;color:var(--muted)}
+.accav{width:64px;height:64px;border-radius:50%;margin:0 auto;display:grid;place-items:center;background:#1F5FE0;color:#fff;font-size:26px;font-weight:800}
+.btn.danger{background:#D32F2F;color:#fff;border-color:#D32F2F}
 /* ===== Tepa menyu (oddiy, hamma bo'lim ko'rinadi) ===== */
 .nav .ni{width:18px;height:18px;flex:none;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .nav button,.nav a.navbj{display:inline-flex;align-items:center;white-space:nowrap}
@@ -499,6 +516,12 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
   <div class="ssub">Orzuingizdagi uyni bugun ko'ring</div>
   <div class="sline"><i></i></div>
 </div>
+<div id="accBox" class="accbox" hidden role="dialog" aria-modal="true" aria-labelledby="accH"><div class="accin">
+  <button type="button" class="accx" id="accX" aria-label="Yopish">✕</button>
+  <div class="accav" id="accAv">U</div><h2 id="accH" style="margin:6px 0 2px;font-size:20px"></h2><p class="note" id="accInfo" style="margin:0 0 14px"></p>
+  <button type="button" class="btn ghost" data-go="projects" id="accProj">📁 Mening loyihalarim</button>
+  <button type="button" class="btn danger" id="accOut">🚪 Akkauntdan chiqish</button>
+</div></div>
 <header class="top">
   <div class="wrap">
     <button class="logo" id="logoBtn" aria-label="UyChizma bosh sahifa">
@@ -515,7 +538,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
     </nav>
     <div class="hlang" role="group" aria-label="Til / Язык"><button type="button" data-lang="uz" class="lz">UZ</button><button type="button" data-lang="ru" class="lr">RU</button></div>
     <button type="button" id="premBtn" style="border:0;border-radius:999px;padding:7px 12px;font:700 13px/1 inherit;background:linear-gradient(135deg,#FFC93C,#F59E0B);color:#3A2500;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(245,158,11,.8);flex:none"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:currentColor"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg><span class="pl"> Premium</span></button><style>@media (max-width:480px){#premBtn{padding:7px 9px}#premBtn .pl{display:none}}</style>
-    <span class="chip" id="userChip" hidden></span>
+    <button type="button" class="chip" id="userChip" aria-label="Akkaunt"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="userName">Kirish</span></button>
   </div>
 </header>
 
@@ -583,16 +606,28 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
         <small class="note" id="gNote" role="status"></small>
       </div>
       <div class="divider">yoki</div>
-      <div class="field"><label for="regName">Ism va familiya</label><input id="regName" autocomplete="name" placeholder="Masalan: Amirhon Karimov"></div>
-      <div class="field"><label for="regPhone">Telefon raqam</label><input id="regPhone" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67"></div>
-      <div class="field"><label for="regCity">Shahar yoki tuman</label>
-        <select id="regCity">
+      <div class="acctabs" role="tablist"><button type="button" id="tabReg" aria-selected="true">Yangi akkaunt</button><button type="button" id="tabLog" aria-selected="false">Akkauntim bor — kirish</button></div>
+      <div id="regPane">
+        <div class="field"><label for="regName">Ism va familiya</label><input id="regName" autocomplete="name" placeholder="Masalan: Amirhon Karimov"><small class="ferr" data-for="regName"></small></div>
+        <div class="field"><label for="regPhone">Telefon raqam</label><input id="regPhone" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67"><small class="ferr" data-for="regPhone"></small></div>
+        <div class="field"><label for="regEmail">Gmail (email)</label><input id="regEmail" type="email" inputmode="email" autocomplete="email" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="regEmail"></small></div>
+        <div class="field"><label for="regPass">Parol o'ylab toping <small>(kamida 6 belgi)</small></label><div class="pwrow"><input id="regPass" type="password" autocomplete="new-password" placeholder="••••••"><button type="button" class="pweye" data-for="regPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="regPass"></small></div>
+        <div class="field"><label for="regCity">Shahar yoki tuman</label>
+          <select id="regCity">
           <option>Toshkent shahri</option><option>Toshkent viloyati</option><option>Samarqand</option><option>Buxoro</option><option>Andijon</option><option>Farg'ona</option><option>Namangan</option><option>Qashqadaryo</option><option>Surxondaryo</option><option>Xorazm</option><option>Navoiy</option><option>Jizzax</option><option>Sirdaryo</option><option>Qoraqalpog'iston</option>
         </select>
+        </div>
+        <p class="err" id="regErr" role="alert"></p>
+        <button class="btn primary" type="button" id="regGo">Ro'yxatdan o'tish</button>
       </div>
-      <p class="err" id="regErr" role="alert"></p>
-      <button class="btn primary" type="button" id="regGo">Davom etish</button>
-      <p class="note">Ma'lumotlaringiz shu brauzerda saqlanadi.</p>
+      <div id="logPane" hidden>
+        <div class="field"><label for="logEmail">Gmail (email)</label><input id="logEmail" type="email" inputmode="email" autocomplete="username" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="logEmail"></small></div>
+        <div class="field"><label for="logPass">Parol</label><div class="pwrow"><input id="logPass" type="password" autocomplete="current-password" placeholder="••••••"><button type="button" class="pweye" data-for="logPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="logPass"></small></div>
+        <p class="err" id="logErr" role="alert"></p>
+        <button class="btn primary" type="button" id="logGo">Kirish</button>
+        <div class="acclinks"><button type="button" class="linkbtn" id="logForgot">Parolni unutdingizmi? Gmail'ga havola yuboramiz</button><button type="button" class="linkbtn" id="logNew">Yangi akkaunt ochish</button></div>
+      </div>
+      <p class="note">Parolingizni eslab qoling — boshqa telefon yoki kompyuterdan ham shu Gmail va parol bilan kirasiz.</p>
     </div>
   </section>
 
@@ -3137,7 +3172,13 @@ function show(name){
 function go(t){ if(t==='start'){ if(!S.user) return show('register'); const w=()=>{ S.step=0; renderStep(); show('wizard'); }; if(window.payStart&&!payStart(w)) return; return w(); } show(t); }
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(b){ go(b.dataset.go); } });
 $('#logoBtn').onclick=()=>show('home');
-function renderUser(){ const c=$('#userChip'); if(S.user){ c.hidden=false; c.textContent=S.user.name; } else c.hidden=true; }
+function renderUser(){ const n=$('#userName'); if(n) n.textContent=S.user&&S.user.name?S.user.name:'Kirish'; const c=$('#userChip'); if(c) c.title=S.user?'Akkaunt: '+(S.user.name||''):'Kirish / ro\'yxatdan o\'tish'; }
+/* Akkaunt oynasi: ma'lumot + qizil "chiqish" tugmasi */
+function accOpen(){ if(!S.user){ accTab(false); show('register'); return; } const u=S.user; $('#accAv').textContent=((u.name||'U').trim()[0]||'U').toUpperCase(); $('#accH').textContent=u.name||'';
+  $('#accInfo').innerHTML=[u.phone,u.email,u.city].filter(Boolean).map(esc).join('<br>')+(u.uid?'':'<br><span style="color:#B26A00">Parolsiz akkaunt — faqat shu qurilmada.</span>'); $('#accBox').hidden=false; }
+function accClose(){ $('#accBox').hidden=true; }
+async function accLogout(){ try{ if(window.firebase&&firebase.auth) await firebase.auth().signOut(); }catch(_){} S.user=null; S.gEmail=''; LS.set('user',null); LS.set('regSent',''); accClose(); renderUser(); try{ window.payBadge&&window.payBadge(); }catch(_){} show('home'); toast('Akkauntdan chiqdingiz'); }
+$('#userChip').onclick=accOpen; $('#accX').onclick=accClose; $('#accOut').onclick=accLogout; $('#accBox').addEventListener('click',e=>{ if(e.target.id==='accBox'||e.target.closest('#accProj')) accClose(); });
 
 
 /* ===== Bulut (Firebase): Google bilan kirish + loyihalarni serverda saqlash =====
@@ -3146,7 +3187,7 @@ const FIREBASE_CONFIG = {apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDo
 const CLOUD={ok:false,user:null,db:null};
 async function cloudInit(){ if(!FIREBASE_CONFIG) return false; try{ const V='10.12.2'; for(const f of ['app','auth','firestore']) await loadScript(`https://cdn.jsdelivr.net/npm/firebase@${V}/firebase-${f}-compat.js`);
   firebase.initializeApp(FIREBASE_CONFIG); CLOUD.db=firebase.firestore(); CLOUD.ok=true;
-  firebase.auth().onAuthStateChanged(u=>{ if(u&&u.email==='admin@uychizma.app'){ CLOUD.user=u; return; } CLOUD.user=u||null; if(u){ S.user=Object.assign({},S.user||{},{name:(S.user&&S.user.name)||u.displayName||u.email,email:u.email||'',uid:u.uid,via:'google'}); LS.set('user',S.user); renderUser(); cloudSyncUser();
+  firebase.auth().onAuthStateChanged(async u=>{ if(u&&u.email==='admin@uychizma.app'){ CLOUD.user=u; return; } CLOUD.user=u||null; if(u){ const pw=(u.providerData||[]).some(p=>p.providerId==='password'); let prof={}; try{ const d=await CLOUD.db.collection('users').doc(u.uid).get(); if(d.exists) prof=d.data()||{}; }catch(_){} S.user=Object.assign({},S.user&&S.user.uid===u.uid?S.user:{},{name:prof.name||u.displayName||(S.user&&S.user.name)||u.email,phone:prof.phone||(S.user&&S.user.phone)||'',city:prof.city||(S.user&&S.user.city)||'',email:u.email||'',uid:u.uid,via:pw?'password':'google'}); LS.set('user',S.user); renderUser(); cloudSyncUser();
       $('#gNote').textContent=(u.email||'Google')+" orqali kirdingiz. Loyihalaringiz serverda saqlanadi."; if(!$('#regName').value) $('#regName').value=u.displayName||''; cloudPull(); } });
   return true; }catch(e){ console.warn('firebase',e); CLOUD.failed=true; return false; } }
 async function cloudLogin(){ if(!CLOUD.ok) return; const p=new firebase.auth.GoogleAuthProvider(); try{ await firebase.auth().signInWithPopup(p); }catch(e){ try{ await firebase.auth().signInWithRedirect(p); }catch(e2){ $('#gNote').textContent="Google orqali kirib bo'lmadi. Ism va telefon bilan davom eting."; } } }
@@ -3165,15 +3206,42 @@ function initGoogle(){
   s.onload=()=>{ try{ google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogle}); $('#gBtn').hidden=true; google.accounts.id.renderButton($('#gBtnHost'),{theme:'filled_black',size:'large',text:'continue_with',shape:'pill',width:320}); }catch(e){ gFail(); } };
   s.onerror=()=>gFail(); document.head.appendChild(s);
 }
-/* register */
-function regSubmit(){
-  const name=$('#regName').value.trim(), phone=$('#regPhone').value.replace(/[^\d+]/g,''), city=$('#regCity').value;
-  const digits=phone.replace(/\D/g,'');
-  if(name.length<2){ $('#regErr').textContent="Ismingizni yozing."; return; }
-  if(digits.length<9){ $('#regErr').textContent="Telefon raqamni to'liq yozing, masalan +998 90 123 45 67."; return; }
-  $('#regErr').textContent=''; S.user=Object.assign({},S.user&&S.user.uid?S.user:{},{name,phone,city,email:(S.user&&S.user.email)||S.gEmail||'',via:(S.user&&S.user.uid)||S.gEmail?'google':'form',at:Date.now()}); if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; cloudSyncUser(); LS.set('user',S.user); try{ cloudReg(); }catch(e){} renderUser(); toast("Ro'yxatdan o'tdingiz"); go('start');
-}
-$('#regGo').addEventListener('click',regSubmit); $('#regForm').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); regSubmit(); } });
+/* register: ism, telefon, Gmail, parol — xato bo'lsa aniq ko'rsatiladi va qayta urinish mumkin */
+function ferr(id,msg){ const i=$('#'+id), m=document.querySelector(`.ferr[data-for="${id}"]`); if(i) i.setAttribute('aria-invalid',msg?'true':'false'); if(m) m.textContent=msg||''; return !msg; }
+['regName','regPhone','regEmail','regPass','logEmail','logPass'].forEach(id=>{ const i=$('#'+id); if(i) i.addEventListener('input',()=>{ ferr(id,''); $('#regErr').textContent=''; $('#logErr').textContent=''; }); });
+document.addEventListener('click',e=>{ const b=e.target.closest('.pweye'); if(!b) return; const i=$('#'+b.dataset.for); i.type=i.type==='password'?'text':'password'; });
+function accTab(log){ $('#tabReg').setAttribute('aria-selected',String(!log)); $('#tabLog').setAttribute('aria-selected',String(log)); $('#regPane').hidden=log; $('#logPane').hidden=!log; }
+$('#tabReg').onclick=()=>accTab(false); $('#tabLog').onclick=()=>accTab(true); $('#logNew').onclick=()=>accTab(false);
+const okEmail=v=>/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v);
+const AUTH_ERR={'auth/email-already-in-use':"Bu Gmail bilan akkaunt allaqachon bor. «Akkauntim bor — kirish» ni bosing.",'auth/invalid-email':"Gmail noto'g'ri yozilgan.",'auth/weak-password':"Parol juda oddiy — kamida 6 belgi yozing.",'auth/wrong-password':"Parol noto'g'ri. Qayta yozing yoki «Parolni unutdingizmi?» ni bosing.",'auth/invalid-credential':"Gmail yoki parol noto'g'ri. Qayta tekshirib yozing.",'auth/invalid-login-credentials':"Gmail yoki parol noto'g'ri. Qayta tekshirib yozing.",'auth/user-not-found':"Bu Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.",'auth/too-many-requests':"Ko'p marta xato kiritildi. Bir oz kutib, qayta urining yoki parolni tiklang.",'auth/network-request-failed':"Internet bilan aloqa yo'q. Tekshirib, qayta urining.",'auth/operation-not-allowed':"Parol bilan kirish hozircha yoqilmagan."};
+const authMsg=e=>AUTH_ERR[(e&&e.code)||'']||("Xato: "+((e&&(e.code||e.message))||'noma\'lum')+". Qayta urining.");
+async function regSubmit(){ const btn=$('#regGo'); if(btn.disabled) return;
+  const name=$('#regName').value.trim().replace(/\s+/g,' '), phone=$('#regPhone').value.replace(/[^\d+]/g,''), city=$('#regCity').value, email=$('#regEmail').value.trim().toLowerCase(), pass=$('#regPass').value; const digits=phone.replace(/\D/g,'');
+  let ok=true; $('#regErr').textContent='';
+  ok=ferr('regName',name.length<2?"Ism va familiyangizni yozing.":(/\d/.test(name)?"Ismda raqam bo'lmasin.":''))&&ok;
+  ok=ferr('regPhone',digits.length<9?"Telefon raqamni to'liq yozing, masalan +998 90 123 45 67.":'')&&ok;
+  ok=ferr('regEmail',!okEmail(email)?"Gmail'ni to'g'ri yozing, masalan ism@gmail.com":'')&&ok;
+  ok=ferr('regPass',pass.length<6?"Parol kamida 6 belgi bo'lsin.":'')&&ok;
+  if(!ok){ $('#regErr').textContent="Qizil bilan belgilangan joylarni to'g'rilang."; const f=document.querySelector('#regPane [aria-invalid=true]'); if(f) f.focus(); return; }
+  btn.disabled=true; btn.textContent='Yuborilmoqda…';
+  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'};
+    const cr=await firebase.auth().createUserWithEmailAndPassword(email,pass); try{ await cr.user.updateProfile({displayName:name}); }catch(_){}
+    S.user={name,phone,city,email,uid:cr.user.uid,via:'password',at:Date.now()}; CLOUD.user=cr.user;
+    if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); await cloudSyncUser(); try{ cloudReg(); }catch(e){} renderUser(); toast("Ro'yxatdan o'tdingiz ✅"); go('start'); }
+  catch(e){ console.warn(e); const m=authMsg(e); if(/email-already|invalid-email/.test(e&&e.code)) ferr('regEmail',m); else if(/weak-password/.test(e&&e.code)) ferr('regPass',m); $('#regErr').textContent=m; }
+  finally{ btn.disabled=false; btn.textContent="Ro'yxatdan o'tish"; } }
+async function logSubmit(){ const btn=$('#logGo'); if(btn.disabled) return; const email=$('#logEmail').value.trim().toLowerCase(), pass=$('#logPass').value; $('#logErr').textContent='';
+  let ok=ferr('logEmail',!okEmail(email)?"Gmail'ni to'g'ri yozing.":''); ok=ferr('logPass',!pass?'Parolni yozing.':'')&&ok; if(!ok) return;
+  btn.disabled=true; btn.textContent='Kirilmoqda…';
+  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; await firebase.auth().signInWithEmailAndPassword(email,pass);
+    for(let i=0;i<30&&!(S.user&&S.user.uid);i++) await new Promise(r=>setTimeout(r,100)); toast('Xush kelibsiz, '+((S.user&&S.user.name)||'')+'!'); cloudPull(); go('start'); }
+  catch(e){ console.warn(e); const m=authMsg(e); $('#logErr').textContent=m; if(/password|credential/.test(e&&e.code)) ferr('logPass',' '); }
+  finally{ btn.disabled=false; btn.textContent='Kirish'; } }
+$('#logForgot').onclick=async()=>{ const email=$('#logEmail').value.trim().toLowerCase(); if(!okEmail(email)){ ferr('logEmail',"Avval Gmail'ingizni yozing, keyin shu tugmani bosing."); $('#logEmail').focus(); return; }
+  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; try{ firebase.auth().languageCode='uz'; }catch(_){} await firebase.auth().sendPasswordResetEmail(email); $('#logErr').style.color='#1F7A4D'; $('#logErr').textContent=`✅ ${email} ga parolni tiklash havolasi yuborildi. Pochtangizni (Spam papkasini ham) tekshiring.`; setTimeout(()=>$('#logErr').style.color='',8000); }
+  catch(e){ $('#logErr').style.color=''; $('#logErr').textContent=authMsg(e); } };
+$('#regGo').addEventListener('click',regSubmit); $('#logGo').addEventListener('click',logSubmit);
+$('#regForm').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); ($('#logPane').hidden?regSubmit:logSubmit)(); } });
 
 /* wizard */
 const STEP_NAMES=['Yer uchastkasi','Uy kattaligi',"Xonalar va hashamat",'Hovli','Uslub','Fasad va atrof','Uy ichi','Eshik va derazalar','Byudjet'];
@@ -4762,7 +4830,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   const vipUntil=()=>+LS.get('vipUntil',0)||0, vip=()=>vipUntil()>Date.now();
   async function vipSync(){ if(!(await cloudReady())) return; let best=0; for(const c of [cid(),LS.get('vipCid','')].filter(Boolean)){ try{ const d=await CLOUD.db.collection('vip').doc(c).get(); if(d.exists) best=Math.max(best,+d.data().until||0); }catch(_){} } const was=vip(); LS.set('vipUntil',best); badge(); if(!was&&vip()) toast('⭐ VIP faol — 30 kun cheksiz uy loyihalari'); }
   setTimeout(vipSync,2000);
-  const owner=()=>{ try{ const u=CLOUD.user||(window.firebase&&firebase.auth&&firebase.auth().currentUser); return !!(u&&u.email&&OWNER_EMAILS.includes(String(u.email).toLowerCase())); }catch(_){ return false; } };
+  const owner=()=>{ try{ const u=CLOUD.user||(window.firebase&&firebase.auth&&firebase.auth().currentUser); return !!(u&&u.email&&OWNER_EMAILS.includes(String(u.email).toLowerCase())&&(u.emailVerified||(u.providerData||[]).some(p=>p.providerId==='google.com'))); }catch(_){ return false; } };
   const left=()=>(owner()||vip())?1e9:Math.max(0,credits()-Math.max(0,LS.get('houses',[]).length-PAY.free));
   function badge(){ const STAR='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:currentColor"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg>', CROWN='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:currentColor"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>', CLOCK='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>'; const b=$p('premBtn'); if(!b) return; if(!PAY_ON){ b.hidden=true; return; } if(vip()&&!owner()){ const dd=Math.max(1,Math.ceil((vipUntil()-Date.now())/864e5)); b.innerHTML=CROWN+`<span class="pl"> VIP ·</span> ${dd}<span class="pl"> kun</span>`; b.title='VIP: '+dd+' kun qoldi, cheksiz'; return; } if(owner()){ b.innerHTML=CROWN+'<span class="pl"> Cheksiz</span>'; b.title='Sayt egasi: cheksiz'; return; } const n=left(), pend=pays().some(x=>x.status==='pending'); b.innerHTML=n?`${STAR}<span class="pl"> Premium ·</span> ${n}<span class="pl"> ta uy</span>`:(pend?CLOCK+'<span class="pl"> Premium</span>':STAR+'<span class="pl"> Premium</span>'); b.title=n?`Premium: yana ${n} ta uy`:'Premium obuna'; }
   window.payBadge=()=>badge();
