@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<script src="ru.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>UyChizma Biznes</title>
+<meta name="description" content="Quruvchi firmalar, rieltorlar va arxitektorlar uchun UyChizma: mijozga 1 daqiqada uy rejasi, 3D, smeta — o'z logotipingiz bilan.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+:root{--paper:#F3F6FB;--card:#fff;--ink:#0E1626;--muted:#566275;--line:#D6DEEA;--accent:#1F5FE0;--soft:#E6EDF8;--ok:#1F7A4D;--danger:#D32F2F;--gold:#F2B33D;
+  --grad:linear-gradient(135deg,#2A6BF0 0%,#1747B8 45%,#0A1120 100%);--fd:'Unbounded','Golos Text',system-ui,sans-serif;--fb:'Golos Text',system-ui,-apple-system,'Segoe UI',sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#0B111C;--card:#121B2B;--ink:#E6EDF7;--muted:#97A6BC;--line:#22304A;--soft:#18243A}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:15px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header{background:var(--grad);color:#fff;padding:18px 0 70px}
+.top{display:flex;align-items:center;gap:10px}.top a{color:#cfe0ff;text-decoration:none;font-weight:600;font-size:14px}
+.badge{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.08em;background:rgba(255,255,255,.16);padding:4px 10px;border-radius:99px}
+h1{font-family:var(--fd);font-size:clamp(26px,6vw,42px);line-height:1.12;margin:26px 0 12px;max-width:760px}
+.lead{color:#d8e4fb;margin:0 0 20px;max-width:640px;font-size:16px}
+.cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#1747B8;font-weight:800;text-decoration:none;border-radius:14px;padding:14px 20px}
+main{margin-top:-40px;padding-bottom:60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 6px 24px rgba(14,22,38,.06)}
+h2{font-family:var(--fd);font-size:clamp(18px,4vw,24px);margin:0 0 6px}.sub{color:var(--muted);margin:0 0 16px}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.who div{border:1px solid var(--line);border-radius:14px;padding:14px}.who .i{font-size:28px}.who b{display:block;margin:4px 0}.who p{margin:0;color:var(--muted);font-size:14px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.feat>div{display:flex;gap:10px;align-items:flex-start;padding:10px 0}.feat .i{flex:none;width:36px;height:36px;border-radius:10px;background:var(--soft);display:grid;place-items:center;font-size:18px}
+.feat b{display:block}.feat p{margin:0;color:var(--muted);font-size:14px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.plan{border:1.5px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;background:var(--card)}
+.plan.hot{border-color:var(--accent);box-shadow:0 10px 30px rgba(31,95,224,.18);position:relative}
+.plan.hot::before{content:'Ko\'p tanlanadi';position:absolute;top:-12px;left:18px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
+.plan h3{margin:0;font-size:17px}.price{font-family:var(--fd);font-size:26px;margin:8px 0 2px}.price small{font-family:var(--fb);font-size:14px;color:var(--muted)}
+.plan ul{padding-left:18px;margin:10px 0 14px;flex:1}.plan li{margin:4px 0}
+.plan button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px;background:var(--soft);color:var(--accent);cursor:pointer}
+.plan.hot button{background:var(--accent);color:#fff}
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}label small{color:var(--muted);font-weight:500}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+textarea{min-height:80px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media (max-width:560px){.row2{grid-template-columns:1fr}}
+.btn{font:inherit;font-weight:700;font-size:16px;border:0;border-radius:14px;min-height:52px;padding:0 18px;cursor:pointer;width:100%;margin-top:16px;background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(31,95,224,.3)}
+.btn:disabled{opacity:.5}
+.msg{margin:10px 0 0;font-weight:600;min-height:1em}.msg.err{color:var(--danger)}
+.done{text-align:center}.done .big{font-size:46px}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;list-style:none;padding:0;margin:0}
+.steps li{counter-increment:s;border-left:3px solid var(--accent);padding:4px 0 4px 12px}.steps li::before{content:counter(s);font-family:var(--fd);color:var(--accent);font-weight:700;margin-right:6px}
+.foot{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}.foot a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><a href="./">← UyChizma</a><span class="badge">BIZNES</span></div>
+  <h1>Mijozingizga uyini 1 daqiqada ko'rsating — o'z logotipingiz bilan</h1>
+  <p class="lead">Quruvchi firmalar, rieltorlar va arxitektorlar uchun: reja, 3D, AR, smeta va ustaga tayyor PDF. Mijoz uchrashuvdayoq uyini ko'radi va shartnoma tezroq imzolanadi.</p>
+  <a class="cta" href="#ariza">📩 Ariza qoldirish →</a>
+</div></header>
+
+<main class="wrap">
+  <section class="card">
+    <h2>Kimlar uchun</h2><p class="sub">Uy-joy bilan ishlaydigan har qanday biznes uchun</p>
+    <div class="who">
+      <div><span class="i">🏗</span><b>Quruvchi firmalar</b><p>Mijozga uy variantlari va narxini birinchi uchrashuvda ko'rsating.</p></div>
+      <div><span class="i">🏡</span><b>Rieltorlar</b><p>Bo'sh yer sotayotganda: "shu yerda qanday uy qurish mumkin" — 3D va narx bilan.</p></div>
+      <div><span class="i">📐</span><b>Arxitektorlar</b><p>Eskiz bosqichini minutlarda bajaring, vaqtingizni ishchi loyihaga sarflang.</p></div>
+      <div><span class="i">🧱</span><b>Material do'konlari</b><p>Smeta orqali mijozga kerakli materialni aniq hisoblab bering.</p></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Nimalar kiradi</h2>
+    <div class="feat">
+      <div><span class="i">🏠</span><div><b>Cheksiz loyihalar</b><p>Har bir mijoz uchun 3 xil uy varianti, reja va 3D.</p></div></div>
+      <div><span class="i">🏷</span><div><b>O'z logotipingiz</b><p>PDF va havolada sizning firmangiz nomi, logotipi va telefoni.</p></div></div>
+      <div><span class="i">💰</span><div><b>Smeta</b><p>Materiallar va narxlar — o'z narxlaringizni kiritib qo'yasiz.</p></div></div>
+      <div><span class="i">📱</span><div><b>AR</b><p>Mijoz uyni telefonida o'z yerida turgandek ko'radi.</p></div></div>
+      <div><span class="i">🛋</span><div><b>Ichki dizayn</b><p>Har bir xona AI bilan jihozlangan holda.</p></div></div>
+      <div><span class="i">📄</span><div><b>Ustaga tayyor PDF</b><p>Poydevor, kesim, deraza-eshik jadvali, bosqichlar.</p></div></div>
+      <div><span class="i">👥</span><div><b>Mijozlar bazasi</b><p>Kim qaysi loyihani ko'rgani — bitta ro'yxatda.</p></div></div>
+      <div><span class="i">🌐</span><div><b>O'zbek va rus tilida</b><p>Mijozingiz qaysi tilda gaplashsa, shu tilda.</p></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Tariflar</h2><p class="sub">Oylik to'lov. Birinchi 7 kun — bepul sinov.</p>
+    <div class="plans">
+      <div class="plan"><h3>Start</h3><div class="price">490 000 <small>so'm / oy</small></div><ul><li>30 ta loyiha oyiga</li><li>Reja, 3D, smeta, PDF</li><li>1 xodim</li></ul><button type="button" data-plan="Start">Tanlash</button></div>
+      <div class="plan hot"><h3>Biznes</h3><div class="price">1 490 000 <small>so'm / oy</small></div><ul><li>Cheksiz loyihalar</li><li>O'z logotipingiz va telefoningiz</li><li>AR, AI interyer</li><li>5 ta xodim</li></ul><button type="button" data-plan="Biznes">Tanlash</button></div>
+      <div class="plan"><h3>Korporativ</h3><div class="price">Kelishiladi</div><ul><li>Sizning saytingizga o'rnatish</li><li>O'z domeningiz</li><li>Cheksiz xodim, shaxsiy menejer</li></ul><button type="button" data-plan="Korporativ">Bog'lanish</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Qanday boshlanadi</h2>
+    <ol class="steps"><li>Ariza qoldirasiz</li><li>Biz qo'ng'iroq qilib, ko'rsatib beramiz</li><li>Logotipingizni sozlaymiz</li><li>7 kun bepul ishlatasiz</li></ol>
+  </section>
+
+  <section class="card" id="ariza">
+    <div id="bForm">
+      <h2>Ariza qoldirish</h2><p class="sub">1 ish kuni ichida siz bilan bog'lanamiz.</p>
+      <div class="row2">
+        <div><label for="bCo">Firma nomi</label><input id="bCo" autocomplete="organization"></div>
+        <div><label for="bType">Faoliyat</label><select id="bType"><option>Quruvchi firma</option><option>Rieltor / agentlik</option><option>Arxitektor / dizayner</option><option>Material do'koni</option><option>Boshqa</option></select></div>
+      </div>
+      <div class="row2">
+        <div><label for="bName">Ismingiz</label><input id="bName" autocomplete="name"></div>
+        <div><label for="bPhone">Telefon</label><input id="bPhone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67"></div>
+      </div>
+      <div class="row2">
+        <div><label for="bPlan">Tarif</label><select id="bPlan"><option>Start</option><option selected>Biznes</option><option>Korporativ</option></select></div>
+        <div><label for="bCity">Shahar</label><input id="bCity" placeholder="Toshkent"></div>
+      </div>
+      <label for="bNote">Izoh <small>(ixtiyoriy)</small></label>
+      <textarea id="bNote" placeholder="Masalan: oyiga 20–30 ta mijoz bilan ishlaymiz"></textarea>
+      <button type="button" class="btn" id="bSend">📩 Ariza yuborish</button>
+      <p class="msg" id="bMsg" role="status"></p>
+    </div>
+    <div class="done" id="bDone" hidden><div class="big">🤝</div><h2>Arizangiz qabul qilindi</h2><p class="sub">Tez orada qo'ng'iroq qilamiz. Shoshilinch bo'lsa: <a href="https://t.me/amirhonsh">@amirhonsh</a></p></div>
+  </section>
+  <p class="foot">UyChizma Biznes · <a href="https://t.me/amirhonsh">@amirhonsh</a></p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const FB={apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDomain:"uychizma.firebaseapp.com",projectId:"uychizma",storageBucket:"uychizma.firebasestorage.app",messagingSenderId:"475315386452",appId:"1:475315386452:web:736912ec5a93398ab315c1"};
+const $=id=>document.getElementById(id); let db=null; try{ firebase.initializeApp(FB); db=firebase.firestore(); }catch(e){ console.warn(e); }
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{ $('bPlan').value=b.dataset.plan; $('ariza').scrollIntoView({behavior:'smooth'}); setTimeout(()=>$('bCo').focus(),500); });
+$('bSend').onclick=async()=>{ const m=$('bMsg'); m.className='msg'; m.textContent=''; const co=$('bCo').value.trim(), name=$('bName').value.trim(), phone=$('bPhone').value.trim();
+  if(!co||!name||String(phone).replace(/\D/g,'').length<9){ m.className='msg err'; m.textContent='Firma nomi, ism va telefonni yozing.'; return; }
+  const b=$('bSend'); b.disabled=true; b.textContent='Yuborilmoqda…';
+  try{ if(!db) throw new Error('net'); await Promise.race([db.collection('leads').add({work:'b2b',status:'new',company:co.slice(0,80),bizType:$('bType').value,name:name.slice(0,60),phone:phone.slice(0,20),plan:$('bPlan').value,region:$('bCity').value.trim().slice(0,60),note:$('bNote').value.trim().slice(0,800),lang:window.UC_LANG||'uz',at:Date.now()}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),15000))]);
+    $('bForm').hidden=true; $('bDone').hidden=false; }
+  catch(e){ console.warn(e); m.className='msg err'; m.innerHTML="Yuborib bo'lmadi. Telegramda yozing: <a href='https://t.me/amirhonsh?text="+encodeURIComponent('UyChizma Biznes: '+co+', '+name+', '+phone+', tarif '+$('bPlan').value)+"'>@amirhonsh</a>"; b.disabled=false; b.textContent='📩 Ariza yuborish'; } };
+</script>
+</body>
+</html>

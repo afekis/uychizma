@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<script src="ru.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ustalar · UyChizma</title>
+<meta name="description" content="Uyingizni qurib beradigan ishonchli ustalar va brigadalar. So'rov qoldiring — ustalar narx taklif qiladi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+:root{--paper:#F3F6FB;--card:#fff;--ink:#0E1626;--muted:#566275;--line:#D6DEEA;--accent:#1F5FE0;--soft:#E6EDF8;--ok:#1F7A4D;--danger:#D32F2F;--gold:#E0A100;
+  --grad:linear-gradient(135deg,#2A6BF0 0%,#1747B8 45%,#0A1120 100%);--fd:'Unbounded','Golos Text',system-ui,sans-serif;--fb:'Golos Text',system-ui,-apple-system,'Segoe UI',sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#0B111C;--card:#121B2B;--ink:#E6EDF7;--muted:#97A6BC;--line:#22304A;--soft:#18243A}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:15px;line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px}
+header{background:var(--grad);color:#fff;padding:18px 0 56px}
+.top{display:flex;align-items:center;gap:10px}.top a{color:#cfe0ff;text-decoration:none;font-weight:600;font-size:14px}
+.badge{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.08em;background:rgba(255,255,255,.16);padding:4px 10px;border-radius:99px}
+h1{font-family:var(--fd);font-size:clamp(24px,6vw,34px);line-height:1.15;margin:22px 0 8px}
+.lead{color:#d8e4fb;margin:0;max-width:600px}
+main{margin-top:-38px;padding-bottom:60px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px;margin-bottom:14px;box-shadow:0 6px 24px rgba(14,22,38,.06)}
+.tabs button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 8px;background:none;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 6px 24px rgba(14,22,38,.06)}
+h2{font-family:var(--fd);font-size:18px;margin:0 0 6px}.sub{color:var(--muted);margin:0 0 14px}
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}label small{color:var(--muted);font-weight:500}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+textarea{min-height:84px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{font:inherit;font-size:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:8px 12px;border-radius:99px;cursor:pointer;min-height:40px}
+.chips button[aria-pressed=true]{border-color:var(--accent);background:var(--soft);color:var(--accent);font-weight:700}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media (max-width:520px){.row2{grid-template-columns:1fr}}
+.btn{font:inherit;font-weight:700;font-size:16px;border:0;border-radius:14px;min-height:52px;padding:0 18px;cursor:pointer;width:100%;margin-top:16px;background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(31,95,224,.3)}
+.btn:disabled{opacity:.5;box-shadow:none}
+.msg{margin:10px 0 0;font-weight:600;min-height:1em}.msg.err{color:var(--danger)}.msg.ok{color:var(--ok)}
+.done{text-align:center;padding:10px}.done .big{font-size:46px}
+.plink{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:8px}
+.ulist{display:grid;gap:10px}
+.u{display:flex;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px}
+.u .av{flex:none;width:48px;height:48px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800;color:var(--accent);font-size:18px}
+.u b{display:block}.u .meta{color:var(--muted);font-size:13px}.u .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.u .tags span{font-size:12px;background:var(--soft);border-radius:99px;padding:2px 8px}
+.u .pick{margin-left:auto;align-self:center;font:inherit;font-weight:700;border:1.5px solid var(--accent);color:var(--accent);background:none;border-radius:10px;padding:8px 10px;cursor:pointer;white-space:nowrap}
+.u .pick[aria-pressed=true]{background:var(--accent);color:#fff}
+.perks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:0 0 14px}
+.perks div{background:var(--soft);border-radius:12px;padding:12px}.perks b{display:block}
+.empty{color:var(--muted);text-align:center;padding:14px}
+.foot{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}.foot a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><a href="./">← UyChizma</a><span class="badge">YANGI</span></div>
+  <h1>Ustalar va brigadalar</h1>
+  <p class="lead">Uyingizni qurib beradigan ustalarni toping. So'rov qoldiring — tekshirilgan ustalar siz bilan bog'lanib, narx taklif qiladi.</p>
+</div></header>
+
+<main class="wrap">
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tC" aria-selected="true">🏠 Menga usta kerak</button>
+    <button type="button" role="tab" id="tU" aria-selected="false">👷 Men ustaman</button>
+  </div>
+
+  <!-- MIJOZ -->
+  <section id="pC">
+    <div class="card" id="cForm">
+      <h2>Usta topish</h2>
+      <p class="sub">Bir daqiqada to'ldiring. So'rovingiz hududingizdagi ustalarga yuboriladi.</p>
+      <label>Qanday ish kerak?</label>
+      <div class="chips" id="cWork">
+        <button type="button" data-v="toliq" aria-pressed="true">Uyni to'liq qurish</button>
+        <button type="button" data-v="karobka" aria-pressed="false">Karobka (devor, tom)</button>
+        <button type="button" data-v="poydevor" aria-pressed="false">Poydevor</button>
+        <button type="button" data-v="tom" aria-pressed="false">Tom</button>
+        <button type="button" data-v="pardoz" aria-pressed="false">Pardoz (remont)</button>
+        <button type="button" data-v="elektr" aria-pressed="false">Elektr, santexnika</button>
+        <button type="button" data-v="hovli" aria-pressed="false">Hovli, zabor</button>
+      </div>
+      <div class="row2">
+        <div><label for="cReg">Hudud</label><select id="cReg"></select></div>
+        <div><label for="cWhen">Qachon boshlash</label><select id="cWhen"><option>Hoziroq</option><option>1 oy ichida</option><option>3 oy ichida</option><option>Hali aniq emas</option></select></div>
+      </div>
+      <label for="cBud">Taxminiy byudjet <small>(ixtiyoriy)</small></label>
+      <input id="cBud" inputmode="numeric" placeholder="Masalan: 400 000 000 so'm">
+      <div class="plink" id="cProj" hidden>📐 <span>Loyihangiz biriktirildi: <b id="cProjName"></b></span></div>
+      <label for="cNote">Izoh <small>(ixtiyoriy)</small></label>
+      <textarea id="cNote" placeholder="Masalan: 2 qavatli uy, 10×12 m, g'ishtdan"></textarea>
+      <div class="row2">
+        <div><label for="cName">Ismingiz</label><input id="cName" autocomplete="name"></div>
+        <div><label for="cPhone">Telefon</label><input id="cPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67"></div>
+      </div>
+      <label>Ustalar <small>— tanlasangiz, avval shularga yuboriladi</small></label>
+      <div class="ulist" id="cList"><p class="empty">Ustalar yuklanmoqda…</p></div>
+      <button type="button" class="btn" id="cSend">📨 So'rov yuborish</button>
+      <p class="msg" id="cMsg" role="status"></p>
+    </div>
+    <div class="card done" id="cDone" hidden>
+      <div class="big">✅</div><h2>So'rovingiz yuborildi</h2>
+      <p class="sub">Ustalar 1–2 kun ichida siz bilan bog'lanadi. Savol bo'lsa: <a href="https://t.me/amirhonsh">@amirhonsh</a></p>
+    </div>
+  </section>
+
+  <!-- USTA -->
+  <section id="pU" hidden>
+    <div class="perks">
+      <div><b>📨 Tayyor buyurtmalar</b>Hududingizdagi uy quruvchilar loyihasi va byudjeti bilan</div>
+      <div><b>📐 Chizma tayyor</b>Mijozda reja, smeta va 3D bor — tushuntirish shart emas</div>
+      <div><b>⭐ Ishonch</b>Tekshirilgan ustalar ro'yxatda yuqorida turadi</div>
+    </div>
+    <div class="card" id="uForm">
+      <h2>Usta sifatida ro'yxatdan o'tish</h2>
+      <p class="sub">Arizangiz tekshirilgach, mijozlar sizni ro'yxatda ko'radi va buyurtmalar keladi.</p>
+      <div class="row2">
+        <div><label for="uName">Ism yoki brigada nomi</label><input id="uName"></div>
+        <div><label for="uPhone">Telefon</label><input id="uPhone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67"></div>
+      </div>
+      <div class="row2">
+        <div><label for="uReg">Hudud</label><select id="uReg"></select></div>
+        <div><label for="uExp">Tajriba</label><select id="uExp"><option>1–3 yil</option><option>3–5 yil</option><option>5–10 yil</option><option>10 yildan ko'p</option></select></div>
+      </div>
+      <label>Qanday ishlar qilasiz?</label>
+      <div class="chips" id="uWork">
+        <button type="button" data-v="toliq" aria-pressed="false">Uyni to'liq qurish</button>
+        <button type="button" data-v="karobka" aria-pressed="false">Karobka</button>
+        <button type="button" data-v="poydevor" aria-pressed="false">Poydevor</button>
+        <button type="button" data-v="tom" aria-pressed="false">Tom</button>
+        <button type="button" data-v="pardoz" aria-pressed="false">Pardoz</button>
+        <button type="button" data-v="elektr" aria-pressed="false">Elektr, santexnika</button>
+        <button type="button" data-v="hovli" aria-pressed="false">Hovli, zabor</button>
+      </div>
+      <label for="uTeam">Brigadada necha kishi?</label>
+      <select id="uTeam"><option>Yolg'iz ishlayman</option><option>2–5 kishi</option><option>6–10 kishi</option><option>10 dan ko'p</option></select>
+      <label for="uAbout">O'zingiz haqingizda <small>(qilgan ishlaringiz, narxlar)</small></label>
+      <textarea id="uAbout" placeholder="Masalan: 12 yildan beri uy quramiz, 40 dan ortiq uy topshirganmiz. Karobka 1 m² — 1,2 mln so'mdan."></textarea>
+      <label for="uTg">Telegram <small>(ixtiyoriy)</small></label>
+      <input id="uTg" placeholder="@username">
+      <button type="button" class="btn" id="uSend">👷 Ariza yuborish</button>
+      <p class="msg" id="uMsg" role="status"></p>
+    </div>
+    <div class="card done" id="uDone" hidden>
+      <div class="big">👷</div><h2>Arizangiz qabul qilindi</h2>
+      <p class="sub">Tekshiruvdan so'ng ro'yxatga qo'shasiz va buyurtmalar keladi. Savol bo'lsa: <a href="https://t.me/amirhonsh">@amirhonsh</a></p>
+    </div>
+  </section>
+  <p class="foot">UyChizma · <a href="https://t.me/amirhonsh">@amirhonsh</a></p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const FB={apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDomain:"uychizma.firebaseapp.com",projectId:"uychizma",storageBucket:"uychizma.firebasestorage.app",messagingSenderId:"475315386452",appId:"1:475315386452:web:736912ec5a93398ab315c1"};
+const REG=["Toshkent shahri","Toshkent viloyati","Andijon","Buxoro","Farg'ona","Jizzax","Xorazm","Namangan","Navoiy","Qashqadaryo","Qoraqalpog'iston","Samarqand","Sirdaryo","Surxondaryo"];
+const WORK={toliq:"Uyni to'liq qurish",karobka:'Karobka',poydevor:'Poydevor',tom:'Tom',pardoz:'Pardoz',elektr:'Elektr, santexnika',hovli:'Hovli, zabor'};
+const $=id=>document.getElementById(id); let db=null;
+const LSg=(k,d)=>{ try{ const v=localStorage.getItem('uychizma:'+k); return v?JSON.parse(v):d; }catch(_){ return d; } };
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+['cReg','uReg'].forEach(id=>{ $(id).innerHTML=REG.map(r=>`<option>${r}</option>`).join(''); });
+try{ firebase.initializeApp(FB); db=firebase.firestore(); }catch(e){ console.warn(e); }
+/* tablar */
+function tab(u){ $('tC').setAttribute('aria-selected',String(!u)); $('tU').setAttribute('aria-selected',String(u)); $('pC').hidden=u; $('pU').hidden=!u; try{ history.replaceState(null,'',u?'#usta':'#'); }catch(_){} }
+$('tC').onclick=()=>tab(false); $('tU').onclick=()=>tab(true); if(location.hash==='#usta') tab(true);
+/* chips */
+$('cWork').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; [...$('cWork').children].forEach(x=>x.setAttribute('aria-pressed',String(x===b))); loadUstalar(); });
+$('uWork').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true')); });
+/* foydalanuvchi va loyiha */
+const user=LSg('user',{})||{}; if(user.name) $('cName').value=user.name; if(user.phone) $('cPhone').value=user.phone; if(user.city){ const r=REG.find(x=>String(user.city).toLowerCase().includes(x.split(' ')[0].toLowerCase())); if(r) $('cReg').value=r; }
+const qs=new URLSearchParams(location.search); const proj=qs.get('p')||''; const projName=qs.get('n')||'';
+if(proj){ $('cProj').hidden=false; $('cProjName').textContent=projName||'UyChizma loyihasi'; if(!$('cNote').value&&qs.get('d')) $('cNote').value=qs.get('d'); }
+/* ustalar ro'yxati */
+let USTA=[], picked=new Set();
+async function loadUstalar(){ const box=$('cList'); if(!db){ box.innerHTML='<p class="empty">Ustalar ro\'yxati hozir ochilmadi — so\'rovingiz baribir yuboriladi.</p>'; return; }
+  try{ if(!USTA.length){ const q=await db.collection('ustalar').where('status','==','ok').limit(200).get(); USTA=q.docs.map(d=>Object.assign({id:d.id},d.data())); }
+    const reg=$('cReg').value, w=[...$('cWork').children].find(x=>x.getAttribute('aria-pressed')==='true').dataset.v;
+    const list=USTA.filter(u=>u.region===reg).sort((a,b)=>((b.work||[]).includes(w)-(a.work||[]).includes(w))||((b.top||0)-(a.top||0)));
+    box.innerHTML=list.length?list.slice(0,12).map(u=>`<div class="u"><span class="av">${esc((u.name||'U').trim()[0]||'U')}</span><div><b>${esc(u.name)}${u.top?' ⭐':''}</b><span class="meta">${esc(u.region)} · ${esc(u.exp||'')} · ${esc(u.team||'')}</span><div class="tags">${(u.work||[]).map(k=>`<span>${esc(WORK[k]||k)}</span>`).join('')}</div>${u.about?`<div class="meta" style="margin-top:6px">${esc(String(u.about).slice(0,180))}</div>`:''}</div><button type="button" class="pick" data-id="${esc(u.id)}" aria-pressed="${picked.has(u.id)}">${picked.has(u.id)?'✓ Tanlandi':'Tanlash'}</button></div>`).join(''):'<p class="empty">Bu hududda hozircha tasdiqlangan usta yo\'q. So\'rovingizni yuboring — o\'zimiz usta topib beramiz.</p>';
+  }catch(e){ console.warn(e); box.innerHTML='<p class="empty">Ustalar ro\'yxati hozir ochilmadi — so\'rovingiz baribir yuboriladi.</p>'; } }
+$('cReg').onchange=loadUstalar;
+$('cList').addEventListener('click',e=>{ const b=e.target.closest('.pick'); if(!b) return; const id=b.dataset.id; picked.has(id)?picked.delete(id):picked.add(id); b.setAttribute('aria-pressed',String(picked.has(id))); b.textContent=picked.has(id)?'✓ Tanlandi':'Tanlash'; });
+loadUstalar();
+/* yuborish */
+const okPhone=p=>String(p).replace(/\D/g,'').length>=9;
+async function save(col,data,msgEl){ if(!db) throw new Error('net'); return await Promise.race([db.collection(col).add(data),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),15000))]); }
+$('cSend').onclick=async()=>{ const m=$('cMsg'); m.className='msg'; m.textContent=''; const name=$('cName').value.trim(), phone=$('cPhone').value.trim();
+  if(!name||!okPhone(phone)){ m.className='msg err'; m.textContent='Ism va telefon raqamini yozing.'; return; }
+  const b=$('cSend'); b.disabled=true; b.textContent='Yuborilmoqda…';
+  const w=[...$('cWork').children].find(x=>x.getAttribute('aria-pressed')==='true').dataset.v;
+  try{ await save('leads',{name:name.slice(0,60),phone:phone.slice(0,20),region:$('cReg').value,work:w,when:$('cWhen').value,budget:$('cBud').value.trim().slice(0,40),note:$('cNote').value.trim().slice(0,800),project:proj.slice(0,1500),projName:projName.slice(0,80),ustalar:[...picked].slice(0,12),status:'new',lang:window.UC_LANG||'uz',at:Date.now()});
+    $('cForm').hidden=true; $('cDone').hidden=false; scrollTo({top:0,behavior:'smooth'}); }
+  catch(e){ console.warn(e); m.className='msg err'; m.innerHTML="Yuborib bo'lmadi ("+esc(e.code||e.message||'')+"). Telegramda yozing: <a href='https://t.me/amirhonsh'>@amirhonsh</a>"; b.disabled=false; b.textContent="📨 So'rov yuborish"; } };
+$('uSend').onclick=async()=>{ const m=$('uMsg'); m.className='msg'; m.textContent=''; const name=$('uName').value.trim(), phone=$('uPhone').value.trim(), work=[...$('uWork').children].filter(x=>x.getAttribute('aria-pressed')==='true').map(x=>x.dataset.v);
+  if(!name||!okPhone(phone)){ m.className='msg err'; m.textContent='Ism va telefon raqamini yozing.'; return; } if(!work.length){ m.className='msg err'; m.textContent='Qanday ishlar qilishingizni tanlang.'; return; }
+  const b=$('uSend'); b.disabled=true; b.textContent='Yuborilmoqda…';
+  try{ await save('ustalar',{name:name.slice(0,60),phone:phone.slice(0,20),region:$('uReg').value,exp:$('uExp').value,team:$('uTeam').value,work,about:$('uAbout').value.trim().slice(0,800),tg:$('uTg').value.trim().slice(0,40),status:'pending',top:0,at:Date.now()});
+    $('uForm').hidden=true; $('uDone').hidden=false; scrollTo({top:0,behavior:'smooth'}); }
+  catch(e){ console.warn(e); m.className='msg err'; m.innerHTML="Yuborib bo'lmadi ("+esc(e.code||e.message||'')+"). Telegramda yozing: <a href='https://t.me/amirhonsh'>@amirhonsh</a>"; b.disabled=false; b.textContent='👷 Ariza yuborish'; } };
+</script>
+</body>
+</html>
