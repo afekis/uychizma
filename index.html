@@ -12,6 +12,36 @@
 .langsw{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;font-size:12.5px}
 .langsw button{border:0;background:none;padding:5px 11px;cursor:pointer;color:var(--muted);font:inherit;font-weight:600}
 html[lang=uz] .langsw .lz,html[lang=ru] .langsw .lr{background:var(--accent);color:#fff}
+.refcard{margin-top:14px;padding:12px 14px;border:1.5px dashed #E0A100;border-radius:14px;background:#FFF9E8;color:#3B2F00}
+.refcard .note{color:#6B5A1E}.refh{font-size:15px}
+.refrow{display:flex;gap:6px;flex-wrap:wrap}.refrow input{flex:1 1 160px;min-width:0;font:inherit;font-size:13px;padding:8px 10px;border:1px solid #E7CF86;border-radius:10px;background:#fff;color:#333}
+.refrow .btn{min-height:38px}.refTg{background:#229ED9!important;color:#fff!important;text-decoration:none;display:inline-flex;align-items:center}
+@media (prefers-color-scheme:dark){.refcard{background:#2A2410;color:#F5E6B8;border-color:#8A6D10}.refcard .note{color:#D9C78F}}
+.smtot{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.smtot div{background:var(--soft,#EEF2F8);border-radius:12px;padding:10px 12px}.smtot small{display:block;color:var(--muted);font-size:12px}.smtot b{font-size:17px}
+.smtot .big{background:var(--accent);color:#fff}.smtot .big small{color:#dbe6ff}
+table.smeta td.n,table.smeta th.n{text-align:right;white-space:nowrap}
+table.smeta tr.grp td{background:var(--soft,#EEF2F8);font-weight:700}
+table.smeta tr.lab td{color:var(--muted);font-style:italic}
+table.smeta input{width:96px;text-align:right;font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card,#fff);color:inherit}
+table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
+
+@media (max-width:600px){
+ #smetaPanel .tablebox{overflow:visible}
+ table.smeta,table.smeta tbody{display:block;width:100%;min-width:0!important}
+ table.smeta thead{display:none}
+ table.smeta tr{display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:4px 8px;padding:9px 4px;border-bottom:1px solid var(--line)}
+ table.smeta td{border:0!important;padding:0!important;background:none}
+ table.smeta tr td:first-child{grid-column:1/-1;font-weight:600}
+ table.smeta tr td:nth-child(2){color:var(--muted)}table.smeta tr td:nth-child(3){color:var(--muted)}
+ table.smeta tr td:nth-child(4){justify-self:end}
+ table.smeta tr td:nth-child(5){font-weight:700;min-width:84px}
+ table.smeta tr.grp,table.smeta tr.lab{grid-template-columns:1fr auto}
+ table.smeta tr.grp{background:var(--soft,#EEF2F8);border-radius:8px;margin-top:8px;padding:9px 10px}
+ table.smeta tr.grp td:first-child,table.smeta tr.lab td:first-child{grid-column:auto}
+ table.smeta tr.lab td:first-child{font-weight:400}
+ table.smeta input{width:100px}
+}
 </style></head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
@@ -814,6 +844,15 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <h3 style="font-size:16px">Ish bosqichlari va materiallar</h3>
       <div class="tablebox"><table class="mat" id="stageTable"></table></div>
     </div>
+    <div class="panel" id="smetaPanel">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:4px"><div class="eyebrow">Smeta</div><h2 style="font-size:20px">Qurilish materiallari va narxlari</h2><span class="note">Har bir material miqdori va Toshkent bozoridagi taxminiy narxi. Narxni bosib o'zgartirsangiz, jami o'zi qayta hisoblanadi.</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="smetaPdf" type="button">📄 Smetani yuklab olish (PDF)</button><button class="btn ghost" id="smetaReset" type="button">Narxlarni tiklash</button></div>
+      </div>
+      <div class="smtot" id="smetaTot"></div>
+      <div class="tablebox"><table class="mat smeta" id="smetaTable"></table></div>
+      <p class="disc">⚠️ Narxlar 2026-yil Toshkent qurilish bozorlari o'rtacha ko'rsatkichlari (taxminiy). Ish haqi — ustalar o'rtacha narxi. Aniq narxni do'kon va ustangiz bilan tekshiring.</p>
+    </div>
     <div class="panel photo" id="photoPanel">
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end">
         <div style="display:flex;flex-direction:column;gap:4px"><div class="eyebrow">Natija</div><h2 style="font-size:22px">Uyingiz qurilib bitgandagi ko'rinishi</h2><span class="note">Rasmlar aynan shu loyihaning 3D modelidan oqshom quyoshi yorug'ida chiqariladi, shuning uchun har bir uy uchun o'zgacha bo'ladi.</span></div>
@@ -873,6 +912,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <div style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">Saqlanganlar</div><h2 style="font-size:28px">Mening loyihalarim</h2></div>
       <button class="btn primary small" data-go="start">Yangi loyiha</button>
     </div>
+    <div style="margin:4px 0 16px;max-width:620px"><div class="refcard"><div class="refh">🎁 <b>Do'stingizni taklif qiling</b></div><p class="note" style="margin:4px 0 8px">Do'stingiz shu havola orqali Premium olsa — <b>sizga 1 ta uy loyihasi bepul</b>.</p><div class="refrow"><input class="refLink" readonly aria-label="Taklif havolasi"><button type="button" class="btn small refCopy">Nusxalash</button><a class="btn small refTg" target="_blank" rel="noopener">✈️ Telegram</a></div><p class="note refStat" style="margin:6px 0 0"></p></div></div>
     <div class="projects" id="projList"></div>
   </section>
 </main>
@@ -2949,6 +2989,7 @@ function renderUsta(v){
   $('#ustaSheets').innerHTML=`<div class="sheet"><h3>POYDEVOR REJASI <span>lentali, mm</span></h3><div class="svgbox">${foundSVG(v)}</div></div><div class="sheet"><h3>KESIM 1-1 <span>balandliklar, m</span></h3><div class="svgbox">${sectionSVG(v,A)}</div></div>`;
   const os=openSchedule(v);
   $('#openTable').innerHTML='<thead><tr><th>Belgi</th><th>Turi</th><th>O\'lchami, mm (eni × bo\'yi)</th><th style="text-align:right">1-qavat</th><th style="text-align:right">2-qavat</th><th style="text-align:right">Jami</th></tr></thead><tbody>'+os.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="n" style="text-align:left">${r[2]}</td><td class="n">${r[3]}</td><td class="n">${r[4]}</td><td class="n"><b>${r[5]}</b></td></tr>`).join('')+'</tbody>';
+  try{ renderSmeta(v); }catch(e){ console.error(e); }
   const sr=stageRows(v,A);
   $('#stageTable').innerHTML='<thead><tr><th>Bosqich</th><th>Material / ish</th><th style="text-align:right">Miqdor</th><th>Birlik</th></tr></thead><tbody>'+sr.map(s=>s.items.map((it,i)=>`<tr>${i===0?`<td rowspan="${s.items.length}" style="vertical-align:top"><b>${s.name}</b><br><small>≈ ${money(s.sum)}</small></td>`:''}<td>${esc(it[0])}</td><td class="n">${it[1]}</td><td>${it[2]}</td></tr>`).join('')).join('')+'</tbody>';
 }
@@ -4232,20 +4273,23 @@ setTimeout(()=>{ makePromoImages(); },2600);
     err.textContent=''; load(); }
   $a('admGo').onclick=login; $a('admPw').addEventListener('keydown',ev=>{ if(ev.key==='Enter') login(); });
   async function load(){ $a('admLogin').hidden=true; $a('admBody').hidden=false; $a('admWho').textContent='Admin sifatida kirdingiz'; $a('admTable').innerHTML='<p class="note" style="padding:12px">Yuklanmoqda…</p>';
-    try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>Object.assign({_id:d.id},d.data())); render(); }
+    try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>Object.assign({_id:d.id},d.data())).filter(r=>r.kind!=='bonus'); render(); }
     catch(x){ rows=[]; $a('admTable').innerHTML='<p class="err" style="padding:12px">Ma\'lumotni o\'qib bo\'lmadi: '+e((x&&x.code)||x)+'</p>'; $a('admCount').textContent=''; } }
   function filtered(){ const q=$a('admQ').value.trim().toLowerCase(); return q?rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q)):rows; }
   function renderPays(list){ const st={pending:['⏳ Kutilmoqda','#A8620A'],ok:['✅ Ruxsat berildi','#1F7A4D'],no:['❌ Rad etildi','#B3261E']};
     const pend=rows.filter(r=>r.status==='pending').length; $a('admCount').textContent=list.length+' ta chek'+(pend?' · '+pend+' tasi kutilmoqda':''); $a('admPayN').textContent=pend?'('+pend+')':'';
     $a('admTable').innerHTML=list.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:12px">'+list.map(r=>{ const s=st[r.status]||st.pending; return `<div style="border:1px solid var(--line,#ddd);border-radius:12px;padding:10px;background:var(--card,#fff)">
       <a href="#" data-img="${e(r._id)}" title="Kattalashtirish"><img src="${e(r.img||'')}" alt="Chek rasmi" style="width:100%;height:220px;object-fit:contain;background:#f2f2f2;border-radius:8px"></a>
-      <div style="margin-top:8px;font-size:14px"><b>${e(r.name)}</b><br>${r.phone?`<a href="tel:${e(String(r.phone).replace(/[^\d+]/g,''))}">${e(r.phone)}</a>`:''}<br><span style="color:var(--muted,#666);font-size:12px">${dt(r.at)} · ${e(r.n||2)} ta uy uchun</span></div>
+      <div style="margin-top:8px;font-size:14px"><b>${e(r.name)}</b><br>${r.phone?`<a href="tel:${e(String(r.phone).replace(/[^\d+]/g,''))}">${e(r.phone)}</a>`:''}<br><span style="color:var(--muted,#666);font-size:12px">${dt(r.at)} · ${e(r.n||2)} ta uy uchun${r.ref?' · 🎁 taklif orqali':''}</span></div>
       <div style="margin:6px 0;font-weight:700;color:${s[1]}">${s[0]}</div>
       ${r.status==='pending'?`<div style="display:flex;gap:6px"><button type="button" class="btn primary small" data-ok="${e(r._id)}" style="flex:1">✅ Ruxsat berish</button><button type="button" class="btn back small" data-no="${e(r._id)}">Rad etish</button></div>`:(r.status==='ok'?`<button type="button" class="btn back small" data-no="${e(r._id)}">Ruxsatni bekor qilish</button>`:`<button type="button" class="btn back small" data-ok="${e(r._id)}">Baribir ruxsat berish</button>`)}
     </div>`; }).join('')+'</div>':'<p class="note" style="padding:12px">Hozircha chek yo\'q.</p>'; }
   $a('admTable').addEventListener('click',async ev=>{ const im=ev.target.closest('[data-img]'); if(im){ ev.preventDefault(); const r=rows.find(x=>x._id===im.dataset.img); if(r){ const w=window.open(); if(w) w.document.write('<title>Chek</title><img src="'+r.img+'" style="max-width:100%">'); } return; }
     const b=ev.target.closest('[data-ok],[data-no]'); if(!b) return; const id=b.dataset.ok||b.dataset.no, ok=!!b.dataset.ok; b.disabled=true;
-    try{ await CLOUD.db.collection('pays').doc(id).update({status:ok?'ok':'no',checkedAt:Date.now()}); const r=rows.find(x=>x._id===id); if(r) r.status=ok?'ok':'no'; render(); }catch(x){ b.disabled=false; alert("Saqlab bo'lmadi: "+((x&&x.code)||x)); } });
+    try{ await CLOUD.db.collection('pays').doc(id).update({status:ok?'ok':'no',checkedAt:Date.now()}); const r=rows.find(x=>x._id===id); if(r) r.status=ok?'ok':'no';
+      if(ok&&r&&r.ref&&!r.refPaid&&r.ref!==r.cid){ try{ let k=0; for(;k<50;k++){ const d=await CLOUD.db.collection('pays').doc('ref_'+r.ref+'_'+(k+1)).get(); if(!d.exists) break; }
+        await CLOUD.db.collection('pays').doc('ref_'+r.ref+'_'+(k+1)).set({kind:'bonus',cid:r.ref,from:id,n:1,status:'ok',at:Date.now()}); await CLOUD.db.collection('pays').doc(id).update({refPaid:true}); r.refPaid=true; toast("🎁 Taklif qilgan do'stiga 1 ta bepul uy berildi"); }catch(x2){ console.warn('ref bonus',x2); alert("Taklif bonusini yozib bo'lmadi: "+((x2&&x2.code)||x2)); } }
+      render(); }catch(x){ b.disabled=false; alert("Saqlab bo'lmadi: "+((x&&x.code)||x)); } });
   async function upSigned(id,file){ const msg=$a('admCount'); if(!file||file.type!=='application/pdf'){ alert('Faqat PDF fayl yuklang.'); return; } if(file.size>9.5*1024*1024){ alert('Fayl 9,5 MB dan katta. Kichikroq PDF yuklang.'); return; }
     const b64=await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(String(fr.result).split(',')[1]||''); fr.onerror=rej; fr.readAsDataURL(file); }); const CH=700000, n=Math.ceil(b64.length/CH);
     try{ for(let i=0;i<n;i++){ msg.textContent=`Yuklanmoqda: ${i+1}/${n}…`; await CLOUD.db.collection('signed').doc(id+'_p'+i).set({d:b64.slice(i*CH,(i+1)*CH)}); }
@@ -4287,6 +4331,54 @@ async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user
   const close=()=>{ const v=ov.querySelector('video'); try{ v.pause(); }catch(_){} ov.remove(); document.body.style.overflow=''; }; ov.querySelector('button').onclick=close; ov.addEventListener('click',ev=>{ if(ev.target===ov) close(); }); document.body.appendChild(ov); document.body.style.overflow='hidden'; }); })();
 </script>
 <script>
+
+/* ===== SMETA: materiallar, narxlar (so'm), ish haqi, PDF ===== */
+const SMP={qazish:70000,beton:950000,armatura:9800000,gidro:38000,yostiq:160000,gisht:1350,sement:58000,qum:150000,peremichka:130000,opalubka:28000,
+  tgidro:38000,izol:950000,parapet:65000,metall:95000,profnastil:72000,yumshoq:125000,keramik:230000,osb:78000,mauerlat:55000,stropila:4800000,plyonka:13000,
+  deraza:1350000,teshik:4800000,ieshik:1500000,suvoq:32000,styajka:45000,fasad:130000,pol:180000,boyoq:38000,santex:5500000,elektr:90000,suv:80000,isitish:160000};
+const SMLAB={poydevor:0.45,devor:0.5,yopma:0.4,tom:0.35,deraza:0.1,pardoz:0.6,muh:0.35};
+function smPrices(){ let o={}; try{ o=JSON.parse(localStorage.getItem('uychizma:smp')||'{}'); }catch(_){ } return Object.assign({},SMP,o); }
+function smeta(v,A){ const q=v.q, P=smPrices(), L=q.groundExt+q.groundInt, lx={oddiy:0.75,orta:1,hashamatli:1.6}[v.lux]||1, R=v.roof||roofOf(v.style||A.style,A);
+  const qop=t=>Math.ceil(t*20); const wet=Math.max(1,sum(v.floors,f=>f.rooms.filter(r=>r.t==='wet').length));
+  const G=[
+    ['poydevor','1. Poydevor',[['qazish','Tuproq qazish (ekskavator)',L*0.8*1.3,'m³'],['yostiq',"Qum-shag'al yostiq",L*0.8*0.15,'m³'],['beton','Tayyor beton B20 (M250)',q.found,'m³'],['armatura','Armatura A500',q.found*0.04,'t'],['gidro','Gidroizolyatsiya',L*0.6*1.1,'m²']]],
+    ['devor','2. Devorlar',[['gisht',"G'isht 250×120×65 (pishgan)",q.bricks,'dona'],['sement','Sement M400 (50 kg qop)',qop(q.mortar*0.32),'qop'],['qum','Qum',q.mortar*1.1,'m³'],['peremichka','Peremichkalar',q.winN+q.extDoors+q.intDoors,'dona']]],
+    ['yopma','3. Yopmalar (monolit)',[['beton','Tayyor beton B20',q.slabV,'m³'],['armatura','Armatura A500',q.slabV*0.1,'t'],['opalubka','Opalubka (ijara)',q.floorArea,'m²']]],
+    ['tom','4. Tom',R.shape==='tekis'?[['tgidro','Gidroizolyatsiya (2 qatlam)',q.roofA*2,'m²'],['izol','Issiqlik izolyatsiyasi',q.roofA*0.15,'m³'],['parapet',"Parapet qopqog'i",Math.sqrt(q.roofA)*4,'m']]
+      :[[R.mat,ROOFM[R.mat].n,q.roofA,'m²'],...(R.mat==='yumshoq'?[['osb','OSB-3 plita 12 mm',q.roofA*1.08,'m²']]:[]),['stropila',"Stropila yog'ochi",q.roofA*(R.mat==='keramik'?0.042:0.03),'m³'],['mauerlat','Mauerlat va konyok',Math.sqrt(q.roofA)*3,'m'],['plyonka','Izolyatsiya plyonkasi',q.roofA*1.1,'m²']]],
+    ['deraza','5. Deraza va eshiklar',[['deraza','Plastik derazalar (oyna maydoni)',q.winA,'m²',lx],['teshik','Tashqi eshik',q.extDoors,'dona',lx],['ieshik','Ichki eshiklar',q.intDoors,'dona',lx]]],
+    ['pardoz','6. Pardoz',[['suvoq','Ichki suvoq (aralashma)',q.plaster-q.extA,'m²'],['styajka','Pol styajkasi',q.floorArea,'m²'],['sement','Sement (suvoq, styajka)',qop((q.plaster*0.006+q.floorArea*0.0175)),'qop'],['fasad','Fasad pardozi',q.extA,'m²',lx],['pol','Pol qoplamasi (laminat, kafel)',q.floorArea,'m²',lx],['boyoq',"Devor va shift bo'yog'i",q.plaster-q.extA+q.floorArea,'m²',lx],['santex','Santexnika (unitaz, rakovina, dush)',wet,'xona',lx]]],
+    ['muh','7. Muhandislik tarmoqlari',[['elektr','Elektr (kabel, rozetka, shchit)',q.floorArea,'m²'],['suv','Suv va kanalizatsiya',q.floorArea,'m²'],['isitish','Isitish (kotel, radiatorlar)',q.floorArea,'m²']]]
+  ];
+  let mat=0, lab=0; const groups=G.map(([k,name,items])=>{ const it=items.filter(x=>x[2]>0.0001).map(([pk,n,qty,u,m])=>{ const qq=u==='dona'||u==='qop'||u==='xona'?Math.ceil(qty):Math.round(qty*10)/10; const pr=Math.round((P[pk]||0)*(m||1)); return {pk,n,qty:qq,u,pr,m:m||1,sum:qq*pr}; });
+    const ms=it.reduce((a,x)=>a+x.sum,0), ls=ms*SMLAB[k]; mat+=ms; lab+=ls; return {k,name,items:it,mat:ms,lab:ls}; });
+  const yard=v.yard&&v.yard.cost>0?v.yard.cost*UZS_RATE:0, extra=(mat+lab)*0.05, total=mat+lab+yard+extra;
+  return {groups,mat,lab,yard,extra,total,usd:total/UZS_RATE};
+}
+function som(n){ return fmt(Math.round(n/1000)*1000)+" so'm"; }
+function renderSmeta(v){ const A=S.A, box=$('#smetaTable'); if(!box||!v||!v.q) return; const sm=smeta(v,A), P=smPrices();
+  $('#smetaTot').innerHTML=`<div><small>Materiallar</small><b>${som(sm.mat)}</b></div><div><small>Ish haqi (ustalar)</small><b>${som(sm.lab)}</b></div>`+(sm.yard?`<div><small>Hovli obodonchiligi</small><b>${som(sm.yard)}</b></div>`:'')+`<div><small>Kutilmagan xarajat 5%</small><b>${som(sm.extra)}</b></div><div class="big"><small>Jami smeta</small><b>${som(sm.total)}</b><small>≈ ${money(sm.usd)}</small></div>`;
+  box.innerHTML='<thead><tr><th>Material / ish</th><th class="n">Miqdor</th><th>Birlik</th><th class="n">Narxi, so\'m</th><th class="n">Summa, so\'m</th></tr></thead><tbody>'+sm.groups.map(g=>`<tr class="grp"><td colspan="4">${esc(g.name)}</td><td class="n">${fmt(g.mat+g.lab)}</td></tr>`+g.items.map(x=>`<tr><td>${esc(x.n)}</td><td class="n">${x.u==='dona'||x.u==='qop'||x.u==='xona'?fmt(x.qty):fmt1(x.qty)}</td><td>${x.u}</td><td class="n"><input inputmode="numeric" data-pk="${x.pk}" data-m="${x.m}" value="${fmt(x.pr)}" class="${P[x.pk]!==SMP[x.pk]?'ch':''}" aria-label="${esc(x.n)} narxi"></td><td class="n">${fmt(x.sum)}</td></tr>`).join('')+`<tr class="lab"><td colspan="4">Ish haqi (${Math.round(SMLAB[g.k]*100)}%)</td><td class="n">${fmt(g.lab)}</td></tr>`).join('')+'</tbody>';
+}
+document.addEventListener('change',e=>{ const t=e.target; if(!t.matches||!t.matches('#smetaTable input')) return; const n=+String(t.value).replace(/[^\d]/g,''); if(!(n>0)) return; let o={}; try{ o=JSON.parse(localStorage.getItem('uychizma:smp')||'{}'); }catch(_){ } o[t.dataset.pk]=Math.round(n/(+t.dataset.m||1)); try{ localStorage.setItem('uychizma:smp',JSON.stringify(o)); }catch(_){ } renderSmeta(S.variants[S.active]); });
+document.addEventListener('click',async e=>{ if(e.target.closest('#smetaReset')){ try{ localStorage.removeItem('uychizma:smp'); }catch(_){ } renderSmeta(S.variants[S.active]); toast&&toast("Narxlar boshlang'ich holatga qaytdi"); }
+  if(e.target.closest('#smetaPdf')){ const b=e.target.closest('#smetaPdf'); b.disabled=true; try{ await smetaPdf(); }catch(er){ console.error(er); toast&&toast("PDF yasab bo'lmadi. Qayta urinib ko'ring."); } b.disabled=false; } });
+async function smetaPdf(){ if(!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  const v=S.variants[S.active], A=S.A, sm=smeta(v,A), doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'}), W=210, H=297; let y=0;
+  const head=()=>{ doc.setFillColor(23,71,184); doc.rect(0,0,W,18,'F'); doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.text('UyChizma',14,12); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(pt('Qurilish smetasi · '+new Date().toLocaleDateString('ru-RU')),W-14,12,{align:'right'}); doc.setTextColor(20); y=28; };
+  const need=h=>{ if(y+h>H-16){ doc.addPage(); head(); } };
+  head(); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(pt(`Variant ${v.key}: ${v.name}`),14,y); y+=7; doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text(pt(`${fmt1(v.W)} x ${fmt1(v.D)} m · ${v.floors.length} qavat · ${fmtA(v.area)} m2 · ${LUX_NAME[v.lux]} daraja`),14,y); y+=9;
+  const cols=[14,108,128,146,196];
+  const row=(a,b,c,d,e,bold,fill)=>{ need(6.5); if(fill){ doc.setFillColor(...fill); doc.rect(12,y-4.3,W-24,6.2,'F'); } doc.setFont('helvetica',bold?'bold':'normal'); doc.setFontSize(9); doc.text(pt(a),cols[0],y,{maxWidth:92}); if(b!=null) doc.text(pt(b),cols[2]-2,y,{align:'right'}); if(c!=null) doc.text(pt(c),cols[2],y); if(d!=null) doc.text(pt(d),cols[3]+22,y,{align:'right'}); if(e!=null) doc.text(pt(e),cols[4],y,{align:'right'}); y+=6.2; };
+  row('Material / ish','Miqdor','Birlik',"Narx, so'm","Summa, so'm",true,[226,233,246]);
+  sm.groups.forEach(g=>{ row(g.name,null,null,null,fmt(g.mat+g.lab),true,[240,244,250]); g.items.forEach(x=>row(x.n,x.u==='dona'||x.u==='qop'||x.u==='xona'?fmt(x.qty):fmt1(x.qty),x.u.replace('²','2').replace('³','3'),fmt(x.pr),fmt(x.sum))); doc.setTextColor(110); row(`Ish haqi (${Math.round(SMLAB[g.k]*100)}%)`,null,null,null,fmt(g.lab)); doc.setTextColor(20); });
+  y+=3; need(40); doc.setDrawColor(23,71,184); doc.line(14,y,W-14,y); y+=7;
+  [['Materiallar',sm.mat],['Ish haqi (ustalar)',sm.lab],...(sm.yard?[['Hovli obodonchiligi',sm.yard]]:[]),['Kutilmagan xarajatlar (5%)',sm.extra]].forEach(([k,n])=>{ doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text(pt(k),14,y); doc.text(pt(som(n)),W-14,y,{align:'right'}); y+=6; });
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.text(pt('JAMI SMETA'),14,y+2); doc.text(pt(som(sm.total)+'  (~'+money(sm.usd)+')'),W-14,y+2,{align:'right'}); y+=12;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(110); doc.text(pt("Narxlar 2026-yil Toshkent qurilish bozorlari o'rtacha ko'rsatkichlari asosida taxminiy hisoblangan. Ish haqi ustalar o'rtacha narxi. Aniq narxni do'kon va ustangiz bilan tekshiring. uychizma · afekis.github.io/uychizma"),14,y,{maxWidth:W-28});
+  const blob=doc.output('blob'); await saveBlob(blob,`UyChizma-smeta-${v.key}.pdf`,'Smeta saqlandi');
+}
 /* ===== MUHANDISLIK AGENTI: dastlabki konstruktiv hisob (KR), seysmika, armatura; tarmoq sxemalari (VK, EL, OV) =====
    Diqqat: barcha natijalar TAXMINIY. Litsenziyali konstruktor va muhandislar tekshirib tasdiqlashi shart. */
 const KG_M={8:0.395,10:0.617,12:0.888,14:1.21,16:1.58};
@@ -4495,6 +4587,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px"><b style="font-size:28px" id="payPrice"></b><span class="note">· yana 2 ta uy loyihasi</span></div>
    <div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:10px 12px;border-radius:12px;background:#E8F7EE;border:1px solid #9BD8B3;color:#14653A;font-weight:700;font-size:15px">✅ Sizga yoqmasa, pulingiz qaytariladi</div>
    <button type="button" class="btn primary" id="payShow" style="width:100%;min-height:50px;font-size:17px">💳 To'lash</button>
+   <div class="refcard"><div class="refh">🎁 <b>Do'stingizni taklif qiling</b></div><p class="note" style="margin:4px 0 8px">Do'stingiz shu havola orqali Premium olsa — <b>sizga 1 ta uy loyihasi bepul</b>.</p><div class="refrow"><input class="refLink" readonly aria-label="Taklif havolasi"><button type="button" class="btn small refCopy">Nusxalash</button><a class="btn small refTg" target="_blank" rel="noopener">✈️ Telegram</a></div><p class="note refStat" style="margin:6px 0 0"></p></div>
   </div>
   <div id="payStep2" hidden>
    <div style="background:var(--soft,#E6EDF8);border-radius:14px;padding:14px;margin-bottom:12px">
@@ -4540,7 +4633,15 @@ const PAY={ card:'5614 6818 7414 6230', holder:'', price:"25 000 so'm", free:0, 
   const sig=()=>{ const A=S.A; const b=[A.plotShape,A.plotW,A.plotL,A.plotBackW||0,A.floors,A.beds,A.targetArea||0].join('|'); if(A.layout!=='custom'||!A.custom) return b; let c=''; try{ c=JSON.stringify((A.custom.fl||[]).map(f=>f.map(r=>[r[1],Math.round(r[2]),Math.round(r[3]),Math.round(r[4]),Math.round(r[5])]))); }catch(_){} return b+'|c'+hsh(c); };
   const cid=()=>{ let c=LS.get('cid',''); if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); LS.set('cid',c); } return c; };
   const pays=()=>LS.get('pays',[]);           // [{id,status}]
-  const credits=()=>pays().filter(x=>x.status==='ok').length*PAY.per;
+  const bonus=()=>+LS.get('bonus',0)||0;       // do'st taklifi uchun bepul uylar
+  const credits=()=>pays().filter(x=>x.status==='ok').length*PAY.per+bonus();
+  try{ const rf=new URLSearchParams(location.search).get('ref'); if(rf&&/^[a-z0-9]{6,40}$/.test(rf)&&rf!==cid()&&!LS.get('refBy','')) LS.set('refBy',rf); }catch(_){}
+  const refUrl=()=>location.origin+location.pathname+'?ref='+cid();
+  async function bonusSync(){ if(!(await cloudReady())) return; let k=bonus(); for(let i=0;i<30;i++){ try{ const d=await CLOUD.db.collection('pays').doc('ref_'+cid()+'_'+(k+1)).get(); if(!d.exists) break; k++; }catch(_){ break; } } if(k>bonus()){ const got=k-bonus(); LS.set('bonus',k); badge(); toast(`🎁 Do'stingiz Premium oldi — sizga ${got} ta uy bepul!`); } refUI(); }
+  function refUI(){ const u=refUrl(), t=encodeURIComponent("UyChizma — uyingizni qurishdan oldin 3D-da ko'ring, reja va narxi bilan. Shu havola orqali kiring:");
+    document.querySelectorAll('.refcard').forEach(c=>{ c.querySelector('.refLink').value=u; c.querySelector('.refTg').href='https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+t; const n=bonus(); c.querySelector('.refStat').textContent=n?`Siz taklif orqali ${n} ta bepul uy oldingiz 🎉`:''; }); }
+  document.addEventListener('click',async e=>{ const b=e.target.closest('.refCopy'); if(!b) return; try{ await navigator.clipboard.writeText(refUrl()); toast('Havola nusxalandi'); }catch(_){ const i=b.parentNode.querySelector('.refLink'); i.select(); toast('Havolani belgilab nusxalang'); } });
+  refUI(); setTimeout(bonusSync,2500);
   async function refresh(){ const list=pays(); if(!list.some(x=>x.status==='pending')) return list; if(!(await cloudReady())) return list;
     for(const x of list) if(x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
     LS.set('pays',list); return list; }
@@ -4579,7 +4680,7 @@ const PAY={ card:'5614 6818 7414 6230', holder:'', price:"25 000 so'm", free:0, 
     if((f.size||0)>650000) return card(); const r=new FileReader(); r.onload=()=>{ const d=String(r.result||''); /^data:image\//.test(d)&&d.length<850000?res(d):card(); }; r.onerror=card; try{ r.readAsDataURL(f); }catch(_){ card(); } }); }
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ if(!(await cloudReady())) throw new Error('net'); const u=S.user||{};
-      const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now()});
+      const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now(),...(LS.get('refBy','')?{ref:LS.get('refBy','')}:{})});
       const l=pays(); l.push({id:ref.id,status:'pending'}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi'); }
     catch(x){ console.warn('pay send',x); const code=(x&&(x.code||x.message))||''; $p('payErr').innerHTML="Yuborib bo'lmadi"+(code?" ("+String(code).slice(0,40)+")":"")+". Internetni tekshirib, qayta urinib ko'ring yoki chekni Telegramga yuboring: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>"; b.disabled=false; }
     b.textContent='📤 Chekni yuborish'; };
