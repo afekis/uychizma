@@ -2,6 +2,7 @@
 <html lang="uz">
 <head>
 <meta charset="utf-8">
+<script src="ru.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Bo'sh joy dizayni · UyChizma</title>
 <meta name="description" content="Bo'sh xona yoki hovlining rasmini oling — AI uni nimalar bilan to'ldirish kerakligini aytadi va tayyor dizayn rasmini chizib beradi.">
@@ -60,7 +61,7 @@ h2{font-family:var(--fd);font-size:18px;margin:0 0 10px}
 </head>
 <body>
 <header><div class="wrap">
-  <div class="top"><a href="./">← UyChizma</a><span class="badge">YANGI · DEMO</span></div>
+  <div class="top"><a href="./">← UyChizma</a><span class="badge">YANGI · DEMO</span><span style="display:inline-flex;border:1px solid rgba(255,255,255,.35);border-radius:99px;overflow:hidden;font-size:12px"><button type="button" data-lang="uz" style="border:0;background:none;color:#fff;padding:4px 9px;font:inherit;font-weight:700;cursor:pointer">UZ</button><button type="button" data-lang="ru" style="border:0;background:rgba(255,255,255,.18);color:#fff;padding:4px 9px;font:inherit;font-weight:700;cursor:pointer">RU</button></span></div>
   <h1>Bo'sh joy dizayni</h1>
   <p class="lead">Bo'sh xona, hovli yoki ayvonning rasmini oling. AI unga nimalar qo'yish kerakligini aytadi va jihozlangan, chiroyli holatini chizib beradi.</p>
 </div></header>
@@ -157,9 +158,9 @@ async function post(body,ms){ const ctl=new AbortController(); const t=setTimeou
 
 function planPrompt(){ return `You are a professional interior and landscape designer in Uzbekistan. The photo shows an EMPTY or poorly furnished space. Space type: ${TYPE[S.type]}. Desired style: ${STYLE[S.style]}. Budget: ${BUD[S.bud]}.
 Study the photo carefully: walls, windows, doors, floor, size, light, existing fixed elements. Decide what to put in this space so it becomes beautiful, practical and cosy, and exactly where each item goes.
-Return ONLY JSON with this shape (all human text in Uzbek Latin, simple words):
+Return ONLY JSON with this shape (all human text in ${window.UC_LANG==='ru'?'Russian':'Uzbek Latin'}, simple words):
 {"joy":"1-2 sentences: what this space is and its approximate size",
- "tavsiyalar":[{"nom":"item name","joy":"where exactly to place it","nega":"why it fits","narx":"approximate price range in Uzbekistan in so'm, e.g. 2 000 000 – 3 500 000 so'm","min":2000000,"max":3500000}],
+ "tavsiyalar":[{"nom":"item name","joy":"where exactly to place it","nega":"why it fits","narx":"approximate price range in Uzbekistan in ${window.UC_LANG==='ru'?'сум':"so'm"}, e.g. 2 000 000 – 3 500 000 ${window.UC_LANG==='ru'?'сум':"so'm"}","min":2000000,"max":3500000}],
  "ranglar":["#RRGGBB", "... 4-5 colours of the palette"],
  "maslahat":["3-4 short practical tips"],
  "prompt":"ENGLISH, 60-120 words: precise instructions for an image model listing every item to add, its position relative to visible walls/windows, materials and colours"}
