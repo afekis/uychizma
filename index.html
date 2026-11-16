@@ -3279,7 +3279,7 @@ async function logSubmit(){ const btn=$('#logGo'); if(btn.disabled) return; cons
   finally{ btn.disabled=false; btn.textContent='Kirish'; } }
 /* Parolni tiklash: 1) Gmail so'raladi 2) xat yuboriladi 3) havola bosilganda saytda yangi parol */
 /* Gmail'ga kod: Google Apps Script xizmati (KOD_API bo'sh bo'lsa — eski havola usuli) */
-const KOD_API='';
+const KOD_API='https://script.google.com/macros/s/AKfycbwcg9Gj4HUWPwo02IJ3U_EkS8mmOuZxACZZiuFoYSKJ4fZhyw2a_7ld7OZHOF-6lSqyyQ/exec';
 async function kodApi(body){ const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),25000); try{ const r=await fetch(KOD_API,{method:'POST',body:JSON.stringify(body),signal:ctl.signal}); return await r.json(); }catch(e){ return {ok:false,error:'net'}; } finally{ clearTimeout(t); } }
 const KOD_ERR={exists:"Bu Gmail bilan akkaunt bor. «Akkauntim bor — kirish» ni bosing.",no_user:"Bu Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.",too_many:"Juda ko'p urinish bo'ldi. Birozdan keyin qayta urining.",expired:"Kod eskirgan. «Qayta yuborish» ni bosing.",wrong_code:"Kod noto'g'ri. Gmail'dagi kodni qayta tekshiring.",weak:"Parol kamida 6 belgi bo'lsin.",bad_email:"Gmail noto'g'ri yozilgan.",net:"Internet bilan aloqa yo'q. Qayta urining.",server:"Xizmatda xato bo'ldi. Birozdan keyin qayta urining."};
 const kodMsg=r=>(KOD_ERR[r&&r.error]||KOD_ERR.server)+(r&&r.error==='wrong_code'&&r.left!=null?` (yana ${r.left} ta urinish)`:'');
