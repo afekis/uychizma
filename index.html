@@ -1,4 +1,4 @@
-<!doctype html><html lang="uz"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+<!doctype html><html lang="uz"><head><meta charset=utf8><script src="ru.js"></script><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 .bjblk{display:flex;align-items:center;gap:12px;margin:14px 0 14px;padding:12px 14px;border-radius:16px;text-decoration:none;color:inherit;background:var(--card);border:1.5px solid var(--accent);box-shadow:0 6px 18px rgba(31,95,224,.14);max-width:520px}
 .bjblk:hover{transform:translateY(-1px)}.bjic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;font-size:24px}
 .bjtx{flex:1;min-width:0}.bjtx b{display:block;font-size:15px;color:var(--ink)}.bjtx b i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;background:var(--accent);color:#fff;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:2px}
@@ -9,6 +9,14 @@
 @media (max-width:640px){.nav.nav a.navbj{padding:5px 6px;font-size:17px;white-space:nowrap}.nav.nav button{padding:7px 8px}.nav.nav{gap:2px}}
 @media (max-width:360px){.nav.nav button{padding:6px 5px;font-size:12px}}
 
+.langsw{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;font-size:12.5px}
+.langsw button{border:0;background:none;padding:5px 11px;cursor:pointer;color:var(--muted);font:inherit;font-weight:600}
+html[lang=uz] .langsw .lz,html[lang=ru] .langsw .lr{background:var(--accent);color:#fff}
+.refcard{margin-top:14px;padding:12px 14px;border:1.5px dashed #E0A100;border-radius:14px;background:#FFF9E8;color:#3B2F00}
+.refcard .note{color:#6B5A1E}.refh{font-size:15px}
+.refrow{display:flex;gap:6px;flex-wrap:wrap}.refrow input{flex:1 1 160px;min-width:0;font:inherit;font-size:13px;padding:8px 10px;border:1px solid #E7CF86;border-radius:10px;background:#fff;color:#333}
+.refrow .btn{min-height:38px}.refTg{background:#229ED9!important;color:#fff!important;text-decoration:none;display:inline-flex;align-items:center}
+@media (prefers-color-scheme:dark){.refcard{background:#2A2410;color:#F5E6B8;border-color:#8A6D10}.refcard .note{color:#D9C78F}}
 .smtot{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
 .smtot div{background:var(--soft,#EEF2F8);border-radius:12px;padding:10px 12px}.smtot small{display:block;color:var(--muted);font-size:12px}.smtot b{font-size:17px}
 .smtot .big{background:var(--accent);color:#fff}.smtot .big small{color:#dbe6ff}
@@ -34,6 +42,18 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
  table.smeta tr.lab td:first-child{font-weight:400}
  table.smeta input{width:100px}
 }
+
+.arbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.arbar .note{flex:1 1 220px}
+#arBox{position:fixed;inset:0;z-index:300;background:#0A1120;display:flex;flex-direction:column}
+#arBox model-viewer{flex:1;width:100%;background:radial-gradient(#2a3550,#0A1120)}
+#arBox .arTop{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;color:#fff}
+#arBox .arTop b{flex:1}#arBox .arX{border:0;border-radius:99px;width:42px;height:42px;font-size:18px;background:#fff;color:#0A1120;cursor:pointer}
+#arBox .arSw{display:flex;gap:6px;justify-content:center;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+#arBox .arSw button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;border-radius:99px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer}
+#arBox .arSw button[aria-pressed=true]{background:#fff;color:#0A1120}
+#arBox .arGo{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);border:0;border-radius:14px;background:#1F5FE0;color:#fff;font:inherit;font-weight:700;font-size:16px;padding:14px 20px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#arBox .arMsg{color:#cfd8ea;text-align:center;font-size:13px;padding:0 16px 6px}
 </style></head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
@@ -487,7 +507,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     </div>
     <div class="hero">
       <div class="copy">
-        <div class="eyebrow">🏠 Uy · 3D · reja · narx</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div class="eyebrow">🏠 Uy · 3D · reja · narx</div><div class="langsw" role="group" aria-label="Til / Язык"><button type="button" data-lang="uz" class="lz">O'zbekcha</button><button type="button" data-lang="ru" class="lr">Русский</button></div></div>
         <h1>Uyingizni qurishdan oldin 3D-da ko'ring</h1>
         <p>Yeringiz o'lchamini yozing yoki chizmangizni yuklang. 1 daqiqada uyning rejasi, 3D ko'rinishi va narxi tayyor.</p>
         <a class="bjblk" href="bosh-joy.html">
@@ -789,6 +809,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <div class="viewer" id="resViewer"></div>
       <div class="panel summary" id="summary"></div>
     </div>
+    <div class="arbar"><button class="btn primary" id="arBtn" type="button">📱 Uyni yeringizda ko'ring (AR)</button><span class="note">Telefon kamerasini yeringizga qarating — uy o'sha joyda turgandek ko'rinadi.</span></div>
     <div class="panel" id="roomEdit">
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end">
         <div style="display:flex;flex-direction:column;gap:4px"><div class="eyebrow">Xonalarni o'zingiz sozlang</div><h2 style="font-size:20px">Xonalar ro'yxati</h2><span class="note">Maydonni − / + bilan o'zgartiring, keraksiz xonani o'chiring yoki yangi xona qo'shing. "Qo'llash"ni bossangiz, 3 variant qaytadan chiziladi.</span></div>
@@ -910,6 +931,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <div style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">Saqlanganlar</div><h2 style="font-size:28px">Mening loyihalarim</h2></div>
       <button class="btn primary small" data-go="start">Yangi loyiha</button>
     </div>
+    <div style="margin:4px 0 16px;max-width:620px"><div class="refcard"><div class="refh">🎁 <b>Do'stingizni taklif qiling</b></div><p class="note" style="margin:4px 0 8px">Do'stingiz shu havola orqali Premium olsa — <b>sizga 1 ta uy loyihasi bepul</b>.</p><div class="refrow"><input class="refLink" readonly aria-label="Taklif havolasi"><button type="button" class="btn small refCopy">Nusxalash</button><a class="btn small refTg" target="_blank" rel="noopener">✈️ Telegram</a></div><p class="note refStat" style="margin:6px 0 0"></p></div></div>
     <div class="projects" id="projList"></div>
   </section>
 </main>
@@ -4272,21 +4294,24 @@ setTimeout(()=>{ makePromoImages(); },2600);
     err.textContent=''; load(); }
   $a('admGo').onclick=login; $a('admPw').addEventListener('keydown',ev=>{ if(ev.key==='Enter') login(); });
   async function load(){ $a('admLogin').hidden=true; $a('admBody').hidden=false; $a('admWho').textContent='Admin sifatida kirdingiz'; $a('admTable').innerHTML='<p class="note" style="padding:12px">Yuklanmoqda…</p>';
-    try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>Object.assign({_id:d.id},d.data())); render(); }
+    try{ const q=await CLOUD.db.collection(tab).orderBy('at','desc').limit(1000).get(); rows=q.docs.map(d=>Object.assign({_id:d.id},d.data())).filter(r=>r.kind!=='bonus'); render(); }
     catch(x){ rows=[]; $a('admTable').innerHTML='<p class="err" style="padding:12px">Ma\'lumotni o\'qib bo\'lmadi: '+e((x&&x.code)||x)+'</p>'; $a('admCount').textContent=''; } }
   function filtered(){ const q=$a('admQ').value.trim().toLowerCase(); return q?rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q)):rows; }
   function renderPays(list){ const st={pending:['⏳ Kutilmoqda','#A8620A'],ok:['✅ Ruxsat berildi','#1F7A4D'],no:['❌ Rad etildi','#B3261E']};
     const pend=rows.filter(r=>r.status==='pending').length; $a('admCount').textContent=list.length+' ta chek'+(pend?' · '+pend+' tasi kutilmoqda':''); $a('admPayN').textContent=pend?'('+pend+')':'';
     $a('admTable').innerHTML=list.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:12px">'+list.map(r=>{ const s=st[r.status]||st.pending; return `<div style="border:1px solid var(--line,#ddd);border-radius:12px;padding:10px;background:var(--card,#fff)">
       <a href="#" data-img="${e(r._id)}" title="Kattalashtirish"><img src="${e(r.img||'')}" alt="Chek rasmi" style="width:100%;height:220px;object-fit:contain;background:#f2f2f2;border-radius:8px"></a>
-      <div style="margin-top:8px;font-size:14px"><b>${e(r.name)}</b><br>${r.phone?`<a href="tel:${e(String(r.phone).replace(/[^\d+]/g,''))}">${e(r.phone)}</a>`:''}<br><span style="color:var(--muted,#666);font-size:12px">${dt(r.at)} · ${e(r.n||2)} ta uy uchun</span></div>
+      <div style="margin-top:8px;font-size:14px"><b>${e(r.name)}</b><br>${r.phone?`<a href="tel:${e(String(r.phone).replace(/[^\d+]/g,''))}">${e(r.phone)}</a>`:''}<br><span style="color:var(--muted,#666);font-size:12px">${dt(r.at)} · ${e(r.n||2)} ta uy uchun${r.ref?' · 🎁 taklif orqali':''}</span></div>
       <div style="margin:6px 0;font-weight:700;color:${s[1]}">${s[0]}</div>
       ${r.status==='pending'?`<div style="display:flex;gap:6px"><button type="button" class="btn primary small" data-ok="${e(r._id)}" style="flex:1">✅ Ruxsat berish</button><button type="button" class="btn back small" data-no="${e(r._id)}">Rad etish</button></div>`:(r.status==='ok'?`<button type="button" class="btn back small" data-no="${e(r._id)}">Ruxsatni bekor qilish</button>`:`<button type="button" class="btn back small" data-ok="${e(r._id)}">Baribir ruxsat berish</button>`)}
     </div>`; }).join('')+'</div>':'<p class="note" style="padding:12px">Hozircha chek yo\'q.</p>'; }
   $a('admTable').addEventListener('click',async ev=>{ const ub=ev.target.closest('[data-uok],[data-uno],[data-utop]'); if(ub){ const id=ub.dataset.uok||ub.dataset.uno||ub.dataset.utop, r=rows.find(x=>x._id===id); if(!r) return; ub.disabled=true; const upd=ub.dataset.utop?{top:r.top?0:1}:{status:ub.dataset.uok?'ok':'no'}; try{ await CLOUD.db.collection('ustalar').doc(id).update(upd); Object.assign(r,upd); render(); }catch(x){ ub.disabled=false; alert("Saqlab bo'lmadi: "+((x&&x.code)||x)); } return; }
     const im=ev.target.closest('[data-img]'); if(im){ ev.preventDefault(); const r=rows.find(x=>x._id===im.dataset.img); if(r){ const w=window.open(); if(w) w.document.write('<title>Chek</title><img src="'+r.img+'" style="max-width:100%">'); } return; }
     const b=ev.target.closest('[data-ok],[data-no]'); if(!b) return; const id=b.dataset.ok||b.dataset.no, ok=!!b.dataset.ok; b.disabled=true;
-    try{ await CLOUD.db.collection('pays').doc(id).update({status:ok?'ok':'no',checkedAt:Date.now()}); const r=rows.find(x=>x._id===id); if(r) r.status=ok?'ok':'no'; render(); }catch(x){ b.disabled=false; alert("Saqlab bo'lmadi: "+((x&&x.code)||x)); } });
+    try{ await CLOUD.db.collection('pays').doc(id).update({status:ok?'ok':'no',checkedAt:Date.now()}); const r=rows.find(x=>x._id===id); if(r) r.status=ok?'ok':'no';
+      if(ok&&r&&r.ref&&!r.refPaid&&r.ref!==r.cid){ try{ let k=0; for(;k<50;k++){ const d=await CLOUD.db.collection('pays').doc('ref_'+r.ref+'_'+(k+1)).get(); if(!d.exists) break; }
+        await CLOUD.db.collection('pays').doc('ref_'+r.ref+'_'+(k+1)).set({kind:'bonus',cid:r.ref,from:id,n:1,status:'ok',at:Date.now()}); await CLOUD.db.collection('pays').doc(id).update({refPaid:true}); r.refPaid=true; toast("🎁 Taklif qilgan do'stiga 1 ta bepul uy berildi"); }catch(x2){ console.warn('ref bonus',x2); alert("Taklif bonusini yozib bo'lmadi: "+((x2&&x2.code)||x2)); } }
+      render(); }catch(x){ b.disabled=false; alert("Saqlab bo'lmadi: "+((x&&x.code)||x)); } });
   async function upSigned(id,file){ const msg=$a('admCount'); if(!file||file.type!=='application/pdf'){ alert('Faqat PDF fayl yuklang.'); return; } if(file.size>9.5*1024*1024){ alert('Fayl 9,5 MB dan katta. Kichikroq PDF yuklang.'); return; }
     const b64=await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(String(fr.result).split(',')[1]||''); fr.onerror=rej; fr.readAsDataURL(file); }); const CH=700000, n=Math.ceil(b64.length/CH);
     try{ for(let i=0;i<n;i++){ msg.textContent=`Yuklanmoqda: ${i+1}/${n}…`; await CLOUD.db.collection('signed').doc(id+'_p'+i).set({d:b64.slice(i*CH,(i+1)*CH)}); }
@@ -4381,6 +4406,35 @@ async function smetaPdf(){ if(!window.jspdf) await loadScript('https://cdnjs.clo
 
 /* Ustalar bozori: natijadan loyiha havolasi bilan ochish */
 document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if(!a) return; try{ const v=S.variants[S.active]; const u=new URL('ustalar.html',location.href); u.searchParams.set('p',shareUrl()); u.searchParams.set('n',`Variant ${v.key}: ${v.name}`); u.searchParams.set('d',`${v.floors.length} qavatli uy, ${fmtA(v.area)} m², ${fmt1(v.W)}×${fmt1(v.D)} m`); a.href=u.toString(); }catch(_){} });
+/* ===== AR: uyni telefon kamerasida yerda ko'rish (model-viewer: WebXR / Scene Viewer / Quick Look) ===== */
+(function(){
+  const $a=id=>document.getElementById(id); let busy=false, urls={};
+  async function need(){ if(!THREE.GLTFExporter) await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js');
+    if(!customElements.get('model-viewer')) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.type='module'; s.src='https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js'; s.onload=res; s.onerror=()=>rej(new Error('mv')); document.head.appendChild(s); }); }
+  function glb(scale){ const v=S.variants[S.active], A=S.A, key=(A.seed||0)+'|'+v.key+'|'+v.name+'|'+(v.sub||v.style)+'|'+v.roof.shape+'|'+scale; if(urls[key]) return Promise.resolve(urls[key]);
+    const B=buildHouse(v,A), g=new THREE.Group(); g.add(B.group); B.group.position.set(-B.cx,0,-B.cz); g.scale.setScalar(scale);
+    g.traverse(o=>{ if(o.isLine||o.isLineSegments||o.isPoints||o.isSprite) o.visible=false; if(o.material&&o.material.transparent&&o.material.opacity<0.05) o.visible=false; });
+    /* faqat yer uchastkasi ichidagilar: uy, hovli, zabor (ko'cha, qo'shnilar, shahar olib tashlanadi) */
+    g.updateMatrixWorld(true); const PP=B.plotPts||[], x0=Math.min(...PP.map(p=>p[0]))-0.6, x1=Math.max(...PP.map(p=>p[0]))+0.6, y0=Math.min(...PP.map(p=>p[1]))-0.6, y1=Math.max(...PP.map(p=>p[1]))+0.6, bb=new THREE.Box3(), c=new THREE.Vector3(), sz=new THREE.Vector3();
+    if(PP.length) g.traverse(o=>{ if(!o.isMesh||!o.visible) return; bb.setFromObject(o); if(bb.isEmpty()) return; bb.getCenter(c); bb.getSize(sz); const lx=c.x/scale+B.cx, ly=-(c.z/scale+B.cz); if(!(lx>=x0&&lx<=x1&&ly>=y0&&ly<=y1)||Math.max(sz.x,sz.z)/scale>Math.max(x1-x0,y1-y0)+2) o.visible=false; });
+    return new Promise((res,rej)=>{ try{ new THREE.GLTFExporter().parse(g,r=>{ const u=URL.createObjectURL(new Blob([r],{type:'model/gltf-binary'})); urls[key]=u; res(u); },{binary:true,onlyVisible:true,maxTextureSize:512}); }catch(e){ rej(e); } }); }
+  function box(){ let b=$a('arBox'); if(b) return b; b=document.createElement('div'); b.id='arBox'; b.hidden=true;
+    b.innerHTML=`<div class="arTop"><b>📱 AR: uyingiz yeringizda</b><button class="arX" type="button" aria-label="Yopish">✕</button></div>
+      <model-viewer id="arMv" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1.05" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="auto" camera-orbit="35deg 70deg auto" alt="Uy 3D modeli"><button slot="ar-button" class="arGo" type="button">📷 Kamerada ko'rish</button></model-viewer>
+      <p class="arMsg" id="arMsg">Telefonni yerga qarating, sekin aylantiring — uy yerga qo'yiladi. Ikki barmoq bilan kattalashtirish va burish mumkin.</p>
+      <div class="arSw"><button type="button" data-s="1" aria-pressed="true">🏠 Haqiqiy o'lcham</button><button type="button" data-s="0.02" aria-pressed="false">🧱 Stol ustida maket</button></div>`;
+    document.body.appendChild(b);
+    b.querySelector('.arX').onclick=()=>{ b.hidden=true; document.body.style.overflow=''; };
+    b.querySelector('.arSw').addEventListener('click',async e=>{ const t=e.target.closest('button'); if(!t) return; b.querySelectorAll('.arSw button').forEach(x=>x.setAttribute('aria-pressed',String(x===t))); await show(+t.dataset.s); });
+    return b; }
+  async function show(scale){ const mv=$a('arMv'); $a('arMsg').textContent='Model tayyorlanmoqda…'; const u=await glb(scale); mv.src=u;
+    const mob=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform));
+    $a('arMsg').textContent=mob?(scale<1?"Stol yoki polga qarating — kichik maket qo'yiladi. Barmoq bilan burang.":"Telefonni yerga qarating, sekin aylantiring — uy haqiqiy o'lchamda yerga qo'yiladi. Ortga yurib, uyni to'liq ko'ring."):"AR telefonda ishlaydi: saytni telefonda ochib, shu tugmani bosing. Hozir 3D modelni aylantirib ko'rishingiz mumkin."; }
+  document.addEventListener('click',async e=>{ if(!e.target.closest('#arBtn')||busy) return; if(!S.variants||!S.variants[S.active]) return; busy=true; const btn=$a('arBtn'), t=btn.textContent; btn.textContent='⏳ Tayyorlanmoqda…'; btn.disabled=true;
+    try{ await need(); const b=box(); b.hidden=false; document.body.style.overflow='hidden'; b.querySelectorAll('.arSw button').forEach((x,i)=>x.setAttribute('aria-pressed',String(i===0))); await show(1); }
+    catch(er){ console.error(er); toast("AR ochilmadi. Internetni tekshirib, qayta urinib ko'ring."); }
+    btn.textContent=t; btn.disabled=false; busy=false; });
+})();
 /* ===== MUHANDISLIK AGENTI: dastlabki konstruktiv hisob (KR), seysmika, armatura; tarmoq sxemalari (VK, EL, OV) =====
    Diqqat: barcha natijalar TAXMINIY. Litsenziyali konstruktor va muhandislar tekshirib tasdiqlashi shart. */
 const KG_M={8:0.395,10:0.617,12:0.888,14:1.21,16:1.58};
@@ -4589,6 +4643,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px"><b style="font-size:28px" id="payPrice"></b><span class="note">· yana 2 ta uy loyihasi</span></div>
    <div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:10px 12px;border-radius:12px;background:#E8F7EE;border:1px solid #9BD8B3;color:#14653A;font-weight:700;font-size:15px">✅ Sizga yoqmasa, pulingiz qaytariladi</div>
    <button type="button" class="btn primary" id="payShow" style="width:100%;min-height:50px;font-size:17px">💳 To'lash</button>
+   <div class="refcard"><div class="refh">🎁 <b>Do'stingizni taklif qiling</b></div><p class="note" style="margin:4px 0 8px">Do'stingiz shu havola orqali Premium olsa — <b>sizga 1 ta uy loyihasi bepul</b>.</p><div class="refrow"><input class="refLink" readonly aria-label="Taklif havolasi"><button type="button" class="btn small refCopy">Nusxalash</button><a class="btn small refTg" target="_blank" rel="noopener">✈️ Telegram</a></div><p class="note refStat" style="margin:6px 0 0"></p></div>
   </div>
   <div id="payStep2" hidden>
    <div style="background:var(--soft,#E6EDF8);border-radius:14px;padding:14px;margin-bottom:12px">
@@ -4634,7 +4689,15 @@ const PAY={ card:'5614 6818 7414 6230', holder:'', price:"25 000 so'm", free:0, 
   const sig=()=>{ const A=S.A; const b=[A.plotShape,A.plotW,A.plotL,A.plotBackW||0,A.floors,A.beds,A.targetArea||0].join('|'); if(A.layout!=='custom'||!A.custom) return b; let c=''; try{ c=JSON.stringify((A.custom.fl||[]).map(f=>f.map(r=>[r[1],Math.round(r[2]),Math.round(r[3]),Math.round(r[4]),Math.round(r[5])]))); }catch(_){} return b+'|c'+hsh(c); };
   const cid=()=>{ let c=LS.get('cid',''); if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); LS.set('cid',c); } return c; };
   const pays=()=>LS.get('pays',[]);           // [{id,status}]
-  const credits=()=>pays().filter(x=>x.status==='ok').length*PAY.per;
+  const bonus=()=>+LS.get('bonus',0)||0;       // do'st taklifi uchun bepul uylar
+  const credits=()=>pays().filter(x=>x.status==='ok').length*PAY.per+bonus();
+  try{ const rf=new URLSearchParams(location.search).get('ref'); if(rf&&/^[a-z0-9]{6,40}$/.test(rf)&&rf!==cid()&&!LS.get('refBy','')) LS.set('refBy',rf); }catch(_){}
+  const refUrl=()=>location.origin+location.pathname+'?ref='+cid();
+  async function bonusSync(){ if(!(await cloudReady())) return; let k=bonus(); for(let i=0;i<30;i++){ try{ const d=await CLOUD.db.collection('pays').doc('ref_'+cid()+'_'+(k+1)).get(); if(!d.exists) break; k++; }catch(_){ break; } } if(k>bonus()){ const got=k-bonus(); LS.set('bonus',k); badge(); toast(`🎁 Do'stingiz Premium oldi — sizga ${got} ta uy bepul!`); } refUI(); }
+  function refUI(){ const u=refUrl(), t=encodeURIComponent("UyChizma — uyingizni qurishdan oldin 3D-da ko'ring, reja va narxi bilan. Shu havola orqali kiring:");
+    document.querySelectorAll('.refcard').forEach(c=>{ c.querySelector('.refLink').value=u; c.querySelector('.refTg').href='https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+t; const n=bonus(); c.querySelector('.refStat').textContent=n?`Siz taklif orqali ${n} ta bepul uy oldingiz 🎉`:''; }); }
+  document.addEventListener('click',async e=>{ const b=e.target.closest('.refCopy'); if(!b) return; try{ await navigator.clipboard.writeText(refUrl()); toast('Havola nusxalandi'); }catch(_){ const i=b.parentNode.querySelector('.refLink'); i.select(); toast('Havolani belgilab nusxalang'); } });
+  refUI(); setTimeout(bonusSync,2500);
   async function refresh(){ const list=pays(); if(!list.some(x=>x.status==='pending')) return list; if(!(await cloudReady())) return list;
     for(const x of list) if(x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
     LS.set('pays',list); return list; }
@@ -4673,7 +4736,7 @@ const PAY={ card:'5614 6818 7414 6230', holder:'', price:"25 000 so'm", free:0, 
     if((f.size||0)>650000) return card(); const r=new FileReader(); r.onload=()=>{ const d=String(r.result||''); /^data:image\//.test(d)&&d.length<850000?res(d):card(); }; r.onerror=card; try{ r.readAsDataURL(f); }catch(_){ card(); } }); }
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ if(!(await cloudReady())) throw new Error('net'); const u=S.user||{};
-      const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now()});
+      const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now(),...(LS.get('refBy','')?{ref:LS.get('refBy','')}:{})});
       const l=pays(); l.push({id:ref.id,status:'pending'}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi'); }
     catch(x){ console.warn('pay send',x); const code=(x&&(x.code||x.message))||''; $p('payErr').innerHTML="Yuborib bo'lmadi"+(code?" ("+String(code).slice(0,40)+")":"")+". Internetni tekshirib, qayta urinib ko'ring yoki chekni Telegramga yuboring: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>"; b.disabled=false; }
     b.textContent='📤 Chekni yuborish'; };
