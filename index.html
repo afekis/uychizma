@@ -486,6 +486,27 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .accin{position:relative;background:var(--card);color:var(--ink);border-radius:18px;padding:22px;width:min(380px,100%);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .accin .btn{width:100%;margin-top:10px}.accx{position:absolute;right:10px;top:10px;border:0;background:none;font-size:18px;cursor:pointer;color:var(--muted)}
 .accav{width:64px;height:64px;border-radius:50%;margin:0 auto;display:grid;place-items:center;background:#1F5FE0;color:#fff;font-size:26px;font-weight:800}
+.accbox:not([hidden]){animation:boxBg .28s ease both}.accbox:not([hidden]) .accin{animation:boxIn .42s cubic-bezier(.2,.9,.25,1.15) both}
+@keyframes boxBg{from{background:rgba(8,14,28,0);backdrop-filter:blur(0)}to{background:rgba(8,14,28,.55);backdrop-filter:blur(4px)}}
+@keyframes boxIn{from{opacity:0;transform:translateY(26px) scale(.94)}to{opacity:1;transform:none}}
+.accbox.closing{animation:boxBgOut .25s ease both}.accbox.closing .accin{animation:boxOut .25s ease both}
+@keyframes boxBgOut{to{background:rgba(8,14,28,0)}}@keyframes boxOut{to{opacity:0;transform:translateY(18px) scale(.96)}}
+.accin{overflow:hidden}
+.stepin{animation:stepIn .45s cubic-bezier(.2,.9,.25,1) both}.stepback{animation:stepBack .45s cubic-bezier(.2,.9,.25,1) both}
+@keyframes stepIn{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:none}}
+@keyframes stepBack{from{opacity:0;transform:translateX(-48px)}to{opacity:1;transform:none}}
+.stepin h2,.stepin .field,.stepin p,.stepin ol,.stepin .btn{animation:rise .5s cubic-bezier(.2,.9,.25,1) both}
+.stepin .field{animation-delay:.06s}.stepin p{animation-delay:.04s}.stepin ol{animation-delay:.08s}.stepin .btn{animation-delay:.12s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fpdots{display:flex;gap:6px;justify-content:center;margin:0 0 14px}.fpdots i{width:28px;height:5px;border-radius:99px;background:var(--line);transition:background .35s,width .35s}
+.fpdots i.on{background:#1F5FE0;width:44px}.fpdots i.done{background:#1F7A4D}
+#fp2 h2::before{content:'';display:inline-block}
+.fpmail{display:block;font-size:46px;text-align:center;margin:0 0 6px;animation:mailFly 1.1s cubic-bezier(.2,.9,.25,1) both}
+@keyframes mailFly{0%{opacity:0;transform:translate(-60px,30px) rotate(-18deg) scale(.6)}60%{opacity:1;transform:translate(6px,-6px) rotate(6deg) scale(1.08)}100%{transform:none}}
+#regPane:not([hidden]),#logPane:not([hidden]){animation:stepIn .4s cubic-bezier(.2,.9,.25,1) both}
+.acctabs button{transition:background .3s,color .3s}
+@media (prefers-reduced-motion:reduce){.accbox *,.accbox,#regPane,#logPane{animation:none!important;transition:none!important}}
+.fpsteps{margin:0 0 12px;padding-left:20px;line-height:1.5}.fpsteps li{margin:4px 0}
 .btn.danger{background:#D32F2F;color:#fff;border-color:#D32F2F}
 /* ===== Tepa menyu (oddiy, hamma bo'lim ko'rinadi) ===== */
 .nav .ni{width:18px;height:18px;flex:none;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -516,6 +537,19 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
   <div class="ssub">Orzuingizdagi uyni bugun ko'ring</div>
   <div class="sline"><i></i></div>
 </div>
+<div id="fpBox" class="accbox" hidden role="dialog" aria-modal="true" aria-labelledby="fpH"><div class="accin" style="text-align:left">
+  <button type="button" class="accx" id="fpX" aria-label="Yopish">✕</button>
+  <div class="fpdots" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div id="fp1"><h2 id="fpH" style="margin:0 0 6px;font-size:20px">🔑 Parolni tiklash</h2><p class="note" style="margin:0 0 12px">Akkauntingiz ochilgan Gmail'ni yozing — unga parolni tiklash xati yuboramiz.</p>
+    <div class="field"><label for="fpEmail">Gmail</label><input id="fpEmail" type="email" inputmode="email" autocomplete="email" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="fpEmail"></small></div>
+    <p class="err" id="fpErr1" role="alert"></p><button type="button" class="btn primary" id="fpSend">📩 Gmail'ga yuborish</button></div>
+  <div id="fp2" hidden><span class="fpmail" aria-hidden="true">📨</span><h2 style="margin:0 0 6px;font-size:20px;text-align:center">Gmail'ingizni oching</h2><p style="margin:0 0 10px"><b id="fpTo"></b> ga xat yubordik.</p>
+    <ol class="fpsteps"><li>Gmail'da <b>UyChizma</b> dan kelgan xatni oching (ko'rinmasa — <b>Spam</b> papkasini qarang).</li><li>Xatdagi havolani bosing — shu sayt yangi oynada ochiladi.</li><li>Yangi parol yozasiz va akkauntga kirasiz.</li></ol>
+    <a class="btn primary" href="https://mail.google.com/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">📧 Gmail'ni ochish</a><button type="button" class="btn ghost" id="fpAgain">Xat kelmadi — qayta yuborish</button></div>
+  <div id="fp3" hidden><h2 style="margin:0 0 6px;font-size:20px">🔒 Yangi parol</h2><p class="note" style="margin:0 0 12px" id="fpFor"></p>
+    <div class="field"><label for="fpPass">Yangi parol <small>(kamida 6 belgi)</small></label><div class="pwrow"><input id="fpPass" type="password" autocomplete="new-password" placeholder="••••••"><button type="button" class="pweye" data-for="fpPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="fpPass"></small></div>
+    <p class="err" id="fpErr3" role="alert"></p><button type="button" class="btn primary" id="fpSave">✅ Saqlash va kirish</button></div>
+</div></div>
 <div id="accBox" class="accbox" hidden role="dialog" aria-modal="true" aria-labelledby="accH"><div class="accin">
   <button type="button" class="accx" id="accX" aria-label="Yopish">✕</button>
   <div class="accav" id="accAv">U</div><h2 id="accH" style="margin:6px 0 2px;font-size:20px"></h2><p class="note" id="accInfo" style="margin:0 0 14px"></p>
@@ -609,14 +643,9 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div class="acctabs" role="tablist"><button type="button" id="tabReg" aria-selected="true">Yangi akkaunt</button><button type="button" id="tabLog" aria-selected="false">Akkauntim bor — kirish</button></div>
       <div id="regPane">
         <div class="field"><label for="regName">Ism va familiya</label><input id="regName" autocomplete="name" placeholder="Masalan: Amirhon Karimov"><small class="ferr" data-for="regName"></small></div>
-        <div class="field"><label for="regPhone">Telefon raqam</label><input id="regPhone" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67"><small class="ferr" data-for="regPhone"></small></div>
         <div class="field"><label for="regEmail">Gmail (email)</label><input id="regEmail" type="email" inputmode="email" autocomplete="email" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="regEmail"></small></div>
         <div class="field"><label for="regPass">Parol o'ylab toping <small>(kamida 6 belgi)</small></label><div class="pwrow"><input id="regPass" type="password" autocomplete="new-password" placeholder="••••••"><button type="button" class="pweye" data-for="regPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="regPass"></small></div>
-        <div class="field"><label for="regCity">Shahar yoki tuman</label>
-          <select id="regCity">
-          <option>Toshkent shahri</option><option>Toshkent viloyati</option><option>Samarqand</option><option>Buxoro</option><option>Andijon</option><option>Farg'ona</option><option>Namangan</option><option>Qashqadaryo</option><option>Surxondaryo</option><option>Xorazm</option><option>Navoiy</option><option>Jizzax</option><option>Sirdaryo</option><option>Qoraqalpog'iston</option>
-        </select>
-        </div>
+        <select id="regCity" hidden><option></option></select>
         <p class="err" id="regErr" role="alert"></p>
         <button class="btn primary" type="button" id="regGo">Ro'yxatdan o'tish</button>
       </div>
@@ -625,7 +654,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
         <div class="field"><label for="logPass">Parol</label><div class="pwrow"><input id="logPass" type="password" autocomplete="current-password" placeholder="••••••"><button type="button" class="pweye" data-for="logPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="logPass"></small></div>
         <p class="err" id="logErr" role="alert"></p>
         <button class="btn primary" type="button" id="logGo">Kirish</button>
-        <div class="acclinks"><button type="button" class="linkbtn" id="logForgot">Parolni unutdingizmi? Gmail'ga havola yuboramiz</button><button type="button" class="linkbtn" id="logNew">Yangi akkaunt ochish</button></div>
+        <div class="acclinks"><button type="button" class="linkbtn" id="logForgot">Parolni unutdingizmi?</button><button type="button" class="linkbtn" id="logNew">Yangi akkaunt ochish</button></div>
       </div>
       <p class="note">Parolingizni eslab qoling — boshqa telefon yoki kompyuterdan ham shu Gmail va parol bilan kirasiz.</p>
     </div>
@@ -3176,7 +3205,7 @@ function renderUser(){ const n=$('#userName'); if(n) n.textContent=S.user&&S.use
 /* Akkaunt oynasi: ma'lumot + qizil "chiqish" tugmasi */
 function accOpen(){ if(!S.user){ accTab(false); show('register'); return; } const u=S.user; $('#accAv').textContent=((u.name||'U').trim()[0]||'U').toUpperCase(); $('#accH').textContent=u.name||'';
   $('#accInfo').innerHTML=[u.phone,u.email,u.city].filter(Boolean).map(esc).join('<br>')+(u.uid?'':'<br><span style="color:#B26A00">Parolsiz akkaunt — faqat shu qurilmada.</span>'); $('#accBox').hidden=false; }
-function accClose(){ $('#accBox').hidden=true; }
+function accClose(){ boxClose('#accBox'); }
 async function accLogout(){ try{ if(window.firebase&&firebase.auth) await firebase.auth().signOut(); }catch(_){} S.user=null; S.gEmail=''; LS.set('user',null); LS.set('regSent',''); accClose(); renderUser(); try{ window.payBadge&&window.payBadge(); }catch(_){} show('home'); toast('Akkauntdan chiqdingiz'); }
 $('#userChip').onclick=accOpen; $('#accX').onclick=accClose; $('#accOut').onclick=accLogout; $('#accBox').addEventListener('click',e=>{ if(e.target.id==='accBox'||e.target.closest('#accProj')) accClose(); });
 
@@ -3198,7 +3227,7 @@ async function cloudPull(){ if(!CLOUD.ok||!CLOUD.user) return; try{ const q=awai
 /* Google sign-in: works when the site runs on your own domain with a Google OAuth Client ID */
 const GOOGLE_CLIENT_ID=''; // Google Cloud Console → Credentials → OAuth 2.0 Client ID (Web)
 function gFail(msg){ $('#gBtn').disabled=true; $('#gNote').textContent=msg||"Google xizmatiga ulanib bo'lmadi. Ism va telefon bilan ro'yxatdan o'ting."; }
-function onGoogle(resp){ try{ const b=resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'); const p=JSON.parse(decodeURIComponent(Array.from(atob(b)).map(c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join(''))); $('#regName').value=p.name||''; S.gEmail=p.email||''; $('#gNote').textContent=(p.email||'Google')+" orqali kirildi. Endi telefon raqamingizni qo'shing."; $('#regPhone').focus(); }catch(e){ gFail(); } }
+function onGoogle(resp){ try{ const b=resp.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'); const p=JSON.parse(decodeURIComponent(Array.from(atob(b)).map(c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join(''))); $('#regName').value=p.name||''; S.gEmail=p.email||''; $('#gNote').textContent=(p.email||'Google')+" orqali kirildi. Endi parol o'ylab toping."; $('#regPass').focus(); }catch(e){ gFail(); } }
 function initGoogle(){
   if(FIREBASE_CONFIG){ cloudInit().then(ok=>{ if(!ok){ const w=document.querySelector('#regForm .gwrap'), d=document.querySelector('#regForm .divider'); if(w) w.hidden=true; if(d) d.hidden=true; return; } $('#gBtn').onclick=()=>cloudLogin(); }); return; }
   if(!GOOGLE_CLIENT_ID){ const w=document.querySelector('#regForm .gwrap'), d=document.querySelector('#regForm .divider'); if(w) w.hidden=true; if(d) d.hidden=true; return; }
@@ -3208,7 +3237,7 @@ function initGoogle(){
 }
 /* register: ism, telefon, Gmail, parol — xato bo'lsa aniq ko'rsatiladi va qayta urinish mumkin */
 function ferr(id,msg){ const i=$('#'+id), m=document.querySelector(`.ferr[data-for="${id}"]`); if(i) i.setAttribute('aria-invalid',msg?'true':'false'); if(m) m.textContent=msg||''; return !msg; }
-['regName','regPhone','regEmail','regPass','logEmail','logPass'].forEach(id=>{ const i=$('#'+id); if(i) i.addEventListener('input',()=>{ ferr(id,''); $('#regErr').textContent=''; $('#logErr').textContent=''; }); });
+['regName','regEmail','regPass','logEmail','logPass','fpEmail','fpPass'].forEach(id=>{ const i=$('#'+id); if(i) i.addEventListener('input',()=>{ ferr(id,''); $('#regErr').textContent=''; $('#logErr').textContent=''; }); });
 document.addEventListener('click',e=>{ const b=e.target.closest('.pweye'); if(!b) return; const i=$('#'+b.dataset.for); i.type=i.type==='password'?'text':'password'; });
 function accTab(log){ $('#tabReg').setAttribute('aria-selected',String(!log)); $('#tabLog').setAttribute('aria-selected',String(log)); $('#regPane').hidden=log; $('#logPane').hidden=!log; }
 $('#tabReg').onclick=()=>accTab(false); $('#tabLog').onclick=()=>accTab(true); $('#logNew').onclick=()=>accTab(false);
@@ -3216,10 +3245,9 @@ const okEmail=v=>/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v);
 const AUTH_ERR={'auth/email-already-in-use':"Bu Gmail bilan akkaunt allaqachon bor. «Akkauntim bor — kirish» ni bosing.",'auth/invalid-email':"Gmail noto'g'ri yozilgan.",'auth/weak-password':"Parol juda oddiy — kamida 6 belgi yozing.",'auth/wrong-password':"Parol noto'g'ri. Qayta yozing yoki «Parolni unutdingizmi?» ni bosing.",'auth/invalid-credential':"Gmail yoki parol noto'g'ri. Qayta tekshirib yozing.",'auth/invalid-login-credentials':"Gmail yoki parol noto'g'ri. Qayta tekshirib yozing.",'auth/user-not-found':"Bu Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.",'auth/too-many-requests':"Ko'p marta xato kiritildi. Bir oz kutib, qayta urining yoki parolni tiklang.",'auth/network-request-failed':"Internet bilan aloqa yo'q. Tekshirib, qayta urining.",'auth/operation-not-allowed':"Parol bilan kirish hozircha yoqilmagan."};
 const authMsg=e=>AUTH_ERR[(e&&e.code)||'']||("Xato: "+((e&&(e.code||e.message))||'noma\'lum')+". Qayta urining.");
 async function regSubmit(){ const btn=$('#regGo'); if(btn.disabled) return;
-  const name=$('#regName').value.trim().replace(/\s+/g,' '), phone=$('#regPhone').value.replace(/[^\d+]/g,''), city=$('#regCity').value, email=$('#regEmail').value.trim().toLowerCase(), pass=$('#regPass').value; const digits=phone.replace(/\D/g,'');
+  const name=$('#regName').value.trim().replace(/\s+/g,' '), phone='', city='', email=$('#regEmail').value.trim().toLowerCase(), pass=$('#regPass').value; const digits=phone.replace(/\D/g,'');
   let ok=true; $('#regErr').textContent='';
   ok=ferr('regName',name.length<2?"Ism va familiyangizni yozing.":(/\d/.test(name)?"Ismda raqam bo'lmasin.":''))&&ok;
-  ok=ferr('regPhone',digits.length<9?"Telefon raqamni to'liq yozing, masalan +998 90 123 45 67.":'')&&ok;
   ok=ferr('regEmail',!okEmail(email)?"Gmail'ni to'g'ri yozing, masalan ism@gmail.com":'')&&ok;
   ok=ferr('regPass',pass.length<6?"Parol kamida 6 belgi bo'lsin.":'')&&ok;
   if(!ok){ $('#regErr').textContent="Qizil bilan belgilangan joylarni to'g'rilang."; const f=document.querySelector('#regPane [aria-invalid=true]'); if(f) f.focus(); return; }
@@ -3237,9 +3265,26 @@ async function logSubmit(){ const btn=$('#logGo'); if(btn.disabled) return; cons
     for(let i=0;i<30&&!(S.user&&S.user.uid);i++) await new Promise(r=>setTimeout(r,100)); toast('Xush kelibsiz, '+((S.user&&S.user.name)||'')+'!'); cloudPull(); go('start'); }
   catch(e){ console.warn(e); const m=authMsg(e); $('#logErr').textContent=m; if(/password|credential/.test(e&&e.code)) ferr('logPass',' '); }
   finally{ btn.disabled=false; btn.textContent='Kirish'; } }
-$('#logForgot').onclick=async()=>{ const email=$('#logEmail').value.trim().toLowerCase(); if(!okEmail(email)){ ferr('logEmail',"Avval Gmail'ingizni yozing, keyin shu tugmani bosing."); $('#logEmail').focus(); return; }
-  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; try{ firebase.auth().languageCode='uz'; }catch(_){} await firebase.auth().sendPasswordResetEmail(email); $('#logErr').style.color='#1F7A4D'; $('#logErr').textContent=`✅ ${email} ga parolni tiklash havolasi yuborildi. Pochtangizni (Spam papkasini ham) tekshiring.`; setTimeout(()=>$('#logErr').style.color='',8000); }
-  catch(e){ $('#logErr').style.color=''; $('#logErr').textContent=authMsg(e); } };
+/* Parolni tiklash: 1) Gmail so'raladi 2) xat yuboriladi 3) havola bosilganda saytda yangi parol */
+let FP_N=0; function fpShow(n){ const back=n<FP_N; FP_N=n; ['fp1','fp2','fp3'].forEach((id,i)=>{ const el=$('#'+id); el.hidden=i!==n-1; el.classList.remove('stepin','stepback'); if(i===n-1){ void el.offsetWidth; el.classList.add(back?'stepback':'stepin'); } });
+  document.querySelectorAll('.fpdots i').forEach((d,i)=>{ d.className=i<n-1?'done':(i===n-1?'on':''); }); $('#fpBox').classList.remove('closing'); $('#fpBox').hidden=false; }
+function boxClose(id){ const b=$(id); if(b.hidden) return; b.classList.add('closing'); setTimeout(()=>{ b.hidden=true; b.classList.remove('closing'); },240); }
+$('#logForgot').onclick=()=>{ $('#fpEmail').value=$('#logEmail').value.trim(); $('#fpErr1').textContent=''; ferr('fpEmail',''); fpShow(1); setTimeout(()=>$('#fpEmail').focus(),50); };
+$('#fpX').onclick=()=>{ boxClose('#fpBox'); FP_N=0; }; $('#fpBox').addEventListener('click',e=>{ if(e.target.id==='fpBox'){ boxClose('#fpBox'); FP_N=0; } });
+async function fpSend(){ const email=$('#fpEmail').value.trim().toLowerCase(), b=$('#fpSend'); $('#fpErr1').textContent=''; if(!ferr('fpEmail',okEmail(email)?'':"Gmail'ni to'g'ri yozing, masalan ism@gmail.com")) return;
+  b.disabled=true; b.textContent='Yuborilmoqda…';
+  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; try{ firebase.auth().languageCode='uz'; }catch(_){} await firebase.auth().sendPasswordResetEmail(email,{url:location.origin+location.pathname}); $('#fpTo').textContent=email; fpShow(2); }
+  catch(e){ $('#fpErr1').textContent=authMsg(e); } finally{ b.disabled=false; b.textContent="📩 Gmail'ga yuborish"; } }
+$('#fpSend').onclick=fpSend; $('#fpEmail').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); fpSend(); } });
+$('#fpAgain').onclick=()=>fpShow(1);
+let FP_CODE='', FP_MAIL='';
+(async()=>{ const q=new URLSearchParams(location.search); if(q.get('mode')!=='resetPassword'||!q.get('oobCode')) return; FP_CODE=q.get('oobCode'); try{ history.replaceState(null,'',location.pathname); }catch(_){}
+  fpShow(3); $('#fpFor').textContent='Tekshirilmoqda…';
+  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; FP_MAIL=await firebase.auth().verifyPasswordResetCode(FP_CODE); $('#fpFor').innerHTML='Akkaunt: <b>'+esc(FP_MAIL)+'</b>'; setTimeout(()=>$('#fpPass').focus(),50); }
+  catch(e){ $('#fpFor').textContent=''; $('#fpErr3').textContent=(e&&/expired|invalid-action/.test(e.code))?"Havola eskirgan yoki ishlatilgan. Qaytadan «Parolni unutdingizmi?» ni bosing.":authMsg(e); $('#fpSave').hidden=true; } })();
+$('#fpSave').onclick=async()=>{ const p=$('#fpPass').value, b=$('#fpSave'); $('#fpErr3').textContent=''; if(!ferr('fpPass',p.length<6?"Parol kamida 6 belgi bo'lsin.":'')) return; b.disabled=true; b.textContent='Saqlanmoqda…';
+  try{ await firebase.auth().confirmPasswordReset(FP_CODE,p); await firebase.auth().signInWithEmailAndPassword(FP_MAIL,p); for(let i=0;i<30&&!(S.user&&S.user.uid);i++) await new Promise(r=>setTimeout(r,100)); boxClose('#fpBox'); toast('✅ Yangi parol saqlandi, akkauntga kirdingiz'); cloudPull(); }
+  catch(e){ $('#fpErr3').textContent=authMsg(e); } finally{ b.disabled=false; b.textContent='✅ Saqlash va kirish'; } };
 $('#regGo').addEventListener('click',regSubmit); $('#logGo').addEventListener('click',logSubmit);
 $('#regForm').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); ($('#logPane').hidden?regSubmit:logSubmit)(); } });
 
