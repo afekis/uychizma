@@ -1,4 +1,4 @@
-<!doctype html><html lang="uz"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+<!doctype html><html lang="uz"><head><meta charset=utf8><script src="ru.js"></script><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 .bjblk{display:flex;align-items:center;gap:12px;margin:14px 0 14px;padding:12px 14px;border-radius:16px;text-decoration:none;color:inherit;background:var(--card);border:1.5px solid var(--accent);box-shadow:0 6px 18px rgba(31,95,224,.14);max-width:520px}
 .bjblk:hover{transform:translateY(-1px)}.bjic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;font-size:24px}
 .bjtx{flex:1;min-width:0}.bjtx b{display:block;font-size:15px;color:var(--ink)}.bjtx b i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;background:var(--accent);color:#fff;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:2px}
@@ -8,6 +8,10 @@
 .nav a.navbj:hover{color:var(--head-ink)}
 @media (max-width:640px){.nav.nav a.navbj{padding:5px 6px;font-size:17px;white-space:nowrap}.nav.nav button{padding:7px 8px}.nav.nav{gap:2px}}
 @media (max-width:360px){.nav.nav button{padding:6px 5px;font-size:12px}}
+
+.langsw{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;font-size:12.5px}
+.langsw button{border:0;background:none;padding:5px 11px;cursor:pointer;color:var(--muted);font:inherit;font-weight:600}
+html[lang=uz] .langsw .lz,html[lang=ru] .langsw .lr{background:var(--accent);color:#fff}
 </style></head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
@@ -461,7 +465,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     </div>
     <div class="hero">
       <div class="copy">
-        <div class="eyebrow">🏠 Uy · 3D · reja · narx</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div class="eyebrow">🏠 Uy · 3D · reja · narx</div><div class="langsw" role="group" aria-label="Til / Язык"><button type="button" data-lang="uz" class="lz">O'zbekcha</button><button type="button" data-lang="ru" class="lr">Русский</button></div></div>
         <h1>Uyingizni qurishdan oldin 3D-da ko'ring</h1>
         <p>Yeringiz o'lchamini yozing yoki chizmangizni yuklang. 1 daqiqada uyning rejasi, 3D ko'rinishi va narxi tayyor.</p>
         <a class="bjblk" href="bosh-joy.html">
