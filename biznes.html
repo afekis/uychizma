@@ -37,6 +37,7 @@ h2{font-family:var(--fd);font-size:clamp(18px,4vw,24px);margin:0 0 6px}.sub{colo
 .plan ul{padding-left:18px;margin:10px 0 14px;flex:1}.plan li{margin:4px 0}
 .trybtn{display:inline-block;margin:0 0 14px;font-weight:700;text-decoration:none;background:#1F7A4D;color:#fff;padding:11px 16px;border-radius:12px}
 .pbtn{font-weight:700;border-radius:12px;padding:12px;background:var(--soft);color:var(--accent);text-decoration:none;text-align:center}
+.vipnow{background:#E3F4EA;border:1.5px solid #9CD3B4;color:#14532D;border-radius:14px;padding:12px 14px;margin-bottom:14px}.vipnow a{color:#1F7A4D;font-weight:700}
 .paybox{margin-top:14px;background:var(--soft);border-radius:14px;padding:14px}.payamt{font-size:17px;margin-bottom:6px}.payamt small{color:var(--muted)}
 .cardrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}.cardrow b{font-family:var(--fd);font-size:20px;letter-spacing:.04em}.cardrow button{font:inherit;font-weight:700;border:1.5px solid var(--accent);color:var(--accent);background:var(--card);border-radius:10px;padding:6px 12px;cursor:pointer}
 .drop{display:grid;place-items:center;min-height:110px;border:2px dashed var(--line);border-radius:12px;background:var(--card);cursor:pointer;margin:0;font-weight:600;color:var(--muted);text-align:center;padding:10px}.drop img{max-width:100%;max-height:260px;border-radius:8px}
@@ -99,9 +100,10 @@ textarea{min-height:80px;resize:vertical}
 
   <section class="card">
     <h2>Qanday boshlanadi</h2>
-    <ol class="steps"><li>Tarifni tanlaysiz</li><li>Kartaga to'laysiz va chek rasmini yuborasiz</li><li>Biz tekshirib, tasdiqlaymiz</li><li>Logotipingizni sozlab, ishga tushiramiz</li></ol>
+    <ol class="steps"><li>Tarifni tanlaysiz</li><li>Kartaga to'laysiz va chek rasmini yuborasiz</li><li>Biz tekshirib, tasdiqlaymiz</li><li>30 kun VIP: cheksiz loyihalar</li></ol>
   </section>
 
+  <div class="vipnow" id="vipNow" hidden>👑 <b>VIP faol</b> — yana <b id="vipDays"></b> kun cheksiz uy loyihalari. <a href="./">Loyiha boshlash →</a></div>
   <section class="card" id="ariza">
     <div id="bForm">
       <h2>Tarifni sotib olish</h2><p class="sub">Ma'lumotlarni yozing, kartaga to'lang va chek rasmini yuboring.</p>
@@ -129,7 +131,7 @@ textarea{min-height:80px;resize:vertical}
       <button type="button" class="btn" id="bSend">📤 Chekni yuborish</button>
       <p class="msg" id="bMsg" role="status"></p>
     </div>
-    <div class="done" id="bDone" hidden><div class="big">✅</div><h2>Chek yuborildi</h2><p class="sub">Tekshirib, tasdiqlaganimizdan so'ng siz bilan bog'lanamiz va kabinetingizni ishga tushiramiz. Shoshilinch bo'lsa: <a href="https://t.me/amirhonsh">@amirhonsh</a></p></div>
+    <div class="done" id="bDone" hidden><div class="big">✅</div><h2>Chek yuborildi</h2><p class="sub">Tasdiqlangach, shu qurilmada <b>30 kun VIP</b> yoqiladi: uy loyihalari cheksiz. Tekshiruv odatda bir necha soat. Shoshilinch bo'lsa: <a href="https://t.me/amirhonsh">@amirhonsh</a></p></div>
   </section>
   <p class="foot">UyChizma Biznes · <a href="https://t.me/amirhonsh">@amirhonsh</a></p>
 </main>
@@ -148,6 +150,10 @@ if(db) db.collection('config').doc('site').get().then(d=>{ if(d.exists){ bzCfg(d
 $('bPlan').onchange=showAmt; showAmt();
 $('bCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText($('bCard').textContent.replace(/\s/g,'')); $('bCopy').textContent='✓ Nusxalandi'; }catch(_){ $('bCopy').textContent='Belgilab oling'; } setTimeout(()=>$('bCopy').textContent='Nusxa',2000); };
 let IMG='';
+/* Qurilma kodi (asosiy sayt bilan bir xil) — VIP shu kodga beriladi */
+function cid(){ let c=''; try{ c=JSON.parse(localStorage.getItem('uychizma:cid')||'""'); }catch(_){} if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); try{ localStorage.setItem('uychizma:cid',JSON.stringify(c)); }catch(_){} } return c; }
+async function vipShow(){ if(!db) return; try{ const d=await db.collection('vip').doc(cid()).get(); if(d.exists&&+d.data().until>Date.now()){ const dd=Math.ceil((d.data().until-Date.now())/864e5); $('vipNow').hidden=false; $('vipDays').textContent=dd; try{ localStorage.setItem('uychizma:vipUntil',JSON.stringify(+d.data().until)); }catch(_){} } }catch(_){} }
+vipShow();
 $('bFile').onchange=()=>{ const f=$('bFile').files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ const im=new Image(); im.onload=()=>{ const k=Math.min(1,1280/Math.max(im.width,im.height)); const c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height); IMG=c.toDataURL('image/jpeg',0.72); $('bPrev').src=IMG; $('bPrev').hidden=false; $('bDropTxt').hidden=true; }; im.onerror=()=>{ $('bMsg').className='msg err'; $('bMsg').textContent="Rasmni ochib bo'lmadi, boshqa rasm tanlang."; }; im.src=fr.result; }; fr.readAsDataURL(f); };
 const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{ $('bPlan').value=b.dataset.plan; showAmt(); $('ariza').scrollIntoView({behavior:'smooth'}); setTimeout(()=>$('bCo').focus(),500); });
@@ -155,7 +161,7 @@ $('bSend').onclick=async()=>{ const m=$('bMsg'); m.className='msg'; m.textConten
   if(!co||!name||String(phone).replace(/\D/g,'').length<9){ m.className='msg err'; m.textContent='Firma nomi, ism va telefonni yozing.'; return; }
   if(!IMG){ m.className='msg err'; m.textContent="To'lov cheki rasmini yuklang."; return; }
   const b=$('bSend'); b.disabled=true; b.textContent='Yuborilmoqda…';
-  try{ if(!db) throw new Error('net'); await Promise.race([db.collection('leads').add({work:'b2b',kind:'pay',status:'new',company:co.slice(0,80),bizType:$('bType').value,name:name.slice(0,60),phone:phone.slice(0,20),plan:$('bPlan').value,amount:String(PRICE[$('bPlan').value]||'').slice(0,30),months:1,img:IMG,region:$('bCity').value.trim().slice(0,60),note:$('bNote').value.trim().slice(0,800),lang:window.UC_LANG||'uz',at:Date.now()}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),20000))]);
+  try{ if(!db) throw new Error('net'); await Promise.race([db.collection('leads').add({work:'b2b',kind:'pay',status:'new',cid:cid(),company:co.slice(0,80),bizType:$('bType').value,name:name.slice(0,60),phone:phone.slice(0,20),plan:$('bPlan').value,amount:String(PRICE[$('bPlan').value]||'').slice(0,30),months:1,img:IMG,region:$('bCity').value.trim().slice(0,60),note:$('bNote').value.trim().slice(0,800),lang:window.UC_LANG||'uz',at:Date.now()}),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),20000))]);
     $('bForm').hidden=true; $('bDone').hidden=false; $('ariza').scrollIntoView({behavior:'smooth'}); }
   catch(e){ console.warn(e); m.className='msg err'; m.innerHTML="Yuborib bo'lmadi ("+esc(e.code||e.message||'')+"). Telegramda yozing: <a href='https://t.me/amirhonsh'>@amirhonsh</a>"; b.disabled=false; b.textContent='📤 Chekni yuborish'; } };
 </script>
