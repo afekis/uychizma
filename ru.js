@@ -1,7 +1,7 @@
 /* UyChizma — rus tili. Sahifadagi o'zbekcha matnlarni ruschaga almashtiradi (dinamik matnlar ham). */
 (function(){
 var KEY='uychizma:lang';
-function getLang(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'""'); if(v==='ru'||v==='uz') return v; }catch(e){}
+function getLang(){ try{ var q=(location.search.match(/[?&]lang=(ru|uz)\b/)||[])[1]; if(q){ localStorage.setItem(KEY,JSON.stringify(q)); return q; } }catch(e){} try{ var v=JSON.parse(localStorage.getItem(KEY)||'""'); if(v==='ru'||v==='uz') return v; }catch(e){}
   var tz=''; try{ tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''; }catch(e){} if(/Tashkent|Samarkand/.test(tz)) return 'uz';
   var n=(navigator.languages||[navigator.language||'']).join(',').toLowerCase(); return (/(^|,)ru/.test(n)&&!/(^|,)uz/.test(n))?'ru':'uz'; }
 window.UC_LANG=getLang();
