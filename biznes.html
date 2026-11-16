@@ -35,6 +35,7 @@ h2{font-family:var(--fd);font-size:clamp(18px,4vw,24px);margin:0 0 6px}.sub{colo
 .plan.hot::before{content:'Ko\'p tanlanadi';position:absolute;top:-12px;left:18px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
 .plan h3{margin:0;font-size:17px}.price{font-family:var(--fd);font-size:26px;margin:8px 0 2px}.price small{font-family:var(--fb);font-size:14px;color:var(--muted)}
 .plan ul{padding-left:18px;margin:10px 0 14px;flex:1}.plan li{margin:4px 0}
+.trybtn{display:inline-block;margin:0 0 14px;font-weight:700;text-decoration:none;background:#1F7A4D;color:#fff;padding:11px 16px;border-radius:12px}
 .plan button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px;background:var(--soft);color:var(--accent);cursor:pointer}
 .plan.hot button{background:var(--accent);color:#fff}
 label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}label small{color:var(--muted);font-weight:500}
@@ -84,17 +85,17 @@ textarea{min-height:80px;resize:vertical}
   </section>
 
   <section class="card">
-    <h2>Tariflar</h2><p class="sub">Oylik to'lov. Birinchi 7 kun — bepul sinov.</p>
+    <h2>Tariflar</h2><p class="sub">Oylik to'lov. Sinov uchun <b id="bzFree">1</b> ta uy loyihasini bepul qilib ko'ring — yoqsa, tarifni tanlaysiz.</p><a href="./" class="trybtn">🎁 Bepul sinab ko'rish — 1 ta loyiha</a>
     <div class="plans">
-      <div class="plan"><h3>Start</h3><div class="price">490 000 <small>so'm / oy</small></div><ul><li>30 ta loyiha oyiga</li><li>Reja, 3D, smeta, PDF</li><li>1 xodim</li></ul><button type="button" data-plan="Start">Tanlash</button></div>
-      <div class="plan hot"><h3>Biznes</h3><div class="price">1 490 000 <small>so'm / oy</small></div><ul><li>Cheksiz loyihalar</li><li>O'z logotipingiz va telefoningiz</li><li>AR, AI interyer</li><li>5 ta xodim</li></ul><button type="button" data-plan="Biznes">Tanlash</button></div>
+      <div class="plan"><h3>Start</h3><div class="price"><span id="bzStart">490 000</span> <small>so'm / oy</small></div><ul><li>30 ta loyiha oyiga</li><li>Reja, 3D, smeta, PDF</li><li>1 xodim</li></ul><button type="button" data-plan="Start">Tanlash</button></div>
+      <div class="plan hot"><h3>Biznes</h3><div class="price"><span id="bzPro">1 490 000</span> <small>so'm / oy</small></div><ul><li>Cheksiz loyihalar</li><li>O'z logotipingiz va telefoningiz</li><li>AR, AI interyer</li><li>5 ta xodim</li></ul><button type="button" data-plan="Biznes">Tanlash</button></div>
       <div class="plan"><h3>Korporativ</h3><div class="price">Kelishiladi</div><ul><li>Sizning saytingizga o'rnatish</li><li>O'z domeningiz</li><li>Cheksiz xodim, shaxsiy menejer</li></ul><button type="button" data-plan="Korporativ">Bog'lanish</button></div>
     </div>
   </section>
 
   <section class="card">
     <h2>Qanday boshlanadi</h2>
-    <ol class="steps"><li>Ariza qoldirasiz</li><li>Biz qo'ng'iroq qilib, ko'rsatib beramiz</li><li>Logotipingizni sozlaymiz</li><li>7 kun bepul ishlatasiz</li></ol>
+    <ol class="steps"><li>Ariza qoldirasiz</li><li>Biz qo'ng'iroq qilib, ko'rsatib beramiz</li><li>Logotipingizni sozlaymiz</li><li>1 ta loyihani bepul sinab ko'rasiz</li></ol>
   </section>
 
   <section class="card" id="ariza">
@@ -127,6 +128,10 @@ textarea{min-height:80px;resize:vertical}
 <script>
 const FB={apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDomain:"uychizma.firebaseapp.com",projectId:"uychizma",storageBucket:"uychizma.firebasestorage.app",messagingSenderId:"475315386452",appId:"1:475315386452:web:736912ec5a93398ab315c1"};
 const $=id=>document.getElementById(id); let db=null; try{ firebase.initializeApp(FB); db=firebase.firestore(); }catch(e){ console.warn(e); }
+/* Narxlar admin paneldan (config/site) */
+function bzCfg(c){ if(!c) return; if(c.bizStart) $('bzStart').textContent=c.bizStart; if(c.bizPro) $('bzPro').textContent=c.bizPro; if(c.bizFree!=null){ $('bzFree').textContent=c.bizFree; document.querySelector('.trybtn').textContent="🎁 Bepul sinab ko'rish — "+c.bizFree+' ta loyiha'; document.querySelector('.trybtn').hidden=!+c.bizFree; } }
+try{ bzCfg(JSON.parse(localStorage.getItem('uychizma:cfg')||'null')); }catch(_){}
+if(db) db.collection('config').doc('site').get().then(d=>{ if(d.exists){ bzCfg(d.data()); try{ localStorage.setItem('uychizma:cfg',JSON.stringify(d.data())); }catch(_){} } }).catch(()=>{});
 const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{ $('bPlan').value=b.dataset.plan; $('ariza').scrollIntoView({behavior:'smooth'}); setTimeout(()=>$('bCo').focus(),500); });
 $('bSend').onclick=async()=>{ const m=$('bMsg'); m.className='msg'; m.textContent=''; const co=$('bCo').value.trim(), name=$('bName').value.trim(), phone=$('bPhone').value.trim();
