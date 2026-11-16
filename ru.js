@@ -11,7 +11,7 @@ if(window.UC_LANG!=='ru') return;
 document.documentElement.lang='ru';
 
 /* --- Uzun jumlalar (to'liq moslik) --- */
-var S={"Loyihalar":"Проекты","Bo'sh joy":"Пустое место",
+var S={"🏢 Biznes arizalari":"🏢 Заявки бизнеса","💰 Narxlar":"💰 Цены","1 ta loyihani bepul sinab ko'rasiz":"Бесплатно пробуете 1 проект","Loyihalar":"Проекты","Bo'sh joy":"Пустое место",
 "Uyingizni qurishdan oldin 3D-da ko'ring":"Увидьте свой дом в 3D до начала стройки",
 "Uyingizni qurmasdan oldin 3D-da ko'ring":"Увидьте свой дом в 3D до начала стройки",
 "Yeringiz o'lchamini yozing yoki chizmangizni yuklang. 1 daqiqada uyning rejasi, 3D ko'rinishi va narxi tayyor.":"Введите размеры участка или загрузите свой чертёж. За 1 минуту — планировка, 3D-вид и стоимость дома.",
@@ -108,6 +108,7 @@ var S={"Loyihalar":"Проекты","Bo'sh joy":"Пустое место",
 
 /* --- Iboralar va so'zlar (matn ichida almashtiriladi) --- */
 var P={
+"Sinov uchun":"Для пробы","ta uy loyihasini bepul qilib ko'ring — yoqsa, tarifni tanlaysiz.":"проект дома бесплатно — понравится, выберете тариф.","🎁 Bepul sinab ko'rish":"🎁 Попробовать бесплатно","ta loyiha":"проект",
 "ta usta topildi":"мастеров найдено","usta topildi":"мастеров найдено","boshqa saytlar":"другие сайты","Kafel, pol bo'yicha filtrlangan":"с фильтром","bo'yicha filtrlangan":"— фильтр применён","bo'limi":"раздел","Barcha bo'limlar":"Все разделы","shaharni saytda tanlang":"город выберите на сайте",
 /* menyu va asosiy */
 "Bosh sahifa":"Главная","Loyiha boshlash":"Начать проект","Mening loyihalarim":"Мои проекты","Loyihalarim":"Мои проекты","Boshlash":"Начать","Bosh":"Главная",
