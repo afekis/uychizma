@@ -556,7 +556,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
     <p class="err" id="fpErrK" role="alert" style="text-align:center"></p><button type="button" class="btn primary" id="fpKGo">✅ Tasdiqlash</button>
     <div class="acclinks" style="align-items:center"><button type="button" class="linkbtn" id="fpResend">Kod kelmadimi? Qayta yuborish</button><a class="linkbtn" href="https://mail.google.com/" target="_blank" rel="noopener" style="text-decoration:none">📧 Gmail'ni ochish</a></div></div>
   <div id="fp3" hidden><h2 style="margin:0 0 6px;font-size:20px">🔒 Yangi parol</h2><p class="note" style="margin:0 0 12px" id="fpFor"></p>
-    <div class="field"><label for="fpPass">Yangi parol <small>(kamida 6 belgi)</small></label><div class="pwrow"><input id="fpPass" type="password" autocomplete="new-password" placeholder="••••••"><button type="button" class="pweye" data-for="fpPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="fpPass"></small></div>
+    <div class="field"><label for="fpPass">Yangi parol o'ylab toping</label><div class="pwrow"><input id="fpPass" type="password" autocomplete="new-password" placeholder="Masalan: uy2026"><button type="button" class="pweye" data-for="fpPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="note" style="display:block;margin-top:4px">Istalgan harf va raqamlar, kamida 6 ta belgi.</small><small class="ferr" data-for="fpPass"></small></div>
     <p class="err" id="fpErr3" role="alert"></p><button type="button" class="btn primary" id="fpSave">✅ Saqlash va kirish</button></div>
 </div></div>
 <div id="accBox" class="accbox" hidden role="dialog" aria-modal="true" aria-labelledby="accH"><div class="accin">
@@ -653,7 +653,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div id="regPane">
         <div class="field"><label for="regName">Ism va familiya</label><input id="regName" autocomplete="name" placeholder="Masalan: Amirhon Karimov"><small class="ferr" data-for="regName"></small></div>
         <div class="field"><label for="regEmail">Gmail (email)</label><input id="regEmail" type="email" inputmode="email" autocomplete="email" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="regEmail"></small></div>
-        <div class="field"><label for="regPass">Parol o'ylab toping <small>(kamida 6 belgi)</small></label><div class="pwrow"><input id="regPass" type="password" autocomplete="new-password" placeholder="••••••"><button type="button" class="pweye" data-for="regPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="regPass"></small></div>
+        <div class="field"><label for="regPass">Parol o'ylab toping</label><div class="pwrow"><input id="regPass" type="password" autocomplete="new-password" placeholder="Masalan: uy2026"><button type="button" class="pweye" data-for="regPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="note" style="display:block;margin-top:4px">Istalgan harf va raqamlar, kamida 6 ta belgi.</small><small class="ferr" data-for="regPass"></small></div>
         <select id="regCity" hidden><option></option></select>
         <p class="err" id="regErr" role="alert"></p>
         <button class="btn primary" type="button" id="regGo">Ro'yxatdan o'tish</button>
@@ -3258,7 +3258,7 @@ async function regSubmit(){ const btn=$('#regGo'); if(btn.disabled) return;
   let ok=true; $('#regErr').textContent='';
   ok=ferr('regName',name.length<2?"Ism va familiyangizni yozing.":(/\d/.test(name)?"Ismda raqam bo'lmasin.":''))&&ok;
   ok=ferr('regEmail',!okEmail(email)?"Gmail'ni to'g'ri yozing, masalan ism@gmail.com":'')&&ok;
-  ok=ferr('regPass',pass.length<6?"Parol kamida 6 belgi bo'lsin.":'')&&ok;
+  ok=ferr('regPass',pass.length<6?"Parol juda qisqa — kamida 6 ta harf yoki raqam yozing.":'')&&ok;
   if(!ok){ $('#regErr').textContent="Qizil bilan belgilangan joylarni to'g'rilang."; const f=document.querySelector('#regPane [aria-invalid=true]'); if(f) f.focus(); return; }
   btn.disabled=true; btn.textContent='Yuborilmoqda…';
   try{ if(KOD_API){ FPM='reg'; FPE=email; REGD={name,phone,city,email,pass}; const r=await kodSend(); if(!r.ok){ const m=kodMsg(r); if(/exists|bad_email/.test(r.error)) ferr('regEmail',m); $('#regErr').textContent=m; return; } FP_N=0; fpGo('fpK'); return; }
@@ -3281,7 +3281,7 @@ async function logSubmit(){ const btn=$('#logGo'); if(btn.disabled) return; cons
 /* Gmail'ga kod: Google Apps Script xizmati (KOD_API bo'sh bo'lsa — eski havola usuli) */
 const KOD_API='https://script.google.com/macros/s/AKfycbwcg9Gj4HUWPwo02IJ3U_EkS8mmOuZxACZZiuFoYSKJ4fZhyw2a_7ld7OZHOF-6lSqyyQ/exec';
 async function kodApi(body){ const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),25000); try{ const r=await fetch(KOD_API,{method:'POST',body:JSON.stringify(body),signal:ctl.signal}); return await r.json(); }catch(e){ return {ok:false,error:'net'}; } finally{ clearTimeout(t); } }
-const KOD_ERR={exists:"Bu Gmail bilan akkaunt bor. «Akkauntim bor — kirish» ni bosing.",no_user:"Bu Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.",too_many:"Juda ko'p urinish bo'ldi. Birozdan keyin qayta urining.",expired:"Kod eskirgan. «Qayta yuborish» ni bosing.",wrong_code:"Kod noto'g'ri. Gmail'dagi kodni qayta tekshiring.",weak:"Parol kamida 6 belgi bo'lsin.",bad_email:"Gmail noto'g'ri yozilgan.",net:"Internet bilan aloqa yo'q. Qayta urining.",server:"Xizmatda xato bo'ldi. Birozdan keyin qayta urining."};
+const KOD_ERR={exists:"Bu Gmail bilan akkaunt bor. «Akkauntim bor — kirish» ni bosing.",no_user:"Bu Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.",too_many:"Juda ko'p urinish bo'ldi. Birozdan keyin qayta urining.",expired:"Kod eskirgan. «Qayta yuborish» ni bosing.",wrong_code:"Kod noto'g'ri. Gmail'dagi kodni qayta tekshiring.",weak:"Parol juda qisqa — kamida 6 ta harf yoki raqam yozing.",bad_email:"Gmail noto'g'ri yozilgan.",net:"Internet bilan aloqa yo'q. Qayta urining.",server:"Xizmatda xato bo'ldi. Birozdan keyin qayta urining."};
 const kodMsg=r=>(KOD_ERR[r&&r.error]||KOD_ERR.server)+(r&&r.error==='wrong_code'&&r.left!=null?` (yana ${r.left} ta urinish)`:'');
 let FP_N=0, FPM='reset', FPE='', FPC='', REGD=null;
 const FP_ORDER=()=>FPM==='reg'?['fpK']:(KOD_API?['fp1','fpK','fp3']:['fp1','fp2','fp3']);
@@ -3300,6 +3300,7 @@ $('#otp').addEventListener('keydown',e=>{ const all=OTP(), k=all.indexOf(e.targe
 $('#otp').addEventListener('paste',e=>{ const t=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6); if(!t) return; e.preventDefault(); OTP().forEach((i,j)=>{ i.value=t[j]||''; i.classList.toggle('fill',!!t[j]); }); if(t.length===6) setTimeout(()=>$('#fpKGo').click(),150); });
 let RS_T=0; function resendTimer(){ const b=$('#fpResend'); let s=60; clearInterval(RS_T); b.disabled=true; b.textContent=`Qayta yuborish (${s})`; RS_T=setInterval(()=>{ s--; if(s<=0){ clearInterval(RS_T); b.disabled=false; b.textContent='Kod kelmadimi? Qayta yuborish'; } else b.textContent=`Qayta yuborish (${s})`; },1000); }
 async function kodSend(){ const r=await kodApi({action:'send',purpose:FPM,email:FPE}); if(r.ok){ $('#fpKTo').textContent=FPE; resendTimer(); } return r; }
+$('#fpPass').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#fpSave').click(); } });
 $('#fpResend').onclick=async()=>{ const r=await kodSend(); $('#fpErrK').style.color=r.ok?'#1F7A4D':''; $('#fpErrK').textContent=r.ok?'✅ Yangi kod yuborildi':kodMsg(r); otpClear(); if(r.ok){ $('#fpErrK').style.color='#1F7A4D'; $('#fpErrK').textContent='✅ Yangi kod yuborildi'; setTimeout(()=>{ $('#fpErrK').style.color=''; },4000); } };
 $('#fpKGo').onclick=async()=>{ const code=otpVal(), b=$('#fpKGo'); if(b.disabled) return; if(code.length<6){ $('#otp').classList.add('bad'); $('#fpErrK').textContent='6 ta raqamni to\'liq kiriting.'; return; }
   b.disabled=true; b.textContent='Tekshirilmoqda…';
@@ -3324,8 +3325,8 @@ let FP_CODE='', FP_MAIL='';
   fpShow(3); $('#fpFor').textContent='Tekshirilmoqda…';
   try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; FP_MAIL=await firebase.auth().verifyPasswordResetCode(FP_CODE); $('#fpFor').innerHTML='Akkaunt: <b>'+esc(FP_MAIL)+'</b>'; setTimeout(()=>$('#fpPass').focus(),50); }
   catch(e){ $('#fpFor').textContent=''; $('#fpErr3').textContent=(e&&/expired|invalid-action/.test(e.code))?"Havola eskirgan yoki ishlatilgan. Qaytadan «Parolni unutdingizmi?» ni bosing.":authMsg(e); $('#fpSave').hidden=true; } })();
-$('#fpSave').onclick=async()=>{ const p=$('#fpPass').value, b=$('#fpSave'); $('#fpErr3').textContent=''; if(!ferr('fpPass',p.length<6?"Parol kamida 6 belgi bo'lsin.":'')) return; b.disabled=true; b.textContent='Saqlanmoqda…';
-  if(!FP_CODE&&KOD_API){ try{ const r=await kodApi({action:'reset',email:FPE,code:FPC,password:p}); if(!r.ok){ if(/wrong_code|expired|too_many/.test(r.error)){ fpGo('fpK'); $('#otp').classList.add('bad'); $('#fpErrK').textContent=kodMsg(r); } else $('#fpErr3').textContent=kodMsg(r); return; }
+$('#fpSave').onclick=async()=>{ const p=$('#fpPass').value, b=$('#fpSave'); $('#fpErr3').textContent=''; if(!ferr('fpPass',p.length<6?"Parol juda qisqa — kamida 6 ta harf yoki raqam yozing.":'')) return; b.disabled=true; b.textContent='Saqlanmoqda…';
+  if(!FP_CODE&&KOD_API){ try{ const r=await kodApi({action:'reset',purpose:'reset',email:FPE,code:FPC,password:p}); if(!r.ok){ if(/wrong_code|expired|too_many/.test(r.error)){ fpGo('fpK'); $('#otp').classList.add('bad'); $('#fpErrK').textContent=kodMsg(r); } else $('#fpErr3').textContent=kodMsg(r); return; }
       await cloudReady(); await firebase.auth().signInWithEmailAndPassword(FPE,p); for(let i=0;i<30&&!(S.user&&S.user.uid);i++) await new Promise(r2=>setTimeout(r2,100)); boxClose('#fpBox'); toast('✅ Yangi parol saqlandi, akkauntga kirdingiz'); cloudPull(); go('start'); }
     catch(e){ $('#fpErr3').textContent=authMsg(e); } finally{ b.disabled=false; b.textContent='✅ Saqlash va kirish'; } return; }
   try{ await firebase.auth().confirmPasswordReset(FP_CODE,p); await firebase.auth().signInWithEmailAndPassword(FP_MAIL,p); for(let i=0;i<30&&!(S.user&&S.user.uid);i++) await new Promise(r=>setTimeout(r,100)); boxClose('#fpBox'); toast('✅ Yangi parol saqlandi, akkauntga kirdingiz'); cloudPull(); }
