@@ -116,18 +116,27 @@ const esc = s => String(s || '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&g
 async function notifyAdmin(env, text) { if (env.ADMIN_CHAT_ID) { try { await tg(env, 'sendMessage', { chat_id: env.ADMIN_CHAT_ID, text, parse_mode: 'HTML', disable_web_page_preview: true }); } catch (_) {} } }
 
 /* ---------- AI (bepul: Pollinations, zaxira: Cloudflare Workers AI) ---------- */
+const AILOG = [];
+async function tfetch(url, opt, ms) { const c = new AbortController(); const t = setTimeout(() => c.abort(), ms); try { return await fetch(url, { ...(opt || {}), signal: c.signal }); } finally { clearTimeout(t); } }
 async function aiReply(env, l, user, text) {
-  const messages = [
-    { role: 'system', content: SYSTEM(l) },
-    { role: 'user', content: (user && user.first_name ? `[Mijoz ismi: ${user.first_name}] ` : '') + String(text).slice(0, 1500) },
-  ];
+  AILOG.length = 0;
+  const sys = SYSTEM(l), q = (user && user.first_name ? `[Mijoz ismi: ${user.first_name}] ` : '') + String(text).slice(0, 1200);
+  const messages = [{ role: 'system', content: sys }, { role: 'user', content: q }];
+  // 1) Pollinations (OpenAI uslubi)
   try {
-    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 25000);
-    const r = await fetch('https://text.pollinations.ai/openai', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ model: 'openai', messages, temperature: 0.7, private: true }), signal: ctl.signal });
-    clearTimeout(tm);
+    const r = await tfetch('https://text.pollinations.ai/openai', { method: 'POST', headers: { 'content-type': 'application/json', 'user-agent': 'Mozilla/5.0 UyChizmaBot', referer: 'https://afekis.github.io/uychizma/' }, body: JSON.stringify({ model: 'openai', messages, referrer: 'uychizma', private: true }) }, 20000);
+    AILOG.push('p1 ' + r.status);
     if (r.ok) { const j = await r.json(); const a = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content; if (a && a.trim()) return a.trim(); }
-  } catch (_) {}
-  try { if (env.AI) { const o = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', { messages, max_tokens: 400 }); if (o && o.response) return o.response.trim(); } } catch (_) {}
+  } catch (e) { AILOG.push('p1 err ' + (e && e.message)); }
+  // 2) Pollinations (oddiy GET)
+  try {
+    const u = 'https://text.pollinations.ai/' + encodeURIComponent(q) + '?model=openai&private=true&referrer=uychizma&system=' + encodeURIComponent(sys.slice(0, 2500));
+    const r = await tfetch(u, { headers: { 'user-agent': 'Mozilla/5.0 UyChizmaBot', referer: 'https://afekis.github.io/uychizma/' } }, 20000);
+    AILOG.push('p2 ' + r.status);
+    if (r.ok) { const a = (await r.text()).trim(); if (a && a[0] !== '{') return a; }
+  } catch (e) { AILOG.push('p2 err ' + (e && e.message)); }
+  // 3) Cloudflare AI (agar ulangan bo'lsa)
+  try { if (env.AI) { const o = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', { messages, max_tokens: 400 }); AILOG.push('cf ok'); if (o && o.response) return o.response.trim(); } else AILOG.push('cf none'); } catch (e) { AILOG.push('cf err ' + (e && e.message)); }
   return '';
 }
 const clean = s => String(s).replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').slice(0, 3500);
@@ -148,6 +157,10 @@ export default {
       return new Response((a.ok ? `✅ Bot ulandi: @${me.result && me.result.username}\nWebhook: ${hook}` : '❌ Xato: ' + JSON.stringify(a)) + `\nAdmin xabarlari: ${env.ADMIN_CHAT_ID ? 'yoqilgan' : "yo'q (ADMIN_CHAT_ID qo'ying)"}`, { headers: { 'content-type': 'text/plain; charset=utf-8' } });
     }
 
+    if (url.pathname === '/aitest') {
+      const a = await aiReply(env, 'uz', { first_name: 'Test' }, url.searchParams.get('q') || 'Uy loyihasi qancha turadi?');
+      return new Response((a || "(javob yo'q)") + '\n\n' + AILOG.join(' | '), { headers: { 'content-type': 'text/plain; charset=utf-8' } });
+    }
     if (url.pathname === '/hook' && req.method === 'POST') {
       if (req.headers.get('X-Telegram-Bot-Api-Secret-Token') !== secret) return new Response('forbidden', { status: 403 });
       const u = await req.json().catch(() => ({}));
