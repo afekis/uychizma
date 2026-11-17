@@ -13,7 +13,10 @@
 .langsw button{border:0;background:none;padding:5px 11px;cursor:pointer;color:var(--muted);font:inherit;font-weight:600}
 html[lang=uz] .langsw .lz,html[lang=ru] .langsw .lr{background:var(--accent);color:#fff}
 .refcard{margin-top:14px;padding:12px 14px;border:1.5px dashed #E0A100;border-radius:14px;background:#FFF9E8;color:#3B2F00}
-.refcard .note{color:#6B5A1E}.refh{font-size:15px}
+.refcard .note{color:#6B5A1E}.refh{font-size:16px}
+.refsteps{margin:8px 0 10px;padding:0;list-style:none;display:grid;gap:6px;counter-reset:rs}.refsteps li{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.35}.refsteps li::before{counter-increment:rs;content:counter(rs);flex:0 0 22px;height:22px;border-radius:50%;background:#E0A100;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.refprog{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:14px;font-weight:600}.refdots{display:flex;gap:5px}.refdots i{width:26px;height:26px;border-radius:50%;border:2px dashed #E0A100;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:14px}.refdots i.on{background:#1F9D55;border:2px solid #1F9D55;color:#fff}
+.refShare{background:#1F9D55!important;color:#fff!important;border:0}
 .refrow{display:flex;gap:6px;flex-wrap:wrap}.refrow input{flex:1 1 160px;min-width:0;font:inherit;font-size:13px;padding:8px 10px;border:1px solid #E7CF86;border-radius:10px;background:#fff;color:#333}
 .refrow .btn{min-height:38px}.refTg{background:#229ED9!important;color:#fff!important;text-decoration:none;display:inline-flex;align-items:center}
 @media (prefers-color-scheme:dark){.refcard{background:#2A2410;color:#F5E6B8;border-color:#8A6D10}.refcard .note{color:#D9C78F}}
@@ -617,6 +620,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
           <span class="bjtx"><b>Telegram bot: @uychzma_bot <i>YANGI</i></b><small>Savolingizga darhol javob beradi, loyiha va ustalarni Telegram ichida ochadi</small></span>
           <span class="bjar">→</span>
         </a>
+        <div class="refcard" style="margin:-4px 0 14px"></div>
         <p class="note" style="margin:-6px 0 14px"><a href="biznes.html" style="color:var(--accent);font-weight:600">🏢 Quruvchi firmalar va rieltorlar uchun — UyChizma Biznes →</a></p>
         <div class="actions">
           <button class="btn primary" data-go="start">Loyiha boshlash</button>
@@ -1035,7 +1039,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">Saqlanganlar</div><h2 style="font-size:28px">Mening loyihalarim</h2></div>
       <button class="btn primary small" data-go="start">Yangi loyiha</button>
     </div>
-    <div style="margin:4px 0 16px;max-width:620px"><div class="refcard"><div class="refh">🎁 <b>Do'stingizni taklif qiling</b></div><p class="note" style="margin:4px 0 8px"><b>2 ta do'stingiz</b> shu havola orqali kirib ro'yxatdan o'tsa — <b>sizga 1 ta uy loyihasi bepul</b>.</p><div class="refrow"><input class="refLink" readonly aria-label="Taklif havolasi"><button type="button" class="btn small refCopy">Nusxalash</button><a class="btn small refTg" target="_blank" rel="noopener">✈️ Telegram</a></div><p class="note refStat" style="margin:6px 0 0"></p></div></div>
+    <div style="margin:4px 0 16px;max-width:620px"><div class="refcard"></div></div>
     <div class="projects" id="projList"></div>
   </section>
 </main>
@@ -4861,7 +4865,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px"><b style="font-size:28px" id="payPrice"></b><span class="note">· yana <span class="payPer">2</span> ta uy loyihasi</span></div>
    <div style="display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:10px 12px;border-radius:12px;background:#E8F7EE;border:1px solid #9BD8B3;color:#14653A;font-weight:700;font-size:15px">✅ Sizga yoqmasa, pulingiz qaytariladi</div>
    <button type="button" class="btn primary" id="payShow" style="width:100%;min-height:50px;font-size:17px">💳 To'lash</button>
-   <div class="refcard"><div class="refh">🎁 <b>Do'stingizni taklif qiling</b></div><p class="note" style="margin:4px 0 8px"><b>2 ta do'stingiz</b> shu havola orqali kirib ro'yxatdan o'tsa — <b>sizga 1 ta uy loyihasi bepul</b>.</p><div class="refrow"><input class="refLink" readonly aria-label="Taklif havolasi"><button type="button" class="btn small refCopy">Nusxalash</button><a class="btn small refTg" target="_blank" rel="noopener">✈️ Telegram</a></div><p class="note refStat" style="margin:6px 0 0"></p></div>
+   <div class="refcard"></div>
   </div>
   <div id="payStep2" hidden>
    <div style="background:var(--soft,#E6EDF8);border-radius:14px;padding:14px;margin-bottom:12px">
@@ -4918,8 +4922,20 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   const refUrl=()=>location.origin+location.pathname+'?ref='+cid();
   async function bonusSync(){ if(!(await cloudReady())) return; try{ const q=await CLOUD.db.collection('refs').where('ref','==',cid()).limit(200).get(); const was=bonus(); LS.set('refN',q.size); if(bonus()>was){ badge(); toast(`🎁 Do'stlaringiz ro'yxatdan o'tdi — sizga ${bonus()-was} ta uy bepul!`); } }catch(x){ console.warn('refs',x); } refUI(); }
   window.bonusSync=bonusSync;
-  function refUI(){ const u=refUrl(), t=encodeURIComponent("UyChizma — uyingizni qurishdan oldin 3D-da ko'ring, reja va narxi bilan. Shu havola orqali kiring:");
-    document.querySelectorAll('.refcard').forEach(c=>{ c.querySelector('.refLink').value=u; c.querySelector('.refTg').href='https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+t; const n=+LS.get('refN',0)||0, b=Math.floor(n/2); c.querySelector('.refStat').textContent=n?`Ro'yxatdan o'tgan do'stlaringiz: ${n} ta · bepul uy: ${b} ta`+(n%2?' · yana 1 ta do\'st kerak':''):''; }); }
+  function refUI(){ const u=refUrl(), t=encodeURIComponent("UyChizma — uyingizni qurishdan oldin 3D-da ko'ring: reja, narx, smeta. Birinchi uy bepul! Shu havola orqali ro'yxatdan o'ting:"); const n=+LS.get('refN',0)||0, got=Math.floor(n/2), cur=n%2;
+    document.querySelectorAll('.refcard').forEach(c=>{
+      c.innerHTML=`<div class="refh">🎁 <b>2 ta do'st taklif qiling — 1 ta uy bepul</b></div>
+      <ol class="refsteps"><li><span>Pastdagi havolani do'stingizga yuboring (Telegram yoki nusxalab).</span></li><li><span>Do'stingiz havolani ochib, saytda ro'yxatdan o'tadi (ism, Gmail, parol).</span></li><li><span>2 ta do'stingiz o'tishi bilan sizga 1 ta uy loyihasi avtomatik qo'shiladi — hech narsa bosish shart emas.</span></li></ol>
+      <div class="refrow"><input class="refLink" readonly aria-label="Taklif havolasi"><button type="button" class="btn small refCopy">Nusxalash</button><a class="btn small refTg" target="_blank" rel="noopener">✈️ Telegram</a>${navigator.share?'<button type="button" class="btn small refShare">📤 Ulashish</button>':''}</div>
+      <div class="refprog"><span class="refdots"><i class="${cur>=1?'on':''}">${cur>=1?'✓':'1'}</i><i>2</i></span><span>${cur?"1 ta do'st o'tdi — yana 1 ta qoldi!":"Hali do'st yo'q — havolani yuboring"}</span></div>
+      ${got?`<p class="note" style="margin:6px 0 0;font-weight:700;color:#1F7A4D">${"✅ Taklif orqali olingan bepul uylar: "+got+" ta"}</p>`:''}`;
+      c.querySelector('.refLink').value=u; c.querySelector('.refTg').href='https://t.me/share/url?url='+encodeURIComponent(u)+'&text='+t; }); }
+  document.addEventListener('click',async e=>{ const b=e.target.closest('.refShare'); if(!b) return; try{ await navigator.share({title:'UyChizma',text:"UyChizma — uyingizni 3D-da ko'ring. Birinchi uy bepul!",url:refUrl()}); }catch(_){} });
+  /* Real vaqtda kuzatish: do'st ro'yxatdan o'tishi bilan bonus darhol qo'shiladi */
+  let refLive=false; async function refWatch(){ if(refLive||!(await cloudReady())) return; refLive=true; try{ CLOUD.db.collection('refs').where('ref','==',cid()).limit(200).onSnapshot(q=>{ const was=bonus(), wasN=+LS.get('refN',0)||0; LS.set('refN',q.size); if(bonus()>was){ badge(); toast(`🎁 Tabriklaymiz! 2 ta do'stingiz ro'yxatdan o'tdi — sizga ${bonus()-was} ta uy bepul qo'shildi`); } else if(q.size>wasN){ toast("👏 Do'stingiz ro'yxatdan o'tdi! Yana 1 ta do'st — va 1 ta uy bepul"); } refUI(); },()=>{ refLive=false; }); }catch(x){ refLive=false; console.warn('refWatch',x); } }
+  setTimeout(refWatch,3000);
+  /* Taklif bilan kelgan do'stga tushuntirish */
+  try{ if(new URLSearchParams(location.search).get('ref')&&!LS.get('user',null)) setTimeout(()=>toast("🎁 Sizni do'stingiz taklif qildi! Ro'yxatdan o'ting — birinchi uy loyihasi bepul"),1500); }catch(_){}
   document.addEventListener('click',async e=>{ const b=e.target.closest('.refCopy'); if(!b) return; try{ await navigator.clipboard.writeText(refUrl()); toast('Havola nusxalandi'); }catch(_){ const i=b.parentNode.querySelector('.refLink'); i.select(); toast('Havolani belgilab nusxalang'); } });
   refUI(); setTimeout(bonusSync,2500);
   async function refresh(){ try{ await bonusSync(); }catch(_){} try{ await vipSync(); }catch(_){} const list=pays(); if(!list.some(x=>x.status==='pending')) return list; if(!(await cloudReady())) return list;
