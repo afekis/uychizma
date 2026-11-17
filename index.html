@@ -664,20 +664,20 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div class="acctabs" role="tablist"><button type="button" id="tabReg" aria-selected="true">Yangi akkaunt</button><button type="button" id="tabLog" aria-selected="false">Akkauntim bor — kirish</button></div>
       <div id="regPane">
         <div class="field"><label for="regName">Ism va familiya</label><input id="regName" autocomplete="name" placeholder="Masalan: Amirhon Karimov"><small class="ferr" data-for="regName"></small></div>
-        <div class="field"><label for="regEmail">Gmail (email)</label><input id="regEmail" type="email" inputmode="email" autocomplete="email" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="regEmail"></small></div>
+        <div class="field"><label for="regEmail">Gmail yoki telefon raqam</label><input id="regEmail" type="text" autocomplete="username" placeholder="ism@gmail.com yoki 90 123 45 67"><small class="ferr" data-for="regEmail"></small></div>
         <div class="field"><label for="regPass">Parol o'ylab toping</label><div class="pwrow"><input id="regPass" type="password" autocomplete="new-password" placeholder="Masalan: uy2026"><button type="button" class="pweye" data-for="regPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="note" style="display:block;margin-top:4px">Istalgan harf va raqamlar, kamida 6 ta belgi.</small><small class="ferr" data-for="regPass"></small></div>
         <select id="regCity" hidden><option></option></select>
         <p class="err" id="regErr" role="alert"></p>
         <button class="btn primary" type="button" id="regGo">Ro'yxatdan o'tish</button>
       </div>
       <div id="logPane" hidden>
-        <div class="field"><label for="logEmail">Gmail (email)</label><input id="logEmail" type="email" inputmode="email" autocomplete="username" placeholder="ismingiz@gmail.com"><small class="ferr" data-for="logEmail"></small></div>
+        <div class="field"><label for="logEmail">Gmail yoki telefon raqam</label><input id="logEmail" type="text" autocomplete="username" placeholder="ism@gmail.com yoki 90 123 45 67"><small class="ferr" data-for="logEmail"></small></div>
         <div class="field"><label for="logPass">Parol</label><div class="pwrow"><input id="logPass" type="password" autocomplete="current-password" placeholder="••••••"><button type="button" class="pweye" data-for="logPass" aria-label="Parolni ko'rsatish">👁</button></div><small class="ferr" data-for="logPass"></small></div>
         <p class="err" id="logErr" role="alert"></p>
         <button class="btn primary" type="button" id="logGo">Kirish</button>
         <div class="acclinks"><button type="button" class="linkbtn" id="logForgot">Parolni unutdingizmi?</button><button type="button" class="linkbtn" id="logNew">Yangi akkaunt ochish</button></div>
       </div>
-      <p class="note">Parolingizni eslab qoling — boshqa telefon yoki kompyuterdan ham shu Gmail va parol bilan kirasiz.</p>
+      <p class="note">Parolingizni eslab qoling — boshqa telefon yoki kompyuterdan ham shu Gmail (yoki telefon raqam) va parol bilan kirasiz.</p>
     </div>
   </section>
 
@@ -3242,7 +3242,7 @@ const FIREBASE_CONFIG = {apiKey:"AIzaSyC9zJhKMXVnMd-wB72hcWkF-2sG4phnlto",authDo
 const CLOUD={ok:false,user:null,db:null};
 async function cloudInit(){ if(!FIREBASE_CONFIG) return false; try{ const V='10.12.2'; for(const f of ['app','auth','firestore']) await loadScript(`https://cdn.jsdelivr.net/npm/firebase@${V}/firebase-${f}-compat.js`);
   firebase.initializeApp(FIREBASE_CONFIG); CLOUD.db=firebase.firestore(); CLOUD.ok=true;
-  firebase.auth().onAuthStateChanged(async u=>{ if(u&&u.email==='admin@uychizma.app'){ CLOUD.user=u; return; } CLOUD.user=u||null; if(u){ const pw=(u.providerData||[]).some(p=>p.providerId==='password'); let prof={}; try{ const d=await CLOUD.db.collection('users').doc(u.uid).get(); if(d.exists) prof=d.data()||{}; }catch(_){} S.user=Object.assign({},S.user&&S.user.uid===u.uid?S.user:{},{name:prof.name||u.displayName||(S.user&&S.user.name)||u.email,phone:prof.phone||(S.user&&S.user.phone)||'',city:prof.city||(S.user&&S.user.city)||'',email:u.email||'',uid:u.uid,via:pw?'password':'google'}); LS.set('user',S.user); renderUser(); cloudSyncUser();
+  firebase.auth().onAuthStateChanged(async u=>{ if(u&&u.email==='admin@uychizma.app'){ CLOUD.user=u; return; } CLOUD.user=u||null; if(u){ const pw=(u.providerData||[]).some(p=>p.providerId==='password'); let prof={}; try{ const d=await CLOUD.db.collection('users').doc(u.uid).get(); if(d.exists) prof=d.data()||{}; }catch(_){} S.user=Object.assign({},S.user&&S.user.uid===u.uid?S.user:{},{name:prof.name||u.displayName||(S.user&&S.user.name)||(isTelMail(u.email)?telOfMail(u.email):u.email),phone:prof.phone||(S.user&&S.user.phone)||telOfMail(u.email)||'',city:prof.city||(S.user&&S.user.city)||'',email:isTelMail(u.email)?'':(u.email||''),uid:u.uid,via:pw?'password':'google'}); LS.set('user',S.user); renderUser(); cloudSyncUser();
       $('#gNote').textContent=(u.email||'Google')+" orqali kirdingiz. Loyihalaringiz serverda saqlanadi."; if(!$('#regName').value) $('#regName').value=u.displayName||''; cloudPull(); } });
   return true; }catch(e){ console.warn('firebase',e); CLOUD.failed=true; return false; } }
 async function cloudLogin(){ if(!CLOUD.ok) return; const p=new firebase.auth.GoogleAuthProvider(); try{ await firebase.auth().signInWithPopup(p); }catch(e){ try{ await firebase.auth().signInWithRedirect(p); }catch(e2){ $('#gNote').textContent="Google orqali kirib bo'lmadi. Ism va telefon bilan davom eting."; } } }
@@ -3268,31 +3268,39 @@ document.addEventListener('click',e=>{ const b=e.target.closest('.pweye'); if(!b
 function accTab(log){ $('#tabReg').setAttribute('aria-selected',String(!log)); $('#tabLog').setAttribute('aria-selected',String(log)); $('#regPane').hidden=log; $('#logPane').hidden=!log; }
 $('#tabReg').onclick=()=>accTab(false); $('#tabLog').onclick=()=>accTab(true); $('#logNew').onclick=()=>accTab(false);
 const okEmail=v=>/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v);
+/* Telefon bilan akkaunt: raqam ichki email'ga aylanadi (998901234567@tel.uychzma.uz) — SMS kerak emas */
+const TEL_DOM='@tel.uychzma.uz';
+function telNorm(v){ const t=String(v||'').trim(); if(/@/.test(t)||/[a-z]/i.test(t)) return ''; let d=t.replace(/\D/g,''); if(d.length===9) d='998'+d; else if(d.length===10&&d[0]==='8') d='998'+d.slice(1); return d.length>=11&&d.length<=15?d:''; }
+const telMail=d=>d+TEL_DOM, isTelMail=e=>String(e||'').endsWith(TEL_DOM), telOfMail=e=>isTelMail(e)?'+'+String(e).split('@')[0]:'';
+const telPretty=d=>d.length===12&&d.startsWith('998')?`+998 ${d.slice(3,5)} ${d.slice(5,8)} ${d.slice(8,10)} ${d.slice(10)}`:'+'+d;
 const AUTH_ERR={'auth/email-already-in-use':"Bu Gmail bilan akkaunt allaqachon bor. «Akkauntim bor — kirish» ni bosing.",'auth/invalid-email':"Gmail noto'g'ri yozilgan.",'auth/weak-password':"Parol juda oddiy — kamida 6 belgi yozing.",'auth/wrong-password':"Parol noto'g'ri. Qayta yozing yoki «Parolni unutdingizmi?» ni bosing.",'auth/invalid-credential':"Gmail yoki parol noto'g'ri. Qayta tekshirib yozing.",'auth/invalid-login-credentials':"Gmail yoki parol noto'g'ri. Qayta tekshirib yozing.",'auth/user-not-found':"Bu Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.",'auth/too-many-requests':"Ko'p marta xato kiritildi. Bir oz kutib, qayta urining yoki parolni tiklang.",'auth/network-request-failed':"Internet bilan aloqa yo'q. Tekshirib, qayta urining.",'auth/operation-not-allowed':"Parol bilan kirish hozircha yoqilmagan."};
 const authMsg=e=>AUTH_ERR[(e&&e.code)||'']||("Xato: "+((e&&(e.code||e.message))||'noma\'lum')+". Qayta urining.");
 async function regSubmit(){ const btn=$('#regGo'); if(btn.disabled) return;
   const name=$('#regName').value.trim().replace(/\s+/g,' '), phone='', city='', email=$('#regEmail').value.trim().toLowerCase(), pass=$('#regPass').value; const digits=phone.replace(/\D/g,'');
   let ok=true; $('#regErr').textContent='';
   ok=ferr('regName',name.length<2?"Ism va familiyangizni yozing.":(/\d/.test(name)?"Ismda raqam bo'lmasin.":''))&&ok;
-  ok=ferr('regEmail',!okEmail(email)?"Gmail'ni to'g'ri yozing, masalan ism@gmail.com":'')&&ok;
+  const tel=telNorm(email);
+  ok=ferr('regEmail',!tel&&!okEmail(email)?(/^[\d\s+()-]+$/.test(email)?"Telefon raqamni to'liq yozing, masalan 90 123 45 67":"Gmail yoki telefon raqamni to'g'ri yozing, masalan ism@gmail.com yoki 90 123 45 67"):'')&&ok;
   ok=ferr('regPass',pass.length<6?"Parol juda qisqa — kamida 6 ta harf yoki raqam yozing.":'')&&ok;
   if(!ok){ $('#regErr').textContent="Qizil bilan belgilangan joylarni to'g'rilang."; const f=document.querySelector('#regPane [aria-invalid=true]'); if(f) f.focus(); return; }
   btn.disabled=true; btn.textContent='Yuborilmoqda…';
-  try{ if(KOD_API){ FPM='reg'; FPE=email; REGD={name,phone,city,email,pass}; const r=await kodSend(); if(!r.ok){ const m=kodMsg(r); if(/exists|bad_email/.test(r.error)) ferr('regEmail',m); $('#regErr').textContent=m; return; } FP_N=0; fpGo('fpK'); return; }
+  try{ if(tel){ await regCreate({name,phone:telPretty(tel),city,email:telMail(tel),pass}); return; }
+    if(KOD_API){ FPM='reg'; FPE=email; REGD={name,phone,city,email,pass}; const r=await kodSend(); if(!r.ok){ const m=kodMsg(r); if(/exists|bad_email/.test(r.error)) ferr('regEmail',m); $('#regErr').textContent=m; return; } FP_N=0; fpGo('fpK'); return; }
     await regCreate({name,phone,city,email,pass}); }
   finally{ btn.disabled=false; btn.textContent="Ro'yxatdan o'tish"; } }
 async function regCreate(d){ const {name,phone,city,email,pass}=d;
   try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'};
     const cr=await firebase.auth().createUserWithEmailAndPassword(email,pass); try{ await cr.user.updateProfile({displayName:name}); }catch(_){}
-    S.user={name,phone,city,email,uid:cr.user.uid,via:'password',at:Date.now()}; CLOUD.user=cr.user;
+    S.user={name,phone,city,email:isTelMail(email)?'':email,uid:cr.user.uid,via:'password',at:Date.now()}; CLOUD.user=cr.user;
     if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); await cloudSyncUser(); try{ cloudReg(); }catch(e){} renderUser(); toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; }
-  catch(e){ console.warn(e); const m=authMsg(e); if(/email-already|invalid-email/.test(e&&e.code)) ferr('regEmail',m); else if(/weak-password/.test(e&&e.code)) ferr('regPass',m); $('#regErr').textContent=m; return false; } }
+  catch(e){ console.warn(e); let m=authMsg(e); if(isTelMail(email)) m=m.replace(/Gmail/g,'telefon raqam'); if(/email-already|invalid-email/.test(e&&e.code)) ferr('regEmail',m); else if(/weak-password/.test(e&&e.code)) ferr('regPass',m); $('#regErr').textContent=m; return false; } }
 async function logSubmit(){ const btn=$('#logGo'); if(btn.disabled) return; const email=$('#logEmail').value.trim().toLowerCase(), pass=$('#logPass').value; $('#logErr').textContent='';
-  let ok=ferr('logEmail',!okEmail(email)?"Gmail'ni to'g'ri yozing.":''); ok=ferr('logPass',!pass?'Parolni yozing.':'')&&ok; if(!ok) return;
+  const tel=telNorm(email);
+  let ok=ferr('logEmail',!tel&&!okEmail(email)?"Gmail yoki telefon raqamni to'g'ri yozing.":''); ok=ferr('logPass',!pass?'Parolni yozing.':'')&&ok; if(!ok) return;
   btn.disabled=true; btn.textContent='Kirilmoqda…';
-  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; await firebase.auth().signInWithEmailAndPassword(email,pass);
+  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; await firebase.auth().signInWithEmailAndPassword(tel?telMail(tel):email,pass);
     for(let i=0;i<30&&!(S.user&&S.user.uid);i++) await new Promise(r=>setTimeout(r,100)); toast('Xush kelibsiz, '+((S.user&&S.user.name)||'')+'!'); cloudPull(); go('start'); }
-  catch(e){ console.warn(e); const m=authMsg(e); $('#logErr').textContent=m; if(/password|credential/.test(e&&e.code)) ferr('logPass',' '); }
+  catch(e){ console.warn(e); let m=authMsg(e); if(tel) m=m.replace(/Gmail/g,'Telefon raqam').replace(/telefon raqam/g,'telefon raqam'); $('#logErr').textContent=m; if(/password|credential/.test(e&&e.code)) ferr('logPass',' '); }
   finally{ btn.disabled=false; btn.textContent='Kirish'; } }
 /* Parolni tiklash: 1) Gmail so'raladi 2) xat yuboriladi 3) havola bosilganda saytda yangi parol */
 /* Gmail'ga kod: Google Apps Script xizmati (KOD_API bo'sh bo'lsa — eski havola usuli) */
@@ -3328,7 +3336,7 @@ $('#fpKGo').onclick=async()=>{ const code=otpVal(), b=$('#fpKGo'); if(b.disabled
 function boxClose(id){ const b=$(id); if(b.hidden) return; b.classList.add('closing'); setTimeout(()=>{ b.hidden=true; b.classList.remove('closing'); },240); }
 $('#logForgot').onclick=()=>{ FPM='reset'; FP_N=0; $('#fpEmail').value=$('#logEmail').value.trim(); $('#fpErr1').textContent=''; ferr('fpEmail',''); fpShow(1); setTimeout(()=>$('#fpEmail').focus(),50); };
 $('#fpX').onclick=()=>{ boxClose('#fpBox'); FP_N=0; }; $('#fpBox').addEventListener('click',e=>{ if(e.target.id==='fpBox'){ boxClose('#fpBox'); FP_N=0; } });
-async function fpSend(){ const email=$('#fpEmail').value.trim().toLowerCase(), b=$('#fpSend'); $('#fpErr1').textContent=''; if(!ferr('fpEmail',okEmail(email)?'':"Gmail'ni to'g'ri yozing, masalan ism@gmail.com")) return;
+async function fpSend(){ const email=$('#fpEmail').value.trim().toLowerCase(), b=$('#fpSend'); $('#fpErr1').textContent=''; if(telNorm(email)){ ferr('fpEmail',"Telefon raqam bilan ochilgan akkaunt parolini tiklash uchun adminga yozing: Telegram @"+CONTACT_TG); return; } if(!ferr('fpEmail',okEmail(email)?'':"Gmail'ni to'g'ri yozing, masalan ism@gmail.com")) return;
   b.disabled=true; b.textContent='Yuborilmoqda…';
   if(KOD_API){ try{ FPM='reset'; FPE=email; const r=await kodSend(); if(r.ok) fpGo('fpK'); else { ferr('fpEmail',kodMsg(r)); } } finally{ b.disabled=false; b.textContent="📩 Gmail'ga yuborish"; } return; }
   try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; try{ firebase.auth().languageCode='uz'; }catch(_){} await firebase.auth().sendPasswordResetEmail(email,{url:location.origin+location.pathname+'?login=1'}); LS.set('fpMail',email); $('#fpTo').textContent=email; fpShow(2); }
