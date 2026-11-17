@@ -568,6 +568,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
   <button type="button" class="accx" id="accX" aria-label="Yopish">✕</button>
   <div class="accav" id="accAv">U</div><h2 id="accH" style="margin:6px 0 2px;font-size:20px"></h2><p class="note" id="accInfo" style="margin:0 0 14px"></p>
   <button type="button" class="btn ghost" data-go="projects" id="accProj">📁 Mening loyihalarim</button>
+  <button type="button" class="btn ghost" id="accFirm" hidden>🏢 Firma kabineti</button>
   <button type="button" class="btn danger" id="accOut">🚪 Akkauntdan chiqish</button>
 </div></div>
 <header class="top">
@@ -3025,7 +3026,12 @@ function decProject(s){ const p=s.split('-'); if(p[0]!=='q'||p.length<18) return
   { const ki=p.findIndex((x,i)=>i>=18&&x[0]==='K'); if(ki>=0){ try{ A.custom=cpClean(JSON.parse(ub64(p[ki].slice(1)))); }catch(e){} p.splice(ki,1); } if(A.layout==='custom'&&!A.custom) A.layout='auto'; }
   if(p[18]){ try{ const R=JSON.parse(ub64(p.slice(18).join('-'))); if(R&&typeof R==='object') A.rooms={adj:R.adj||{},base:R.base||{},del:Array.isArray(R.del)?R.del:[],add:Array.isArray(R.add)?R.add.filter(r=>r&&typeof r.n==='string'&&r.a>0).slice(0,12):[]}; }catch(e){} }
   if(!(A.layout==='custom'?(A.plotW>=6&&A.plotW<=80&&A.plotL>=10&&A.plotL<=120):(A.plotW>=9&&A.plotW<=60&&A.plotL>=15&&A.plotL<=80))) return null; return {A,vi:Math.min(2,Math.max(0,+p[16]||0)),st:sty((p[17]||'')[0])}; }
-function shareUrl(){ const base=/claude/.test(location.hostname)||location.protocol==='about:'||!location.hostname ? ART_URL : location.origin+location.pathname; const v=S.variants[S.active]; return base+'#'+encProject(S.A,S.active,v&&v.style); }
+/* ===== Firma brendi (Biznes): nomi, logotipi, telefoni, narxlari ===== */
+window.BRAND=null;
+function brandName(){ return (window.BRAND&&BRAND.name)||'UyChizma'; }
+function brandContact(){ const B=window.BRAND; if(B&&B.name) return B.phone||(B.tg?'t.me/'+String(B.tg).replace(/^@/,''):''); return CONTACT_PHONE||('t.me/'+CONTACT_TG); }
+function brandLogo(doc,x,y,w,h){ const B=window.BRAND; if(!B||!B.logo) return false; try{ doc.addImage(B.logo,/^data:image\/png/.test(B.logo)?'PNG':'JPEG',x,y,w,h); return true; }catch(e){ return false; } }
+function shareUrl(){ const base=/claude/.test(location.hostname)||location.protocol==='about:'||!location.hostname ? ART_URL : location.origin+location.pathname; const v=S.variants[S.active]; return base+(window.BRAND&&BRAND.own&&BRAND.uid?'?f='+BRAND.uid:'')+'#'+encProject(S.A,S.active,v&&v.style); }
 
 function edgeIsExt(f,a,b,c,d){ for(let t=0.1;t<1;t+=0.2){ const qx=a+(c-a)*t, qy=b+(d-b)*t; if(f.segs.some(s=>Math.abs(s.y0-s.y1)<1e-6 ? (Math.abs(b-d)<1e-6&&Math.abs(s.y0-qy)<1e-3&&qx>Math.min(s.x0,s.x1)-1e-3&&qx<Math.max(s.x0,s.x1)+1e-3) : (Math.abs(a-c)<1e-6&&Math.abs(s.x0-qx)<1e-3&&qy>Math.min(s.y0,s.y1)-1e-3&&qy<Math.max(s.y0,s.y1)+1e-3))) return true; } return false; }
 function roofSVG(v,A){
@@ -3142,9 +3148,9 @@ async function makePdf(){
       doc.setFillColor(10,17,32); doc.rect(0,H-62,W,62,'F'); doc.setFillColor(31,95,224); doc.rect(0,H-62,W,1.6,'F');
       doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(26); doc.text(pt('UY LOYIHASI KITOBI'),16,H-44); doc.setFontSize(14); doc.text(pt(`Variant ${v.key}: ${v.name} · ${stN(v)} uslub`),16,H-34);
       doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.text(pt(`${fmtA(v.area)} m2 · ${v.floors.length} qavat · ${v.bedCount} yotoqxona · taxminan ${money(v.total)}`),16,H-25);
-      doc.text(pt(`${S.user?S.user.name+' · ':''}${new Date().toLocaleDateString('ru-RU')} · UyChizma · Aloqa: ${CONTACT_PHONE||('Telegram @'+CONTACT_TG)}`),16,H-16); doc.setTextColor(0,0,0); }
+      doc.text(pt(`${S.user&&!(window.BRAND&&BRAND.own)?S.user.name+' · ':''}${new Date().toLocaleDateString('ru-RU')} · ${brandName()} · Aloqa: ${brandContact()}`),16,H-16); if(window.BRAND&&BRAND.logo){ doc.setFillColor(255,255,255); doc.roundedRect(W-46,H-56,32,32,3,3,'F'); brandLogo(doc,W-44,H-54,28,28); } doc.setTextColor(0,0,0); }
     const frame=(title,chap)=>{ if(page++) doc.addPage(); if(chap) toc.push([chap,page]); doc.setDrawColor(20); doc.setLineWidth(0.5); doc.rect(8,8,W-16,H-16); doc.setLineWidth(0.3); doc.rect(W-108,H-30,100,22);
-      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(pt('UyChizma · eskiz loyiha · '+(CONTACT_PHONE||('t.me/'+CONTACT_TG))),W-105,H-24); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(pt(brandName()+' · eskiz loyiha · '+brandContact()),W-105,H-24,{maxWidth:window.BRAND&&BRAND.logo?76:96}); brandLogo(doc,W-27,H-29,18,18); doc.setFont('helvetica','normal'); doc.setFontSize(8);
       doc.text(pt(`Variant ${v.key}: ${v.name}`),W-105,H-19); doc.text(pt(`${S.user?S.user.name+' · '+S.user.phone:''}`),W-105,H-14); doc.text(new Date().toLocaleDateString("ru-RU"),W-105,H-10);
       doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text(pt(title),14,18); doc.setFont('helvetica','normal'); };
     const table=(x,y,cols,rows,widths)=>{ doc.setFontSize(9); doc.setFont('helvetica','bold'); let cx=x; cols.forEach((c,i)=>{ doc.text(pt(c),cx,y); cx+=widths[i]; }); doc.setFont('helvetica','normal'); y+=2; doc.line(x,y,x+widths.reduce((a,b)=>a+b,0),y); y+=5;
@@ -4564,7 +4570,7 @@ async function logGen(){ try{ const v=S.variants&&S.variants[0], A=S.A; if(!v) r
   const mode=A.layout==='custom'?'📐 Chizma':({tez:'⚡ Tez',toliq:"🧩 To'liq"})[S.qmode||'tez']||'';
   await CLOUD.db.collection('gens').add({at:Date.now(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),email:String(u.email||'').slice(0,80),city:String(u.city||'').slice(0,40),
     mode:String(mode).slice(0,20),plot:(fmt1(A.plotW)+' × '+fmt1(A.plotL)+' m').slice(0,30),floors:A.floors|0,beds:A.beds|0,style:String(stN(v)||v.style||'').slice(0,40),house:String(v.name||'').slice(0,60),area:Math.round(v.area||0),link,
-    dev:matchMedia('(max-width:640px)').matches?'telefon':'kompyuter'}); }catch(x){ console.warn('gen',x); } }
+    dev:matchMedia('(max-width:640px)').matches?'telefon':'kompyuter'}); try{ window.firmLogProject&&window.firmLogProject(v,A); }catch(_){} }catch(x){ console.warn('gen',x); } }
 /* Ro'yxatdan o'tganlarni serverga yozish (faqat admin o'qiy oladi) */
 async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user||{}; const sig=(u.name||'')+'|'+(u.phone||'')+'|'+(u.email||''); if(LS.get('regSent','')===sig) return;
   try{ const rb=LS.get('refBy',''); let c=LS.get('cid',''); if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); LS.set('cid',c); } if(rb&&rb!==c&&!LS.get('refSent','')){ await CLOUD.db.collection('refs').doc(c).set({ref:rb,at:Date.now()}); LS.set('refSent',1); } }catch(x){ console.warn('ref',x); }
@@ -4583,7 +4589,7 @@ const SMP={qazish:70000,beton:950000,armatura:9800000,gidro:38000,yostiq:160000,
   tgidro:38000,izol:950000,parapet:65000,metall:95000,profnastil:72000,yumshoq:125000,keramik:230000,osb:78000,mauerlat:55000,stropila:4800000,plyonka:13000,
   deraza:1350000,teshik:4800000,ieshik:1500000,suvoq:32000,styajka:45000,fasad:130000,pol:180000,boyoq:38000,santex:5500000,elektr:90000,suv:80000,isitish:160000};
 const SMLAB={poydevor:0.45,devor:0.5,yopma:0.4,tom:0.35,deraza:0.1,pardoz:0.6,muh:0.35};
-function smPrices(){ let o={}; try{ o=JSON.parse(localStorage.getItem('uychizma:smp')||'{}'); }catch(_){ } return Object.assign({},SMP,o); }
+function smPrices(){ let o={}; try{ o=JSON.parse(localStorage.getItem('uychizma:smp')||'{}'); }catch(_){ } return Object.assign({},SMP,(window.BRAND&&BRAND.prices)||{},o); }
 function smeta(v,A){ const q=v.q, P=smPrices(), L=q.groundExt+q.groundInt, lx={oddiy:0.75,orta:1,hashamatli:1.6}[v.lux]||1, R=v.roof||roofOf(v.style||A.style,A);
   const qop=t=>Math.ceil(t*20); const wet=Math.max(1,sum(v.floors,f=>f.rooms.filter(r=>r.t==='wet').length));
   const G=[
@@ -4611,7 +4617,7 @@ document.addEventListener('click',async e=>{ if(e.target.closest('#smetaReset'))
   if(e.target.closest('#smetaPdf')){ const b=e.target.closest('#smetaPdf'); b.disabled=true; try{ await smetaPdf(); }catch(er){ console.error(er); toast&&toast("PDF yasab bo'lmadi. Qayta urinib ko'ring."); } b.disabled=false; } });
 async function smetaPdf(){ if(!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
   const v=S.variants[S.active], A=S.A, sm=smeta(v,A), doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'}), W=210, H=297; let y=0;
-  const head=()=>{ doc.setFillColor(23,71,184); doc.rect(0,0,W,18,'F'); doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.text('UyChizma',14,12); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(pt('Qurilish smetasi · '+new Date().toLocaleDateString('ru-RU')),W-14,12,{align:'right'}); doc.setTextColor(20); y=28; };
+  const head=()=>{ doc.setFillColor(23,71,184); doc.rect(0,0,W,18,'F'); doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(13); const lg=!!(window.BRAND&&BRAND.logo); if(lg){ doc.setFillColor(255,255,255); doc.rect(13,1.5,15,15,'F'); brandLogo(doc,13.5,2,14,14); } doc.setTextColor(255); doc.text(pt(brandName()+(window.BRAND&&BRAND.name&&brandContact()?'  ·  '+brandContact():'')),lg?31:14,12); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(pt('Qurilish smetasi · '+new Date().toLocaleDateString('ru-RU')),W-14,12,{align:'right'}); doc.setTextColor(20); y=28; };
   const need=h=>{ if(y+h>H-16){ doc.addPage(); head(); } };
   head(); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(pt(`Variant ${v.key}: ${v.name}`),14,y); y+=7; doc.setFont('helvetica','normal'); doc.setFontSize(10);
   doc.text(pt(`${fmt1(v.W)} x ${fmt1(v.D)} m · ${v.floors.length} qavat · ${fmtA(v.area)} m2 · ${LUX_NAME[v.lux]} daraja`),14,y); y+=9;
@@ -4946,6 +4952,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   async function vipSync(){ if(!(await cloudReady())) return; let best=0; for(const c of [cid(),LS.get('vipCid','')].filter(Boolean)){ try{ const d=await CLOUD.db.collection('vip').doc(c).get(); if(d.exists) best=Math.max(best,+d.data().until||0); }catch(_){} } const was=vip(); LS.set('vipUntil',best); badge(); if(!was&&vip()) toast('⭐ VIP faol — 30 kun cheksiz uy loyihalari'); }
   setTimeout(vipSync,2000);
   const owner=()=>{ try{ const u=CLOUD.user||(window.firebase&&firebase.auth&&firebase.auth().currentUser); return !!(u&&u.email&&OWNER_EMAILS.includes(String(u.email).toLowerCase())&&(u.emailVerified||(u.providerData||[]).some(p=>p.providerId==='google.com'))); }catch(_){ return false; } };
+  window.ucVip=()=>vip()||owner(); window.ucOwner=owner; window.ucCid=cid;
   const left=()=>(owner()||vip())?1e9:Math.max(0,credits()-Math.max(0,LS.get('houses',[]).length-PAY.free));
   function badge(){ const STAR='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:currentColor"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg>', CROWN='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:currentColor"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>', CLOCK='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>'; const b=$p('premBtn'); if(!b) return; if(!PAY_ON){ b.hidden=true; return; } if(vip()&&!owner()){ const dd=Math.max(1,Math.ceil((vipUntil()-Date.now())/864e5)); b.innerHTML=CROWN+`<span class="pl"> VIP ·</span> ${dd}<span class="pl"> kun</span>`; b.title='VIP: '+dd+' kun qoldi, cheksiz'; return; } if(owner()){ b.innerHTML=CROWN+'<span class="pl"> Cheksiz</span>'; b.title='Sayt egasi: cheksiz'; return; } const n=left(), pend=pays().some(x=>x.status==='pending'); b.innerHTML=n?`${STAR}<span class="pl"> Premium ·</span> ${n}<span class="pl"> ta uy</span>`:(pend?CLOCK+'<span class="pl"> Premium</span>':STAR+'<span class="pl"> Premium</span>'); b.title=n?`Premium: yana ${n} ta uy`:'Premium obuna'; }
   window.payBadge=()=>badge();
@@ -5009,4 +5016,84 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
     [...p.children].forEach((c,k)=>{ if(k>h&&c!==b) c.classList.add('fx'); }); const h2=hd.tagName==='H2'?hd:hd.querySelector('h2'); h2.classList.add('fhd');
     const tog=()=>set(p.classList.contains('fold')); b.onclick=tog; h2.onclick=tog; set(false); }); })();
 </script>
+<style>
+.fstrip{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#0E1626;color:#fff;font-size:14px;position:relative;z-index:5}
+.fstrip img{width:34px;height:34px;object-fit:contain;background:#fff;border-radius:8px;padding:2px}.fstrip b{font-size:15px}.fstrip a{color:#9CC1FF;font-weight:600;margin-left:auto;white-space:nowrap}
+.firmbox{position:fixed;inset:0;z-index:300;background:rgba(10,17,32,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
+.firmbox[hidden]{display:none}.firmin{background:var(--card,#fff);color:var(--ink,#0E1626);width:min(720px,100%);border-radius:18px;padding:20px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.firmin h2{margin:0 0 4px;font-size:21px}.firmin h3{margin:18px 0 8px;font-size:16px}.firmin label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+.firmin input[type=text],.firmin input[type=tel]{width:100%;box-sizing:border-box;font:inherit;padding:10px 12px;border:1.5px solid var(--line,#D5DCE8);border-radius:10px;background:var(--bg,#fff);color:inherit}
+.flogo{display:flex;align-items:center;gap:12px}.flogo .pv{width:72px;height:72px;border:1.5px dashed var(--line,#C9D3E3);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;font-size:11px;color:#8793A6;text-align:center}
+.flogo .pv img{max-width:100%;max-height:100%;object-fit:contain}
+.ftab{width:100%;border-collapse:collapse;font-size:13px}.ftab td,.ftab th{padding:7px 6px;border-bottom:1px solid var(--line,#E6EBF3);text-align:left;vertical-align:top}.ftab input{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:5px 7px;border:1px solid var(--line,#D5DCE8);border-radius:7px;background:transparent;color:inherit}
+.fnote{font-size:13px;color:var(--muted,#5B6678);margin:4px 0}.fok{color:#1F7A4D;font-weight:700}
+</style>
+<div id="firmBox" class="firmbox" hidden role="dialog" aria-modal="true" aria-labelledby="firmH"><div class="firmin">
+  <button type="button" class="accx" id="firmX" aria-label="Yopish">✕</button>
+  <h2 id="firmH">🏢 Firma kabineti</h2>
+  <p class="fnote" id="firmSub">Bu yerda kiritgan ma'lumotlaringiz mijozga beradigan PDF va havolalarda chiqadi.</p>
+  <h3>1. Firmangiz</h3>
+  <label for="fName">Firma nomi</label><input type="text" id="fName" maxlength="60" placeholder="Masalan: Baraka Qurilish">
+  <label for="fPhone">Telefon</label><input type="tel" id="fPhone" maxlength="30" placeholder="+998 90 123 45 67">
+  <label for="fTg">Telegram (ixtiyoriy)</label><input type="text" id="fTg" maxlength="40" placeholder="@firma">
+  <label>Logotip</label><div class="flogo"><div class="pv" id="fLogoPv">Logotip yo'q</div><div><label class="btn ghost small" style="cursor:pointer;margin:0">📤 Logotip yuklash<input type="file" id="fLogo" accept="image/*" hidden></label><button type="button" class="linkbtn" id="fLogoDel" style="display:block;margin-top:6px">O'chirish</button></div></div>
+  <h3>2. Smeta narxlaringiz</h3>
+  <p class="fnote">Har qanday loyihada <b>Smeta</b> jadvalidagi narxlarni o'zingiznikiga o'zgartiring, keyin shu yerda saqlang. Shundan so'ng mijozlaringiz sizning havolangizni ochsa, smeta sizning narxlaringiz bilan chiqadi.</p>
+  <p class="fnote" id="fPriceInfo"></p>
+  <button type="button" class="btn ghost small" id="fPriceSave">💰 Hozirgi smeta narxlarimni saqlash</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn primary" id="fSave" style="min-width:180px">💾 Saqlash</button><span class="fnote" id="fMsg" style="align-self:center"></span></div>
+  <h3>3. Mijozlar bazasi</h3>
+  <p class="fnote">Siz yaratgan loyihalar va mijozlaringiz havolani necha marta ochgani. Mijoz ismi va telefonini yozib qo'ying — avtomatik saqlanadi.</p>
+  <div id="fClients" style="overflow:auto"><p class="fnote">Yuklanmoqda…</p></div>
+</div></div>
+<script>
+/* ===== Biznes: firma kabineti, brend, mijozlar bazasi ===== */
+(function(){
+  const $f=id=>document.getElementById(id), box=$f('firmBox'); let MY=null, logo='';
+  const esc2=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const authUser=()=>{ try{ const u=(typeof CLOUD!=='undefined'&&CLOUD.user)||(window.firebase&&firebase.auth&&firebase.auth().currentUser); return u&&u.email!=='admin@uychizma.app'?u:null; }catch(_){ return null; } };
+  const isBiz=()=>{ try{ return !!(window.ucVip&&ucVip()); }catch(_){ return false; } };
+  const FIRMS=()=>CLOUD.db.collection('firms');
+  function strip(B){ let el=$f('fStrip'); if(!B||!B.name||B.own){ if(el) el.remove(); return; } if(!el){ el=document.createElement('div'); el.id='fStrip'; el.className='fstrip'; const h=document.querySelector('header.top'); (h&&h.parentNode||document.body).insertBefore(el,h||document.body.firstChild); }
+    const tel=B.phone?String(B.phone).replace(/[^\d+]/g,''):''; el.innerHTML=(B.logo?`<img src="${esc2(B.logo)}" alt="">`:'')+`<span><small style="opacity:.7;display:block;font-size:11px">Loyiha tayyorladi</small><b>${esc2(B.name)}</b></span>`+(tel?`<a href="tel:${esc2(tel)}">📞 ${esc2(B.phone)}</a>`:(B.tg?`<a href="https://t.me/${esc2(String(B.tg).replace(/^@/,''))}" target="_blank" rel="noopener">✈️ ${esc2(B.tg)}</a>`:'')); }
+  function apply(B){ window.BRAND=B&&B.name?B:null; strip(window.BRAND); try{ const v=S.variants&&S.variants[S.active]; if(v&&typeof renderSmeta==='function') renderSmeta(v); }catch(_){} }
+  /* 1) Mijoz firma havolasini ochdi: ?f=UID */
+  let VIEW=''; try{ const f=new URLSearchParams(location.search).get('f'); if(f&&/^[A-Za-z0-9]{10,40}$/.test(f)){ VIEW=f; sessionStorage.setItem('uc:fv',f); } else VIEW=sessionStorage.getItem('uc:fv')||''; }catch(_){}
+  async function loadView(){ if(!VIEW||!(await cloudReady())) return; const me=authUser(); if(me&&me.uid===VIEW) return; try{ const d=await FIRMS().doc(VIEW).get(); if(d.exists){ const x=d.data(); apply({uid:VIEW,name:x.name,phone:x.phone,tg:x.tg,logo:x.logo,prices:x.prices||null,own:false});
+      if(location.hash.length>8&&!sessionStorage.getItem('uc:fvlog'+location.hash.slice(0,40))){ sessionStorage.setItem('uc:fvlog'+location.hash.slice(0,40),1); setTimeout(()=>{ let t='Loyiha'; try{ const v=S.variants[S.active]; t=(`Variant ${v.key}: ${v.name}, ${Math.round(v.area)} m²`); }catch(_){} FIRMS().doc(VIEW).collection('views').add({at:Date.now(),t:String(t).slice(0,110),h:location.hash.slice(1,61),dev:matchMedia('(max-width:640px)').matches?'telefon':'kompyuter'}).catch(()=>{}); },5000); } } }catch(x){ console.warn('firm view',x); } }
+  setTimeout(loadView,1200);
+  /* 2) Biznes egasi: o'z brendi */
+  async function loadMine(){ const u=authUser(); if(!u||!(await cloudReady())) return null; try{ const d=await FIRMS().doc(u.uid).get(); MY=d.exists?d.data():{}; }catch(_){ MY={}; } if(isBiz()&&MY&&MY.name&&!(VIEW&&VIEW!==u.uid)) apply({uid:u.uid,name:MY.name,phone:MY.phone,tg:MY.tg,logo:MY.logo,prices:MY.prices||null,own:true}); return MY; }
+  function btn(){ const b=$f('accFirm'); if(b) b.hidden=!isBiz(); }
+  setInterval(btn,1500); setTimeout(async()=>{ btn(); await loadMine(); },3500);
+  try{ firebase.auth().onAuthStateChanged(()=>setTimeout(async()=>{ btn(); await loadMine(); },800)); }catch(_){}
+  /* 3) Yaratilgan loyihani firma bazasiga yozish */
+  window.firmLogProject=async(v,A)=>{ const u=authUser(); if(!u||!window.BRAND||!BRAND.own) return; const link=shareUrl(); await FIRMS().doc(u.uid).collection('projects').add({at:Date.now(),house:String(`Variant ${v.key}: ${v.name}`).slice(0,80),area:Math.round(v.area||0),plot:(A.plotW+' × '+A.plotL+' m').slice(0,30),link:link.slice(0,6000),h:(link.split('#')[1]||'').slice(0,60),client:'',phone:''}); };
+  /* 4) Kabinet oynasi */
+  function pv(){ $f('fLogoPv').innerHTML=logo?`<img src="${esc2(logo)}" alt="Logotip">`:"Logotip yo'q"; }
+  function priceInfo(){ const n=MY&&MY.prices?Object.keys(MY.prices).length:0; $f('fPriceInfo').innerHTML=n?`<span class="fok">✅ ${n} ta narxingiz saqlangan.</span>`:"Hozircha UyChizma'ning o'rtacha narxlari ishlatiladi."; }
+  async function open(){ const u=authUser(); if(!u){ toast("Firma kabineti uchun avval akkauntga kiring"); try{ accOpen(); }catch(_){} return; } if(!isBiz()){ toast("Firma kabineti Biznes tarifi uchun"); location.href='biznes.html'; return; }
+    try{ accClose(); }catch(_){} box.hidden=false; document.body.style.overflow='hidden'; $f('fMsg').textContent=''; await loadMine(); const m=MY||{}; $f('fName').value=m.name||''; $f('fPhone').value=m.phone||''; $f('fTg').value=m.tg||''; logo=m.logo||''; pv(); priceInfo(); clients(); }
+  function close(){ box.hidden=true; document.body.style.overflow=''; if(location.hash==='#firma') history.replaceState(null,'',location.pathname+location.search); }
+  window.openFirm=open; $f('firmX').onclick=close; box.addEventListener('click',e=>{ if(e.target===box) close(); });
+  document.addEventListener('click',e=>{ if(e.target.closest('#accFirm')) open(); });
+  addEventListener('hashchange',()=>{ if(location.hash==='#firma') open(); }); if(location.hash==='#firma') setTimeout(open,2500);
+  $f('fLogo').onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const img=new Image(), url=URL.createObjectURL(f); img.onload=()=>{ const M=240, k=Math.min(1,M/Math.max(img.width,img.height)), c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); let d=c.toDataURL('image/png'); if(d.length>200000) d=c.toDataURL('image/jpeg',0.85); logo=d; URL.revokeObjectURL(url); pv(); }; img.onerror=()=>toast("Rasmni o'qib bo'lmadi"); img.src=url; e.target.value=''; };
+  $f('fLogoDel').onclick=()=>{ logo=''; pv(); };
+  async function save(extra){ const u=authUser(); if(!u) return false; const d={name:$f('fName').value.trim().slice(0,60),phone:$f('fPhone').value.trim().slice(0,30),tg:$f('fTg').value.trim().slice(0,40),logo:logo||'',prices:(MY&&MY.prices)||{},cid:String(window.ucCid?ucCid():''),at:Date.now(),...(extra||{})};
+    if(!d.name){ $f('fMsg').innerHTML='<span style="color:#C0392B">Firma nomini yozing</span>'; $f('fName').focus(); return false; }
+    try{ await FIRMS().doc(u.uid).set(d); MY=d; apply({uid:u.uid,...d,own:true}); $f('fMsg').innerHTML='<span class="fok">✅ Saqlandi. Endi PDF va havolalarda firmangiz chiqadi.</span>'; return true; }catch(x){ console.warn('firm save',x); $f('fMsg').innerHTML='<span style="color:#C0392B">Saqlab bo\'lmadi: '+esc2(String(x&&x.code||x).slice(0,60))+'</span>'; return false; } }
+  $f('fSave').onclick=async()=>{ const b=$f('fSave'); b.disabled=true; await save(); b.disabled=false; };
+  $f('fPriceSave').onclick=async()=>{ let o={}; try{ o=JSON.parse(localStorage.getItem('uychizma:smp')||'{}'); }catch(_){} const p=Object.assign({},(MY&&MY.prices)||{},o); const clean={}; Object.keys(p).forEach(k=>{ const n=+p[k]; if(/^[a-z0-9]{2,20}$/i.test(k)&&n>0&&n<1e10) clean[k]=Math.round(n); });
+    if(!Object.keys(clean).length){ toast("Avval biror loyihaning Smeta jadvalida narxlarni o'zgartiring"); return; } if(await save({prices:clean})){ priceInfo(); toast('💰 Narxlaringiz saqlandi'); } };
+  async function clients(){ const u=authUser(), el=$f('fClients'); if(!u) return; try{ const [pq,vq]=await Promise.all([FIRMS().doc(u.uid).collection('projects').orderBy('at','desc').limit(100).get(),FIRMS().doc(u.uid).collection('views').orderBy('at','desc').limit(300).get()]);
+      const vc={}, last={}; vq.forEach(d=>{ const x=d.data(); vc[x.h]=(vc[x.h]||0)+1; if(!last[x.h]) last[x.h]=x.at; });
+      const dt=t=>t?new Date(t).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+      if(pq.empty){ el.innerHTML=`<p class="fnote">Hali loyiha yo'q. Saytda uy loyihasini yarating — u shu yerga avtomatik tushadi. Mijozga <b>«Ustaga havolani nusxalash»</b> tugmasi orqali havola yuboring.</p>`+(vq.size?`<p class="fnote">Havolalaringiz jami ${vq.size} marta ochilgan.</p>`:''); return; }
+      el.innerHTML=`<table class="ftab"><thead><tr><th>Sana</th><th>Loyiha</th><th style="min-width:120px">Mijoz</th><th style="min-width:110px">Telefon</th><th>Ko'rildi</th><th></th></tr></thead><tbody>`+pq.docs.map(d=>{ const x=d.data(), n=vc[x.h]||0; return `<tr><td style="white-space:nowrap">${dt(x.at)}</td><td>${esc2(x.house)}<br><small style="color:#7A8597">${esc2(x.area)} m² · ${esc2(x.plot)}</small></td><td><input data-fc="${esc2(d.id)}" data-k="client" value="${esc2(x.client||'')}" placeholder="Ismi" maxlength="60"></td><td><input data-fc="${esc2(d.id)}" data-k="phone" value="${esc2(x.phone||'')}" placeholder="+998…" maxlength="30"></td><td style="white-space:nowrap">${n?`👁 ${n} marta<br><small style="color:#7A8597">${dt(last[x.h])}</small>`:'—'}</td><td><a href="${esc2(x.link)}" target="_blank" rel="noopener">Ochish</a></td></tr>`; }).join('')+'</tbody></table>';
+    }catch(x){ console.warn('clients',x); el.innerHTML='<p class="fnote">Ro\'yxatni yuklab bo\'lmadi. Keyinroq qayta oching.</p>'; } }
+  document.addEventListener('change',async e=>{ const i=e.target.closest&&e.target.closest('[data-fc]'); if(!i) return; const u=authUser(); if(!u) return; try{ await FIRMS().doc(u.uid).collection('projects').doc(i.dataset.fc).update({[i.dataset.k]:String(i.value).trim().slice(0,i.dataset.k==='phone'?30:60)}); toast('Saqlandi'); }catch(_){ toast("Saqlab bo'lmadi"); } });
+})();
+</script>
+
 </body></html>
