@@ -135,9 +135,24 @@ async function aiReply(env, l, user, text) {
     AILOG.push('p2 ' + r.status);
     if (r.ok) { const a = (await r.text()).trim(); if (a && a[0] !== '{') return a; }
   } catch (e) { AILOG.push('p2 err ' + (e && e.message)); }
-  // 3) Cloudflare AI (agar ulangan bo'lsa)
-  try { if (env.AI) { const o = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', { messages, max_tokens: 400 }); AILOG.push('cf ok'); if (o && o.response) return o.response.trim(); } else AILOG.push('cf none'); } catch (e) { AILOG.push('cf err ' + (e && e.message)); }
+  // 3) Cloudflare Workers AI (binding: AI) — bir nechta model, birinchisi ishlamasa keyingisi
+  if (env.AI) {
+    for (const mdl of ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/mistralai/mistral-small-3.1-24b-instruct', '@cf/meta/llama-3.1-8b-instruct-fp8']) {
+      try { const o = await env.AI.run(mdl, { messages, max_tokens: 500 }); const a = o && (o.response || (o.choices && o.choices[0] && o.choices[0].message && o.choices[0].message.content)); AILOG.push(mdl.split('/').pop() + (a ? ' ok' : ' bo\'sh')); if (a && String(a).trim()) return String(a).trim(); }
+      catch (e) { AILOG.push(mdl.split('/').pop() + ' err ' + String(e && e.message).slice(0, 80)); }
+    }
+  } else AILOG.push('cf none');
+  // 4) Oddiy javob (AI ishlamasa ham bot jim qolmasin)
+  return faq(l, text);
   return '';
+}
+function faq(l, text) {
+  const t = String(text).toLowerCase(), ru = l === 'ru';
+  if (/narx|qancha|necha pul|pul|to'lov|tolov|цен|стоим|сколько|оплат/.test(t)) return ru ? "Первый проект дома — бесплатно 🎁 Премиум — 25 000 сум за 2 проекта (план, 3D, смета, PDF). Для компаний: Start 490 000, Biznes 700 000, Korporativ 1 200 000 сум в месяц. Подробнее — кнопка «💰 Цены» внизу." : "Birinchi uy loyihasi — bepul 🎁 Premium — 25 000 so'm, 2 ta uy loyihasi (reja, 3D, smeta, PDF). Firmalar uchun: Start 490 000, Biznes 700 000, Korporativ 1 200 000 so'm/oy. Batafsil — pastdagi «💰 Narxlar» tugmasi.";
+  if (/usta|мастер|quruvchi|строител/.test(t)) return ru ? "Мастеров можно найти по городу и виду работ — нажмите «👷 Найти мастера» внизу 👇" : "Ustalarni shahar va ish turi bo'yicha topishingiz mumkin — pastdagi «👷 Usta topish» tugmasini bosing 👇";
+  if (/xona|bo'sh|bosh joy|mebel|интерьер|комнат|мебел/.test(t)) return ru ? "Загрузите фото пустой комнаты — AI обставит её и покажет примерные цены. Кнопка «🛋 Пустое помещение» внизу 👇" : "Bo'sh xona rasmini yuklang — AI uni jihozlab, taxminiy narxlarni ko'rsatadi. Pastdagi «🛋 Bo'sh joy» tugmasi 👇";
+  if (/uy|loyiha|reja|chizma|3d|дом|проект|план/.test(t)) return ru ? "Введите размеры участка или загрузите чертёж — за 1 минуту получите план дома, 3D, примерную стоимость и смету. Нажмите «🏠 Проект дома» внизу 👇" : "Yer o'lchamini kiriting yoki chizma yuklang — 1 daqiqada uy rejasi, 3D ko'rinish, taxminiy narx va smeta chiqadi. Pastdagi «🏠 Uy loyihasi» tugmasini bosing 👇";
+  return ru ? "Спасибо за вопрос! 🙂 Выберите нужный раздел в меню ниже, а если нужен живой ответ — напишите админу: @amirhonsh" : "Savolingiz uchun rahmat! 🙂 Pastdagi menyudan kerakli bo'limni tanlang, jonli javob kerak bo'lsa — adminga yozing: @amirhonsh";
 }
 const clean = s => String(s).replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').slice(0, 3500);
 
