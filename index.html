@@ -512,6 +512,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .otp input.fill{border-color:#1F5FE0}.otp.bad input{border-color:#C62828;animation:shake .4s}.otp.good input{border-color:#1F7A4D;background:#E3F4EA}
 @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .fpsteps{margin:0 0 12px;padding-left:20px;line-height:1.5}.fpsteps li{margin:4px 0}
+.tgblk{border-color:#9ED3F0!important;background:linear-gradient(135deg,rgba(34,158,217,.10),rgba(34,158,217,.02))!important}
+.ct-bot{font-weight:700;color:#229ED9;text-decoration:none}
 .btn.danger{background:#D32F2F;color:#fff;border-color:#D32F2F}
 /* ===== Tepa menyu (oddiy, hamma bo'lim ko'rinadi) ===== */
 .nav .ni{width:18px;height:18px;flex:none;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -608,6 +610,11 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
         <a class="bjblk" href="ustalar.html" style="margin-top:-4px">
           <span class="bjic">👷</span>
           <span class="bjtx"><b>Usta topish <i>YANGI</i></b><small>Uyingizni qurib beradigan ustalar narx taklif qiladi. Ustamisiz? Ro'yxatdan o'ting</small></span>
+          <span class="bjar">→</span>
+        </a>
+        <a class="bjblk tgblk" href="https://t.me/uychzma_bot?start=sayt" target="_blank" rel="noopener" style="margin-top:-4px">
+          <span class="bjic">🤖</span>
+          <span class="bjtx"><b>Telegram bot: @uychzma_bot <i>YANGI</i></b><small>Savolingizga darhol javob beradi, loyiha va ustalarni Telegram ichida ochadi</small></span>
           <span class="bjar">→</span>
         </a>
         <p class="note" style="margin:-6px 0 14px"><a href="biznes.html" style="color:var(--accent);font-weight:600">🏢 Quruvchi firmalar va rieltorlar uchun — UyChizma Biznes →</a></p>
@@ -1038,7 +1045,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
   <div class="revs-h"><h2>Odamlar fikri</h2><div class="revs-avg" id="revsAvg"></div><button class="btn primary small" id="revsAdd" type="button">✍️ Fikr qoldirish</button></div>
   <div class="revs-list" id="revsList"><p class="note">Fikrlar yuklanmoqda…</p></div></div></section>
 <footer class="ctbar" id="ctBar" hidden><div class="wrap" style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:14px 16px">
-  <span>Savol bo'lsa yoki loyihani buyurtma qilmoqchi bo'lsangiz:</span><a class="ct-phone" href="#"><b class="cf-num"></b></a><a class="ct-tg" href="#" target="_blank" rel="noopener" hidden>Telegram</a></div></footer>
+  <span>Savol bo'lsa yoki loyihani buyurtma qilmoqchi bo'lsangiz:</span><a class="ct-phone" href="#"><b class="cf-num"></b></a><a class="ct-tg" href="#" target="_blank" rel="noopener" hidden>Telegram</a><a class="ct-bot" href="https://t.me/uychzma_bot?start=sayt" target="_blank" rel="noopener">🤖 Bot: @uychzma_bot</a></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -4006,7 +4013,7 @@ const CONTACT_PHONE=''; // masalan '+998 90 123 45 67'
 const CONTACT_TG=TG_USER;
 (function(){ if(!CONTACT_PHONE&&!CONTACT_TG) return; const tg=CONTACT_TG?'https://t.me/'+CONTACT_TG:''; const tel=CONTACT_PHONE?'tel:'+CONTACT_PHONE.replace(/[^\d+]/g,''):'';
   const lab=CONTACT_PHONE||('@'+CONTACT_TG); document.querySelectorAll('.cf-num').forEach(e=>e.textContent=lab);
-  const f=$('#callFab'); f.href=tel||tg; if(!tel){ f.target='_blank'; f.rel='noopener'; f.innerHTML='✈️ <span>Telegram</span>'; f.style.background='#229ED9'; f.setAttribute('aria-label','Telegram orqali yozish'); } f.hidden=false;
+  const f=$('#callFab'); f.href=tel||'https://t.me/uychzma_bot?start=sayt'; if(!tel){ f.target='_blank'; f.rel='noopener'; f.innerHTML='🤖 <span>Bot</span>'; f.style.background='#229ED9'; f.setAttribute('aria-label','Telegram botimiz @uychzma_bot'); } f.hidden=false;
   const b=$('#ctBar'); b.hidden=false; const ph=b.querySelector('.ct-phone'); if(tel) ph.href=tel; else ph.remove();
   document.querySelectorAll('.cf-tel').forEach(a=>{ a.href=tel||tg; if(!tel){ a.target='_blank'; a.innerHTML='✈️ Yoki hoziroq Telegramda yozing: @'+CONTACT_TG; } a.hidden=false; });
   if(tg){ const t=b.querySelector('.ct-tg'); t.href=tg; t.textContent='✈️ Telegram: @'+CONTACT_TG; t.hidden=false; } })();
@@ -4448,7 +4455,7 @@ setTimeout(()=>{ makePromoImages(); },2600);
     </div>
     <div id="admBody" hidden>
       <div class="note" id="admWho" style="margin-bottom:10px"></div>
-      <div class="stylesw" id="admTabs" style="margin-bottom:10px"><button type="button" data-t="gens" aria-pressed="true">🏠 Chiqarilgan loyihalar</button><button type="button" data-t="regs">Ro'yxatdan o'tganlar</button><button type="button" data-t="orders">Arxitektor buyurtmalari</button><button type="button" data-t="b2b">🏢 Biznes to'lovlari</button><button type="button" data-t="leads">👷 Usta so'rovlari</button><button type="button" data-t="ustalar">👷 Ustalar</button><button type="button" data-t="narx">💰 Narxlar</button><button type="button" data-t="feedback">Fikrlar</button><button type="button" data-t="reviews">Ochiq fikrlar</button><button type="button" data-t="pays">💳 Cheklar <span id="admPayN"></span></button></div>
+      <div class="stylesw" id="admTabs" style="margin-bottom:10px"><button type="button" data-t="gens" aria-pressed="true">🏠 Chiqarilgan loyihalar</button><button type="button" data-t="regs">Ro'yxatdan o'tganlar</button><button type="button" data-t="orders">Arxitektor buyurtmalari</button><button type="button" data-t="b2b">🏢 Biznes to'lovlari</button><button type="button" data-t="leads">👷 Usta so'rovlari</button><button type="button" data-t="ustalar">👷 Ustalar</button><button type="button" data-t="botusers">🤖 Bot</button><button type="button" data-t="narx">💰 Narxlar</button><button type="button" data-t="feedback">Fikrlar</button><button type="button" data-t="reviews">Ochiq fikrlar</button><button type="button" data-t="pays">💳 Cheklar <span id="admPayN"></span></button></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><b id="admCount"></b><input id="admQ" placeholder="Qidirish: ism, telefon, shahar…" style="flex:1;min-width:180px"><button type="button" class="btn back small" id="admCsv">⬇️ Excel (CSV)</button><button type="button" class="btn back small" id="admRe">↻ Yangilash</button></div>
       <div id="admTable" style="overflow:auto;background:var(--card,#fff);border:1px solid var(--line,#D6DEEA);border-radius:12px"></div>
     </div>
@@ -4469,6 +4476,7 @@ setTimeout(()=>{ makePromoImages(); },2600);
     pays:[['name','Ism'],['phone','Telefon'],['status','Holat'],['n','Uylar'],['at','Sana']],
     gens:[['name','Ism'],['phone','Telefon'],['mode','Rejim'],['plot','Yer'],['floors','Qavat'],['beds','Yotoqxona'],['style','Uslub'],['house','Uy'],['area','m²'],['dev','Qurilma'],['link','Ko\'rish'],['at','Sana']],
     leads:[['name','Ism'],['phone','Telefon'],['company','Firma (B2B)'],['plan','Tarif'],['region','Hudud'],['work','Ish'],['when','Qachon'],['budget','Byudjet'],['note','Izoh'],['projName','Loyiha'],['project','Havola'],['ustalar','Tanlagan ustalar'],['at','Sana']],
+    botusers:[['first','Ism'],['last','Familiya'],['username','Telegram'],['phone','Telefon'],['lang','Til'],['at','Sana']],
     b2b:[['company','Firma'],['bizType','Turi'],['name','Ism'],['phone','Telefon'],['plan','Tarif'],['region','Shahar'],['note','Izoh'],['at','Sana']],
     ustalar:[['name','Ism'],['phone','Telefon'],['region','Hudud'],['city','Shahar'],['exp','Tajriba'],['team','Brigada'],['work','Ishlar'],['about','Haqida'],['tg','Telegram'],['status','Holat'],['at','Sana']],
     visits:[['name','Ism (bo\'lsa)'],['phone','Telefon'],['dev','Qurilma'],['ref','Qayerdan kelgan'],['lang','Til'],['at','Sana']]};
