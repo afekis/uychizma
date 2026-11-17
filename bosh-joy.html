@@ -179,7 +179,7 @@ async function run(again){ $('err').textContent='';
       S.plan=plan&&plan.tavsiyalar?plan:fallbackPlan(); }
     step(3); $('loadT').textContent='Dizayn rasmi chizilmoqda…';
     const extra=again?` Variation ${++S.n}: choose a different but equally beautiful arrangement and accessories.`:'';
-    const j=await post({mode:'render',image:S.img,prompt:renderPrompt((S.plan.prompt||'')+extra)},120000);
+    let j; try{ j=await post({mode:'render',image:S.img,prompt:renderPrompt((S.plan.prompt||'')+extra)},120000); }catch(e1){ console.warn('render retry',e1); $('loadT').textContent='Yana bir urinish…'; j=await post({mode:'render',image:S.img,prompt:renderPrompt((S.plan.prompt||'')+extra)},120000); }
     if(!j.image) throw new Error('rasm kelmadi');
     S.out=j.image; try{ localStorage.setItem('uychizma:boshjoy',String(used+1)); }catch(_){}
     show();
