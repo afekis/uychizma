@@ -4746,7 +4746,10 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{maxZoom:21,maxNativeZoom:19,subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO',opacity:0.9}).addTo(MAP);
       MK=L.marker(c,{draggable:true,autoPan:true}).addTo(MAP); MAP.on('zoomend',sizeIcon); MAP.on('click',e=>MK.setLatLng(e.latlng)); }
     else { MAP.setView(c,g?19:MAP.getZoom()); MK.setLatLng(c); }
-    setTimeout(()=>{ MAP.invalidateSize(); sizeIcon(); },60); }
+    setTimeout(()=>{ MAP.invalidateSize(); sizeIcon(); },60);
+    if(!g&&navigator.geolocation){ $g('geoInfo').textContent="📍 Joylashuvingiz so'ralmoqda — «Ruxsat berish»ni bosing…";
+      navigator.geolocation.getCurrentPosition(p=>{ const ll=[p.coords.latitude,p.coords.longitude]; MAP.setView(ll,19); MK.setLatLng(ll); sizeIcon(); $g('geoInfo').innerHTML="✅ Joyingiz topildi. Uy tepadan qanday ko'rinishi xaritada turibdi. Sariq ramkani barmoq bilan surib aniq yeringizga qo'ying, kerak bo'lsa burang va <b>✅ Shu yerga joylash</b>ni bosing."; },
+        ()=>{ $g('geoInfo').textContent="Joylashuvga ruxsat berilmadi. Manzilni yozib qidiring yoki xaritada yeringizni topib bosing."; },{enableHighAccuracy:true,timeout:15000}); } }
   /* ---- 3D: qo'shni binolar (OpenStreetMap) bilan ---- */
   function stop3d(){ if(VIEW3){ cancelAnimationFrame(VIEW3.raf); VIEW3.r.dispose(); VIEW3=null; $g('geo3d').innerHTML=''; } }
   async function tiles(c){ const z=19, n=Math.pow(2,z), fx=(c.lng+180)/360*n, fy=(1-Math.log(Math.tan(c.lat*R2)+1/Math.cos(c.lat*R2))/Math.PI)/2*n, tx=Math.floor(fx), ty=Math.floor(fy), N=1;
@@ -4792,6 +4795,17 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
     const h1=e=>{ if(e.absolute&&e.alpha!=null) fin((360-e.alpha)%360); }, h2=e=>{ if(e.webkitCompassHeading!=null) fin(e.webkitCompassHeading); };
     addEventListener('deviceorientationabsolute',h1); addEventListener('deviceorientation',h2); setTimeout(()=>fin(null),4000); }); }
   function pos(){ return new Promise((res,rej)=>{ if(!navigator.geolocation) return rej(new Error('nogeo')); let best=null; const id=navigator.geolocation.watchPosition(p=>{ if(!best||p.coords.accuracy<best.coords.accuracy) best=p; if(best.coords.accuracy<8){ navigator.geolocation.clearWatch(id); res(best); } },e=>{ navigator.geolocation.clearWatch(id); best?res(best):rej(e); },{enableHighAccuracy:true,maximumAge:0,timeout:20000}); setTimeout(()=>{ navigator.geolocation.clearWatch(id); best?res(best):rej(new Error('timeout')); },9000); }); }
+  async function mvReady(){ if(!THREE.GLTFExporter) await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js');
+    if(!customElements.get('model-viewer')) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.type='module'; s.src='https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    let mv=$g('geoMv'); if(!mv){ mv=document.createElement('model-viewer'); mv.id='geoMv'; ['ar','camera-controls'].forEach(k=>mv.setAttribute(k,'')); mv.setAttribute('ar-modes','webxr scene-viewer quick-look'); mv.setAttribute('ar-placement','floor'); mv.setAttribute('ar-scale','fixed'); mv.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none'; document.body.appendChild(mv); } return mv; }
+  async function arFloor(){ const info=$g('geoInfo'); const mob=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform));
+    if(!mob){ info.innerHTML="Kamera rejimi telefonda ishlaydi: saytni telefonda oching, yeringizga borib shu tugmani bosing."; return; }
+    info.textContent='⏳ Uy modeli tayyorlanmoqda…';
+    try{ const mv=await mvReady(), P=plotGroup(); const url=await new Promise((res,rej)=>{ try{ new THREE.GLTFExporter().parse(P.g,r=>res(URL.createObjectURL(new Blob([r],{type:'model/gltf-binary'}))),{binary:true,onlyVisible:true,maxTextureSize:512}); }catch(e){ rej(e); } });
+      mv.src=url; await new Promise(r=>{ mv.addEventListener('load',r,{once:true}); setTimeout(r,6000); });
+      info.innerHTML=`📷 Uy: <b>${P.w.toFixed(1)} × ${P.l.toFixed(1)} m</b> yerda, balandligi <b>${P.h.toFixed(1)} m</b>. Telefonni bo'sh yeringizga qarating — uy haqiqiy o'lchamda paydo bo'ladi.`;
+      if(mv.canActivateAR) mv.activateAR(); else info.innerHTML+='<br>Bu telefonda AR ishlamadi (Android: Google Play Services for AR, iPhone: iOS 12+ kerak).'; }
+    catch(e){ console.error(e); info.textContent="Kamera ochilmadi. Internetni tekshirib qayta urinib ko'ring."; } }
   async function arHere(){ const g=GEO(); const info=$g('geoInfo'); if(!g){ info.innerHTML='Avval <b>🛰 Xaritada</b> uyingizni joylang.'; return; }
     const mob=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform)); if(!mob){ info.innerHTML="Bu rejim telefonda ishlaydi: saytni telefonda ochib, yeringizga borib shu tugmani bosing."; return; }
     info.textContent='⏳ Joylashuv va kompas aniqlanmoqda…'; let H, p; try{ [H,p]=await Promise.all([heading(),pos()]); }catch(_){ info.textContent="Joylashuv aniqlanmadi. Telefonda joylashuv (GPS) ga ruxsat bering."; return; }
@@ -4813,7 +4827,12 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
   function tab(t){ document.querySelectorAll('#geoBox .gTabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
     const isMap=t==='map'; $g('geoMap').hidden=!isMap; $g('geoSearchRow').hidden=!isMap; $g('geoRotBar').hidden=!isMap; $g('geo3d').hidden=t!=='3d';
     if(isMap){ stop3d(); $g('geoInfo').textContent="Xaritada yeringizni toping va sariq ramkadagi uyni barmoq bilan surib, aynan o'z yeringizga qo'ying. Ko'cha tomoni pastda — kerak bo'lsa burang."; setTimeout(()=>{ MAP&&MAP.invalidateSize(); },50); }
-    else if(t==='3d') open3d(); else { stop3d(); $g('geo3d').hidden=false; $g('geo3d').innerHTML='<div style="padding:24px;font-size:15px;line-height:1.5">📍 <b>Shu joyda AR</b><br>Yeringizga borib, o\'rtasida turing va pastdagi tugmani bosing. Telefon GPS va kompas orqali uyni aynan xaritada qo\'ygan joyingizga, to\'g\'ri tomonga qaratib qo\'yadi — qo\'shni uylar yonida haqiqiy balandligi bilan ko\'rasiz.<br><br><button class="gBtn" type="button" id="geoArGo" style="font-size:15px;padding:12px 16px">📷 Kamerani ochish</button></div>'; $g('geoArGo').onclick=arHere; } }
+    else if(t==='3d') open3d(); else { stop3d(); $g('geoInfo').textContent=''; $g('geo3d').hidden=false; $g('geo3d').innerHTML=`<div style="padding:22px;font-size:15px;line-height:1.55">
+      <button class="gBtn" type="button" id="geoArFloor" style="font-size:16px;padding:14px 18px;width:100%">📷 Kamerani ochish — uyni bo'sh yerimga qo'yish</button>
+      <p style="margin:10px 0 18px;color:#cfd8e8">Telefonni bo'sh yeringizga qarating va sekin aylantiring — uy <b>haqiqiy o'lchamda</b> (metrlari bilan) yerga qo'yiladi. Uy atrofidagi zabor — yeringiz chegarasi: u haqiqiy chegaraga to'g'ri kelsa, uy yeringizga aynan sig'adi. Barmoq bilan surib va burab to'g'rilang, orqaga yurib to'liq ko'ring.</p>
+      <button class="gBtn g2" type="button" id="geoArGps" style="width:100%">📍 GPS bo'yicha avtomatik joylash</button>
+      <p style="margin:8px 0 0;color:#9fb0c8;font-size:13px">Xaritada joylagan bo'lsangiz: yeringizda turib bosing — telefon uyni o'zi xaritadagi joyga, to'g'ri tomonga qaratib qo'yadi (GPS sabab 2–5 m farq bo'lishi mumkin).</p></div>`;
+      $g('geoArFloor').onclick=arFloor; $g('geoArGps').onclick=arHere; } }
   document.addEventListener('click',async e=>{ if(!e.target.closest('#geoBtn')) return; if(!S.variants||!S.variants[S.active]) return; const b=box(); b.hidden=false; document.body.style.overflow='hidden';
     try{ tab('map'); await openMap(); }catch(er){ console.error(er); toast("Xarita ochilmadi. Internetni tekshiring."); } });
 })();
