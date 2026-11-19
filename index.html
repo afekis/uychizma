@@ -923,7 +923,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div class="viewer" id="resViewer"></div>
       <div class="panel summary" id="summary"></div>
     </div>
-    <div class="arbar"><button class="btn primary" id="arBtn" type="button">📱 Uyni yeringizda ko'ring (AR)</button><span class="note">Telefon kamerasini yeringizga qarating — uy o'sha joyda turgandek ko'rinadi.</span></div>
+    <div class="arbar"><button class="btn primary" id="arBtn" type="button">📱 Uyni yeringizda ko'ring (AR)</button><button class="btn" id="geoBtn" type="button">🗺 Xaritada joylash · qo'shnilar bilan solishtirish</button><span class="note">Telefon kamerasini yeringizga qarating — uy o'sha joyda turgandek ko'rinadi.</span></div>
     <div class="panel" id="roomEdit">
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end">
         <div style="display:flex;flex-direction:column;gap:4px"><div class="eyebrow">Xonalarni o'zingiz sozlang</div><h2 style="font-size:20px">Xonalar ro'yxati</h2><span class="note">Maydonni − / + bilan o'zgartiring, keraksiz xonani o'chiring yoki yangi xona qo'shing. "Qo'llash"ni bossangiz, 3 variant qaytadan chiziladi.</span></div>
@@ -4681,6 +4681,133 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
     try{ await need(); const b=box(); b.hidden=false; document.body.style.overflow='hidden'; b.querySelectorAll('.arSw button').forEach((x,i)=>x.setAttribute('aria-pressed',String(i===0))); await show(1); }
     catch(er){ console.error(er); toast("AR ochilmadi. Internetni tekshirib, qayta urinib ko'ring."); }
     btn.textContent=t; btn.disabled=false; busy=false; });
+})();
+/* ===== JOYLASHUV: uyni xaritada haqiqiy yerga joylash, tepadan ko'rish, qo'shni binolar bilan solishtirish, shu joyda AR ===== */
+(function(){
+  const $g=id=>document.getElementById(id); let MAP=null, MK=null, VIEW3=null, built=false;
+  const GEO=()=>{ try{ return S.A.geo||JSON.parse(localStorage.getItem('uychizma:geo')||'null'); }catch(_){ return null; } };
+  function saveGeo(g){ S.A.geo=g; try{ localStorage.setItem('uychizma:geo',JSON.stringify(g)); }catch(_){} }
+  const R2=Math.PI/180, MPD=111320;
+  const toXY=(lat,lng,c)=>[(lng-c.lng)*MPD*Math.cos(c.lat*R2),(lat-c.lat)*MPD]; // sharq, shimol (metr)
+  /* hovli guruhi (uy+hovli+zabor), markazi uchastka o'rtasida, plan +y = shimol (-Z) */
+  function plotGroup(){ const v=S.variants[S.active], A=S.A, B=buildHouse(v,A), g=new THREE.Group(); g.add(B.group);
+    const PP=B.plotPts||[[0,0],[A.plotW,0],[A.plotW,A.plotL],[0,A.plotL]], x0=Math.min(...PP.map(p=>p[0])), x1=Math.max(...PP.map(p=>p[0])), y0=Math.min(...PP.map(p=>p[1])), y1=Math.max(...PP.map(p=>p[1]));
+    const mx=(x0+x1)/2, my=(y0+y1)/2; B.group.position.set(-mx,0,my);
+    g.updateMatrixWorld(true); const bb=new THREE.Box3(), c=new THREE.Vector3(), sz=new THREE.Vector3();
+    g.traverse(o=>{ if(o.isLine||o.isLineSegments||o.isPoints||o.isSprite) o.visible=false; if(o.material&&o.material.transparent&&o.material.opacity<0.05) o.visible=false; });
+    g.traverse(o=>{ if(!o.isMesh||!o.visible) return; bb.setFromObject(o); if(bb.isEmpty()) return; bb.getCenter(c); bb.getSize(sz); const lx=c.x+mx, ly=-c.z+my; if(!(lx>=x0-0.6&&lx<=x1+0.6&&ly>=y0-0.6&&ly<=y1+0.6)||Math.max(sz.x,sz.z)>Math.max(x1-x0,y1-y0)+2) o.visible=false; });
+    const hb=new THREE.Box3(); B.group.traverse(o=>{ if(o.isMesh&&o.visible&&!(B.yardG&&isIn(o,B.yardG))&&!(B.fenceG&&isIn(o,B.fenceG))){ bb.setFromObject(o); if(!bb.isEmpty()) hb.union(bb); } });
+    return {g, w:x1-x0, l:y1-y0, h:hb.isEmpty()?FH*v.floors.length:hb.max.y}; }
+  function isIn(o,p){ while(o){ if(o===p) return true; o=o.parent; } return false; }
+  /* tepadan ko'rinish rasmi (shaffof fon) */
+  function topImage(P){ const k=Math.min(28,1400/Math.max(P.w,P.l)), W=Math.round(P.w*k), H=Math.round(P.l*k);
+    const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true}); r.setSize(W,H); r.setClearColor(0x000000,0);
+    const sc=new THREE.Scene(); sc.add(new THREE.HemisphereLight(0xffffff,0x667788,0.9)); const dl=new THREE.DirectionalLight(0xffffff,0.7); dl.position.set(-20,40,25); sc.add(dl); sc.add(P.g);
+    const cam=new THREE.OrthographicCamera(-P.w/2,P.w/2,P.l/2,-P.l/2,0.1,200); cam.position.set(0,100,0); cam.up.set(0,0,-1); cam.lookAt(0,0,0);
+    r.render(sc,cam); const u=r.domElement.toDataURL('image/png'); sc.remove(P.g); r.dispose(); return u; }
+  function css(){ if($g('geoCss')) return; const s=document.createElement('style'); s.id='geoCss'; s.textContent=`
+    #geoBox{position:fixed;inset:0;z-index:260;background:#0A1120;color:#fff;display:flex;flex-direction:column}#geoBox[hidden]{display:none}
+    #geoBox .gTop{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#0E1626}#geoBox .gTop b{flex:1;font-size:15px}
+    #geoBox .gTabs{display:flex;gap:6px;padding:8px 12px;background:#0E1626;overflow:auto}#geoBox .gTabs button{flex:0 0 auto;border:1px solid #33415c;background:#18233a;color:#fff;border-radius:999px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}#geoBox .gTabs button[aria-pressed=true]{background:#1F5FE0;border-color:#1F5FE0}
+    #geoMap,#geo3d{flex:1;min-height:0;position:relative}#geo3d canvas{position:absolute;inset:0;display:block;width:100%!important;height:100%!important;touch-action:none}#geoBox .gInfo{max-height:32vh;overflow:auto}
+    #geoBox .gBar{padding:10px 12px;background:#0E1626;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}#geoBox .gBar input[type=range]{flex:1;min-width:140px}
+    #geoBox .gBtn{border:0;border-radius:10px;padding:9px 12px;background:#1F5FE0;color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer}#geoBox .gBtn.g2{background:#2a3754}
+    #geoBox .gInfo{padding:8px 12px;font-size:13px;line-height:1.45;background:#0E1626;color:#cfd8e8}
+    #geoBox .gSearch{display:flex;gap:6px;padding:0 12px 8px;background:#0E1626}#geoBox .gSearch input{flex:1;border-radius:10px;border:1px solid #33415c;background:#18233a;color:#fff;padding:9px 11px;font:inherit;font-size:14px}
+    .gHouse img{width:100%;height:100%;transform-origin:50% 50%;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 2px 6px rgba(0,0,0,.6));pointer-events:none}.gHouse{outline:2px dashed #ffd84d;outline-offset:0}
+    .gX{background:none;border:0;color:#fff;font-size:20px;cursor:pointer}`; document.head.appendChild(s); }
+  async function needLeaflet(){ if(window.L&&L.map) return; await new Promise((res,rej)=>{ const l=document.createElement('link'); l.rel='stylesheet'; l.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; l.onload=res; l.onerror=rej; document.head.appendChild(l); }); await loadScript('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'); }
+  function box(){ let b=$g('geoBox'); if(b) return b; css(); b=document.createElement('div'); b.id='geoBox'; b.hidden=true;
+    b.innerHTML=`<div class="gTop"><b>🗺 Uyingiz o'z yeringizda</b><button class="gX" type="button" id="geoX" aria-label="Yopish">✕</button></div>
+      <div class="gTabs" role="tablist"><button type="button" data-t="map" aria-pressed="true">🛰 Xaritada (tepadan)</button><button type="button" data-t="3d" aria-pressed="false">🏘 Qo'shnilar bilan 3D</button><button type="button" data-t="ar" aria-pressed="false">📍 Shu joyda AR</button></div>
+      <div class="gSearch" id="geoSearchRow"><input id="geoQ" placeholder="Manzil: masalan, Toshkent, Uchtepa" aria-label="Manzil"><button class="gBtn g2" type="button" id="geoFind">Topish</button><button class="gBtn" type="button" id="geoMe">📍 Men turgan joy</button></div>
+      <div id="geoMap"></div><div id="geo3d" hidden></div>
+      <div class="gBar" id="geoRotBar"><span>↻ Burish</span><input type="range" id="geoRot" min="0" max="359" value="0" aria-label="Uyni burish"><span id="geoRotV">0°</span><button class="gBtn" type="button" id="geoSave">✅ Shu yerga joylash</button></div>
+      <div class="gInfo" id="geoInfo">Xaritada yeringizni toping va sariq ramkadagi uyni barmoq bilan surib, aynan o'z yeringizga qo'ying. Ko'cha tomoni pastda — kerak bo'lsa burang.</div>`;
+    document.body.appendChild(b);
+    $g('geoX').onclick=()=>{ b.hidden=true; document.body.style.overflow=''; stop3d(); };
+    b.querySelector('.gTabs').addEventListener('click',e=>{ const t=e.target.closest('button'); if(t) tab(t.dataset.t); });
+    $g('geoRot').oninput=e=>{ $g('geoRotV').textContent=e.target.value+'°'; rotImg(+e.target.value); };
+    $g('geoSave').onclick=()=>{ const p=MK.getLatLng(); saveGeo({lat:+p.lat.toFixed(7),lng:+p.lng.toFixed(7),rot:+$g('geoRot').value}); toast("✅ Joylashuv saqlandi"); $g('geoInfo').innerHTML="✅ Saqlandi. Endi <b>🏘 Qo'shnilar bilan 3D</b> da balandlikni solishtiring yoki yeringizga borib <b>📍 Shu joyda AR</b> ni bosing."; };
+    $g('geoMe').onclick=()=>{ if(!navigator.geolocation){ toast("Telefoningiz joylashuvni bermayapti"); return; } $g('geoMe').textContent='⏳ Aniqlanmoqda…';
+      navigator.geolocation.getCurrentPosition(p=>{ $g('geoMe').textContent='📍 Men turgan joy'; const ll=[p.coords.latitude,p.coords.longitude]; MAP.setView(ll,19); MK.setLatLng(ll); },e=>{ $g('geoMe').textContent='📍 Men turgan joy'; toast("Joylashuv aniqlanmadi: telefonda joylashuvga ruxsat bering"); },{enableHighAccuracy:true,timeout:15000}); };
+    const find=async()=>{ const q=$g('geoQ').value.trim(); if(!q) return; try{ const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=uz&q='+encodeURIComponent(q)); const j=await r.json(); if(j[0]){ const ll=[+j[0].lat,+j[0].lon]; MAP.setView(ll,18); MK.setLatLng(ll); } else toast("Manzil topilmadi — xaritada qo'lda toping"); }catch(_){ toast("Qidiruv ishlamadi"); } };
+    $g('geoFind').onclick=find; $g('geoQ').onkeydown=e=>{ if(e.key==='Enter') find(); };
+    return b; }
+  let IMG='', PW=18, PL=30;
+  function ppm(){ const z=MAP.getZoom(), lat=MAP.getCenter().lat; return 256*Math.pow(2,z)/(40075016.686*Math.cos(lat*R2)); }
+  function sizeIcon(){ if(!MK) return; const k=ppm(), w=Math.max(8,PW*k), h=Math.max(8,PL*k), d=Math.ceil(Math.hypot(w,h));
+    MK.setIcon(L.divIcon({className:'',iconSize:[d,d],iconAnchor:[d/2,d/2],html:`<div class="gHouse" style="position:absolute;left:${(d-w)/2}px;top:${(d-h)/2}px;width:${w}px;height:${h}px;transform:rotate(${+$g('geoRot').value}deg)"><img src="${IMG}" alt=""></div>`})); }
+  function rotImg(){ sizeIcon(); }
+  async function openMap(){ await needLeaflet(); const P=plotGroup(); PW=P.w; PL=P.l; IMG=topImage(P);
+    const g=GEO(); const c=g?[g.lat,g.lng]:[41.2995,69.2401]; $g('geoRot').value=g?g.rot:0; $g('geoRotV').textContent=$g('geoRot').value+'°';
+    if(!MAP){ MAP=L.map('geoMap',{zoomControl:true,maxZoom:21}).setView(c,g?19:12);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,attribution:'Tiles © Esri'}).addTo(MAP);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{maxZoom:21,maxNativeZoom:19,subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO',opacity:0.9}).addTo(MAP);
+      MK=L.marker(c,{draggable:true,autoPan:true}).addTo(MAP); MAP.on('zoomend',sizeIcon); MAP.on('click',e=>MK.setLatLng(e.latlng)); }
+    else { MAP.setView(c,g?19:MAP.getZoom()); MK.setLatLng(c); }
+    setTimeout(()=>{ MAP.invalidateSize(); sizeIcon(); },60); }
+  /* ---- 3D: qo'shni binolar (OpenStreetMap) bilan ---- */
+  function stop3d(){ if(VIEW3){ cancelAnimationFrame(VIEW3.raf); VIEW3.r.dispose(); VIEW3=null; $g('geo3d').innerHTML=''; } }
+  async function tiles(c){ const z=19, n=Math.pow(2,z), fx=(c.lng+180)/360*n, fy=(1-Math.log(Math.tan(c.lat*R2)+1/Math.cos(c.lat*R2))/Math.PI)/2*n, tx=Math.floor(fx), ty=Math.floor(fy), N=1;
+    const cv=document.createElement('canvas'); cv.width=cv.height=256*(2*N+1); const x=cv.getContext('2d'); x.fillStyle='#6d7a5a'; x.fillRect(0,0,cv.width,cv.height);
+    await Promise.all([...Array((2*N+1)**2)].map((_,i)=>new Promise(res=>{ const dx=i%(2*N+1)-N, dy=Math.floor(i/(2*N+1))-N, im=new Image(); im.crossOrigin='anonymous'; im.onload=()=>{ x.drawImage(im,(dx+N)*256,(dy+N)*256); res(); }; im.onerror=res; im.src=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty+dy}/${tx+dx}`; })));
+    const mpp=40075016.686*Math.cos(c.lat*R2)/(256*n), size=cv.width*mpp; const ox=(fx-tx+N)*256*mpp-size/2, oy=(fy-ty+N)*256*mpp-size/2; // markazning tekstura markazidan siljishi
+    return {cv,size,ox,oy}; }
+  async function open3d(){ const g=GEO(); const el=$g('geo3d'); stop3d();
+    if(!g){ el.innerHTML='<p style="padding:20px">Avval <b>🛰 Xaritada</b> uyingizni joylab, «Shu yerga joylash»ni bosing.</p>'; return; }
+    el.innerHTML='<p style="padding:20px">⏳ Atrofdagi binolar yuklanmoqda…</p>'; $g('geoInfo').textContent='';
+    let blds=[]; try{ const q=`[out:json][timeout:20];way[building](around:110,${g.lat},${g.lng});out tags geom;`; const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(q)}); const j=await r.json(); blds=(j.elements||[]).filter(e=>e.geometry&&e.geometry.length>2); }catch(_){}
+    let T=null; try{ T=await tiles(g); }catch(_){}
+    el.innerHTML=''; const W=el.clientWidth||360, H=el.clientHeight||400; const r=new THREE.WebGLRenderer({antialias:true}); r.setPixelRatio(Math.min(2,devicePixelRatio)); r.setSize(W,H); el.appendChild(r.domElement);
+    const sc=new THREE.Scene(); sc.background=new THREE.Color(0xbfd6f0); sc.add(new THREE.HemisphereLight(0xffffff,0x556677,0.85)); const dl=new THREE.DirectionalLight(0xffffff,0.75); dl.position.set(-40,80,50); sc.add(dl);
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(T?T.size:260,T?T.size:260),new THREE.MeshLambertMaterial(T?{map:new THREE.CanvasTexture(T.cv)}:{color:0x7d8a66})); ground.rotation.x=-Math.PI/2; if(T) ground.position.set(-T.ox,0,-T.oy); sc.add(ground);
+    const hs=[], mat=new THREE.MeshLambertMaterial({color:0xd9d4c8}), roofM=new THREE.MeshLambertMaterial({color:0x9aa3ad});
+    blds.forEach(b=>{ const t=b.tags||{}; let h=parseFloat(t.height)||((parseFloat(t['building:levels'])||0)*3.2)||0, est=!h; if(!h) h=t.building==='apartments'?12:3.6;
+      const pts=b.geometry.map(p=>toXY(p.lat,p.lon,g)); const sh=new THREE.Shape(pts.map(([x,y])=>new THREE.Vector2(x,y)));
+      const geo=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false}); geo.rotateX(-Math.PI/2); const m=new THREE.Mesh(geo,[roofM,mat]); sc.add(m);
+      const c=pts.reduce((a,p)=>[a[0]+p[0]/pts.length,a[1]+p[1]/pts.length],[0,0]); if(Math.hypot(c[0],c[1])>Math.max(PW,PL)/2+1) hs.push({h,est}); });
+    const P=plotGroup(); P.g.rotation.y=-(g.rot||0)*R2; sc.add(P.g);
+    const cam=new THREE.PerspectiveCamera(50,W/H,0.5,2000); let th=-0.6, ph=0.95, rad=Math.max(45,Math.max(PW,PL)*2.2);
+    const upd=()=>{ cam.position.set(rad*Math.sin(ph)*Math.sin(th),rad*Math.cos(ph),rad*Math.sin(ph)*Math.cos(th)); cam.lookAt(0,4,0); };
+    upd(); let drag=null, pinch=0; const cvs=r.domElement;
+    cvs.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; cvs.setPointerCapture(e.pointerId); });
+    cvs.addEventListener('pointermove',e=>{ if(!drag) return; th-=(e.clientX-drag.x)*0.008; ph=Math.min(1.45,Math.max(0.15,ph-(e.clientY-drag.y)*0.006)); drag={x:e.clientX,y:e.clientY}; upd(); });
+    cvs.addEventListener('pointerup',()=>drag=null); cvs.addEventListener('wheel',e=>{ e.preventDefault(); rad=Math.min(220,Math.max(15,rad*(1+Math.sign(e.deltaY)*0.12))); upd(); },{passive:false});
+    cvs.addEventListener('touchmove',e=>{ if(e.touches.length===2){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); if(pinch) { rad=Math.min(220,Math.max(15,rad*pinch/d)); upd(); } pinch=d; drag=null; } },{passive:true}); cvs.addEventListener('touchend',()=>pinch=0);
+    VIEW3={r,raf:0}; const loop=()=>{ r.render(sc,cam); VIEW3&&(VIEW3.raf=requestAnimationFrame(loop)); }; loop();
+    const my=P.h, avg=hs.length?hs.reduce((s,x)=>s+x.h,0)/hs.length:0, mx=hs.length?Math.max(...hs.map(x=>x.h)):0, est=hs.filter(x=>x.est).length;
+    $g('geoInfo').innerHTML=`🏠 Sizning uyingiz balandligi: <b>${my.toFixed(1)} m</b> (${S.variants[S.active].floors.length} qavat). `+(hs.length?`Atrofda ${hs.length} ta bino: o'rtacha <b>${avg.toFixed(1)} m</b>, eng balandi <b>${mx.toFixed(1)} m</b>. Uyingiz qo'shnilardan <b>${my>avg+0.5?'balandroq':(my<avg-0.5?'pastroq':'deyarli bir xil')}</b>.`+(est?` <small>(${est} ta binoning balandligi xaritada yozilmagan — taxminan 3.6 m olindi)</small>`:''):"Atrofdagi binolar xaritada topilmadi.")+` <small>Barmoq bilan aylantiring, ikki barmoq bilan yaqinlashtiring.</small>`; }
+  /* ---- Shu joyda AR (GPS + kompas bo'yicha taxminiy) ---- */
+  function heading(){ return new Promise(async res=>{ let done=false; const fin=v=>{ if(done) return; done=true; removeEventListener('deviceorientationabsolute',h1); removeEventListener('deviceorientation',h2); res(v); };
+    try{ if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){ const p=await DeviceOrientationEvent.requestPermission(); if(p!=='granted') return fin(null); } }catch(_){ }
+    const h1=e=>{ if(e.absolute&&e.alpha!=null) fin((360-e.alpha)%360); }, h2=e=>{ if(e.webkitCompassHeading!=null) fin(e.webkitCompassHeading); };
+    addEventListener('deviceorientationabsolute',h1); addEventListener('deviceorientation',h2); setTimeout(()=>fin(null),4000); }); }
+  function pos(){ return new Promise((res,rej)=>{ if(!navigator.geolocation) return rej(new Error('nogeo')); let best=null; const id=navigator.geolocation.watchPosition(p=>{ if(!best||p.coords.accuracy<best.coords.accuracy) best=p; if(best.coords.accuracy<8){ navigator.geolocation.clearWatch(id); res(best); } },e=>{ navigator.geolocation.clearWatch(id); best?res(best):rej(e); },{enableHighAccuracy:true,maximumAge:0,timeout:20000}); setTimeout(()=>{ navigator.geolocation.clearWatch(id); best?res(best):rej(new Error('timeout')); },9000); }); }
+  async function arHere(){ const g=GEO(); const info=$g('geoInfo'); if(!g){ info.innerHTML='Avval <b>🛰 Xaritada</b> uyingizni joylang.'; return; }
+    const mob=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform)); if(!mob){ info.innerHTML="Bu rejim telefonda ishlaydi: saytni telefonda ochib, yeringizga borib shu tugmani bosing."; return; }
+    info.textContent='⏳ Joylashuv va kompas aniqlanmoqda…'; let H, p; try{ [H,p]=await Promise.all([heading(),pos()]); }catch(_){ info.textContent="Joylashuv aniqlanmadi. Telefonda joylashuv (GPS) ga ruxsat bering."; return; }
+    if(H==null){ info.textContent="Kompas ishlamadi. Telefonni 8 shaklida aylantirib, qayta urinib ko'ring."; return; }
+    const [dx,dy]=toXY(g.lat,g.lng,{lat:p.coords.latitude,lng:p.coords.longitude}), d=Math.hypot(dx,dy), B=(Math.atan2(dx,dy)/R2+360)%360;
+    if(d>150){ info.innerHTML=`Siz yeringizdan <b>${d>1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m'}</b> uzoqdasiz. Yeringizga borib, shu tugmani qayta bosing.`; return; }
+    info.textContent='⏳ Model tayyorlanmoqda…';
+    try{ if(!THREE.GLTFExporter) await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js');
+      if(!customElements.get('model-viewer')) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.type='module'; s.src='https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+      const P=plotGroup(), root=new THREE.Group(), a=(B-H)*R2; P.g.rotation.y=-((g.rot||0)-H)*R2; P.g.position.set(d*Math.sin(a),0,-d*Math.cos(a)); root.add(P.g);
+      /* model markazi foydalanuvchi turgan joyda bo'lishi uchun qarama-qarshi tomonda deyarli ko'rinmas nuqta */
+      const ghost=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.05,0.05),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.06})); ghost.position.set(-P.g.position.x,0.02,-P.g.position.z); root.add(ghost);
+      const url=await new Promise((res,rej)=>{ try{ new THREE.GLTFExporter().parse(root,r=>res(URL.createObjectURL(new Blob([r],{type:'model/gltf-binary'}))),{binary:true,onlyVisible:true,maxTextureSize:512}); }catch(e){ rej(e); } });
+      let mv=$g('geoMv'); if(!mv){ mv=document.createElement('model-viewer'); mv.id='geoMv'; ['ar','camera-controls'].forEach(k=>mv.setAttribute(k,'')); mv.setAttribute('ar-modes','webxr scene-viewer quick-look'); mv.setAttribute('ar-placement','floor'); mv.setAttribute('ar-scale','fixed'); mv.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none'; document.body.appendChild(mv); }
+      mv.src=url; await new Promise(r=>{ mv.addEventListener('load',r,{once:true}); setTimeout(r,6000); });
+      info.innerHTML=`📍 Uy markazi sizdan <b>${Math.round(d)} m</b> uzoqda (${['shimol','shimoli-sharq','sharq','janubi-sharq','janub','janubi-g\'arb','g\'arb','shimoli-g\'arb'][Math.round(B/45)%8]} tomonda). Telefonni <b>oyog'ingiz yonidagi yerga</b> qarating — uy o'z joyida paydo bo'ladi. GPS aniqligi ±${Math.round(p.coords.accuracy)} m, shuning uchun bir-ikki metr farq bo'lishi mumkin: ikki barmoq bilan surib to'g'rilang.`;
+      if(mv.canActivateAR) mv.activateAR(); else info.innerHTML+='<br>Bu telefonda AR ishlamadi (ARCore / ARKit kerak).'; }
+    catch(e){ console.error(e); info.textContent="AR ochilmadi. Internetni tekshirib qayta urinib ko'ring."; } }
+  function tab(t){ document.querySelectorAll('#geoBox .gTabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
+    const isMap=t==='map'; $g('geoMap').hidden=!isMap; $g('geoSearchRow').hidden=!isMap; $g('geoRotBar').hidden=!isMap; $g('geo3d').hidden=t!=='3d';
+    if(isMap){ stop3d(); $g('geoInfo').textContent="Xaritada yeringizni toping va sariq ramkadagi uyni barmoq bilan surib, aynan o'z yeringizga qo'ying. Ko'cha tomoni pastda — kerak bo'lsa burang."; setTimeout(()=>{ MAP&&MAP.invalidateSize(); },50); }
+    else if(t==='3d') open3d(); else { stop3d(); $g('geo3d').hidden=false; $g('geo3d').innerHTML='<div style="padding:24px;font-size:15px;line-height:1.5">📍 <b>Shu joyda AR</b><br>Yeringizga borib, o\'rtasida turing va pastdagi tugmani bosing. Telefon GPS va kompas orqali uyni aynan xaritada qo\'ygan joyingizga, to\'g\'ri tomonga qaratib qo\'yadi — qo\'shni uylar yonida haqiqiy balandligi bilan ko\'rasiz.<br><br><button class="gBtn" type="button" id="geoArGo" style="font-size:15px;padding:12px 16px">📷 Kamerani ochish</button></div>'; $g('geoArGo').onclick=arHere; } }
+  document.addEventListener('click',async e=>{ if(!e.target.closest('#geoBtn')) return; if(!S.variants||!S.variants[S.active]) return; const b=box(); b.hidden=false; document.body.style.overflow='hidden';
+    try{ tab('map'); await openMap(); }catch(er){ console.error(er); toast("Xarita ochilmadi. Internetni tekshiring."); } });
 })();
 /* ===== MUHANDISLIK AGENTI: dastlabki konstruktiv hisob (KR), seysmika, armatura; tarmoq sxemalari (VK, EL, OV) =====
    Diqqat: barcha natijalar TAXMINIY. Litsenziyali konstruktor va muhandislar tekshirib tasdiqlashi shart. */
