@@ -5053,7 +5053,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
   <div id="payStep2" hidden>
    <div style="background:var(--soft,#E6EDF8);border-radius:14px;padding:14px;margin-bottom:12px">
     <div class="note" style="margin:0 0 4px">Shu kartaga aynan <b id="payPrice2" style="font-size:18px"></b> <button type="button" id="payAmtCopy" style="border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:8px;padding:2px 8px;font:inherit;font-size:12px;cursor:pointer">nusxa</button> o'tkazing:</div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b id="payCard" style="font-size:22px;letter-spacing:1px;font-variant-numeric:tabular-nums"></b><button type="button" id="payCopy" style="border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:10px;padding:8px 12px;font:600 14px inherit;cursor:pointer">📋 Nusxa</button></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b id="payCard" style="user-select:all;-webkit-user-select:all;font-size:22px;letter-spacing:1px;font-variant-numeric:tabular-nums"></b><button type="button" id="payCopy" style="border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:10px;padding:8px 12px;font:600 14px inherit;cursor:pointer">📋 Nusxa</button></div>
     <div class="note" id="payHolder" style="margin:4px 0 0"></div>
     <div class="note" id="payCopied" hidden style="margin:6px 0 0;color:#127A3E;font-weight:700">✅ Karta raqami nusxalandi — ilovada "Kartaga o'tkazma"ga qo'ying</div>
     <div style="display:flex;gap:8px;margin-top:10px">
@@ -5167,11 +5167,12 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
       if(j.status==='none'){ LS.set('autoPay',null); } }catch(_){} return false; }
   function autoPoll(ms){ clearInterval(poll); poll=setInterval(()=>{ if(!autoOrder()){ clearInterval(poll); poll=0; return; } autoCheck(); },ms); }
   if(autoOrder()){ setTimeout(autoCheck,2500); autoPoll(20000); }
-  $p('payAmtCopy').onclick=async()=>{ const t=$p('payPrice2').textContent.replace(/\D/g,''); try{ await navigator.clipboard.writeText(t); toast('Summa nusxalandi: '+t); }catch(_){ toast(t); } };
-  $p('payShow').onclick=async()=>{ try{ navigator.clipboard.writeText(PAY.card.replace(/\s/g,'')).then(()=>{ $p('payCopied').hidden=false; },()=>{}); }catch(_){} $p('payAuto').hidden=true; $p('payPrice2').textContent=PAY.price; $p('payFileLbl').textContent='Chek rasmini yuklang';
+  function cpTxt(t){ let ok=false; try{ const a=document.createElement('textarea'); a.value=t; a.setAttribute('readonly',''); a.style.cssText='position:fixed;top:0;left:0;opacity:0;font-size:16px'; document.body.appendChild(a); a.focus(); a.select(); a.setSelectionRange(0,t.length); ok=document.execCommand('copy'); a.remove(); }catch(_){} try{ if(navigator.clipboard) navigator.clipboard.writeText(t).catch(()=>{}); ok=ok||!!navigator.clipboard; }catch(_){} return ok; }
+  $p('payAmtCopy').onclick=()=>{ const t=$p('payPrice2').textContent.replace(/\D/g,''); toast(cpTxt(t)?'Summa nusxalandi: '+t:'Summa: '+t); };
+  $p('payShow').onclick=async()=>{ $p('payCopied').hidden=!cpTxt(PAY.card.replace(/\s/g,'')); $p('payAuto').hidden=true; $p('payPrice2').textContent=PAY.price; $p('payFileLbl').textContent='Chek rasmini yuklang';
     const o=await autoNew(); if(o){ $p('payPrice2').textContent=fmtS(o.amount); $p('payAuto').hidden=false; $p('payFileLbl').textContent="Avtomatik ochilmasa — chek rasmini yuklang"; autoPoll(5000); } };
   $p('payShow').addEventListener('click',()=>{ img=''; $p('payFile').value=''; $p('payPrev').hidden=true; $p('payPrev').removeAttribute('src'); $p('payDropTxt').hidden=false; $p('paySend').disabled=true; $p('payStep1').hidden=true; $p('payStep2').hidden=false; });
-  $p('payCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(PAY.card.replace(/\s/g,'')); toast('Karta raqami nusxalandi'); }catch(_){ toast(PAY.card); } };
+  $p('payCopy').onclick=()=>{ const ok=cpTxt(PAY.card.replace(/\s/g,'')); $p('payCopied').hidden=!ok; toast(ok?'Karta raqami nusxalandi':PAY.card); };
   async function shrink(file){ let src=null, w=0, h=0;
     try{ src=await createImageBitmap(file); w=src.width; h=src.height; }catch(_){ src=null; }
     if(!src){ src=await new Promise((res,rej)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>{ res(im); }; im.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error('img')); }; im.src=u; }); w=src.naturalWidth; h=src.naturalHeight; }
