@@ -4685,9 +4685,10 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
 /* ===== JOYLASHUV: uyni xaritada haqiqiy yerga joylash, tepadan ko'rish, qo'shni binolar bilan solishtirish, shu joyda AR ===== */
 (function(){
   const $g=id=>document.getElementById(id); let MAP=null, MK=null, VIEW3=null, built=false;
-  const GEO=()=>{ try{ return S.A.geo||JSON.parse(localStorage.getItem('uychizma:geo')||'null'); }catch(_){ return null; } };
+  const GEO=()=>{ try{ const g=S.A.geo||JSON.parse(localStorage.getItem('uychizma:geo')||'null'); return g&&g.lat>37&&g.lat<46&&g.lng>55.5&&g.lng<73.5?g:null; }catch(_){ return null; } };
   function saveGeo(g){ S.A.geo=g; try{ localStorage.setItem('uychizma:geo',JSON.stringify(g)); }catch(_){} }
   const R2=Math.PI/180, MPD=111320;
+  const inUZ=(la,lo)=>la>37&&la<46&&lo>55.5&&lo<73.5;
   const toXY=(lat,lng,c)=>[(lng-c.lng)*MPD*Math.cos(c.lat*R2),(lat-c.lat)*MPD]; // sharq, shimol (metr)
   /* hovli guruhi (uy+hovli+zabor), markazi uchastka o'rtasida, plan +y = shimol (-Z) */
   function plotGroup(){ const v=S.variants[S.active], A=S.A, B=buildHouse(v,A), g=new THREE.Group(); g.add(B.group);
@@ -4730,7 +4731,7 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
     $g('geoRot').oninput=e=>{ $g('geoRotV').textContent=e.target.value+'°'; rotImg(+e.target.value); };
     $g('geoSave').onclick=()=>{ const p=MK.getLatLng(); saveGeo({lat:+p.lat.toFixed(7),lng:+p.lng.toFixed(7),rot:+$g('geoRot').value}); toast("✅ Joylashuv saqlandi"); $g('geoInfo').innerHTML="✅ Saqlandi. Endi <b>🏘 Qo'shnilar bilan 3D</b> da balandlikni solishtiring yoki yeringizga borib <b>📍 Shu joyda AR</b> ni bosing."; };
     $g('geoMe').onclick=()=>{ if(!navigator.geolocation){ toast("Telefoningiz joylashuvni bermayapti"); return; } $g('geoMe').textContent='⏳ Aniqlanmoqda…';
-      navigator.geolocation.getCurrentPosition(p=>{ $g('geoMe').textContent='📍 Men turgan joy'; const ll=[p.coords.latitude,p.coords.longitude]; MAP.setView(ll,19); MK.setLatLng(ll); },e=>{ $g('geoMe').textContent='📍 Men turgan joy'; toast("Joylashuv aniqlanmadi: telefonda joylashuvga ruxsat bering"); },{enableHighAccuracy:true,timeout:15000}); };
+      navigator.geolocation.getCurrentPosition(p=>{ $g('geoMe').textContent='📍 Men turgan joy'; const ll=[p.coords.latitude,p.coords.longitude]; if(!inUZ(ll[0],ll[1])){ toast("Joylashuv O'zbekistondan tashqarida chiqdi — VPN'ni o'chiring"); return; } MAP.setView(ll,19); MK.setLatLng(ll); saveGeo({lat:+ll[0].toFixed(7),lng:+ll[1].toFixed(7),rot:+$g('geoRot').value}); },e=>{ $g('geoMe').textContent='📍 Men turgan joy'; toast("Joylashuv aniqlanmadi: telefonda joylashuvga ruxsat bering"); },{enableHighAccuracy:true,timeout:15000}); };
     const find=async()=>{ const q=$g('geoQ').value.trim(); if(!q) return; try{ const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=uz&q='+encodeURIComponent(q)); const j=await r.json(); if(j[0]){ const ll=[+j[0].lat,+j[0].lon]; MAP.setView(ll,18); MK.setLatLng(ll); } else toast("Manzil topilmadi — xaritada qo'lda toping"); }catch(_){ toast("Qidiruv ishlamadi"); } };
     $g('geoFind').onclick=find; $g('geoQ').onkeydown=e=>{ if(e.key==='Enter') find(); };
     return b; }
@@ -4744,12 +4745,15 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
     if(!MAP){ MAP=L.map('geoMap',{zoomControl:true,maxZoom:21}).setView(c,g?19:12);
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,attribution:'Tiles © Esri'}).addTo(MAP);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{maxZoom:21,maxNativeZoom:19,subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO',opacity:0.9}).addTo(MAP);
-      MK=L.marker(c,{draggable:true,autoPan:true}).addTo(MAP); MAP.on('zoomend',sizeIcon); MAP.on('click',e=>MK.setLatLng(e.latlng)); }
+      MK=L.marker(c,{draggable:true,autoPan:true}).addTo(MAP); MK.on('dragend',()=>{ const p=MK.getLatLng(); saveGeo({lat:+p.lat.toFixed(7),lng:+p.lng.toFixed(7),rot:+$g('geoRot').value}); }); MAP.on('zoomend',sizeIcon); MAP.on('click',e=>MK.setLatLng(e.latlng)); }
     else { MAP.setView(c,g?19:MAP.getZoom()); MK.setLatLng(c); }
     setTimeout(()=>{ MAP.invalidateSize(); sizeIcon(); },60);
-    if(!g&&navigator.geolocation){ $g('geoInfo').textContent="📍 Joylashuvingiz so'ralmoqda — «Ruxsat berish»ni bosing…";
-      navigator.geolocation.getCurrentPosition(p=>{ const ll=[p.coords.latitude,p.coords.longitude]; MAP.setView(ll,19); MK.setLatLng(ll); sizeIcon(); $g('geoInfo').innerHTML="✅ Joyingiz topildi. Uy tepadan qanday ko'rinishi xaritada turibdi. Sariq ramkani barmoq bilan surib aniq yeringizga qo'ying, kerak bo'lsa burang va <b>✅ Shu yerga joylash</b>ni bosing."; },
-        ()=>{ $g('geoInfo').textContent="Joylashuvga ruxsat berilmadi. Manzilni yozib qidiring yoki xaritada yeringizni topib bosing."; },{enableHighAccuracy:true,timeout:15000}); } }
+    if(!g&&navigator.geolocation){ $g('geoInfo').textContent="📍 Joylashuvingiz so'ralmoqda — «Ruxsat berish»ni bosing (faqat bir marta so'raladi)…";
+      navigator.geolocation.getCurrentPosition(p=>{ const la=p.coords.latitude, lo=p.coords.longitude, acc=p.coords.accuracy||0;
+          if(!inUZ(la,lo)){ MAP.setView([41.2995,69.2401],12); $g('geoInfo').innerHTML="⚠️ Telefon joylashuvi O'zbekistondan tashqarida chiqdi (VPN yoqilgan bo'lishi mumkin). VPN'ni o'chirib qayta oching yoki manzilni yozib qidiring."; return; }
+          MAP.setView([la,lo],acc>300?16:19); MK.setLatLng([la,lo]); sizeIcon(); saveGeo({lat:+la.toFixed(7),lng:+lo.toFixed(7),rot:+$g('geoRot').value});
+          $g('geoInfo').innerHTML="✅ Joyingiz topildi va eslab qolindi — keyingi safar yana so'ralmaydi. Uy tepadan qanday ko'rinishi xaritada turibdi."+(acc>300?" <b>Joylashuv taxminiy</b> (±"+Math.round(acc)+" m) — ramkani surib aniq yeringizga qo'ying.":" Kerak bo'lsa ramkani surib to'g'rilang va <b>✅ Shu yerga joylash</b>ni bosing."); },
+        ()=>{ $g('geoInfo').textContent="Joylashuvga ruxsat berilmadi. Manzilni yozib qidiring yoki xaritada yeringizni topib bosing."; },{enableHighAccuracy:true,timeout:15000,maximumAge:60000}); } }
   /* ---- 3D: qo'shni binolar (OpenStreetMap) bilan ---- */
   function stop3d(){ if(VIEW3){ cancelAnimationFrame(VIEW3.raf); VIEW3.r.dispose(); VIEW3=null; $g('geo3d').innerHTML=''; } }
   async function tiles(c){ const z=19, n=Math.pow(2,z), fx=(c.lng+180)/360*n, fy=(1-Math.log(Math.tan(c.lat*R2)+1/Math.cos(c.lat*R2))/Math.PI)/2*n, tx=Math.floor(fx), ty=Math.floor(fy), N=1;
