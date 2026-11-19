@@ -5052,11 +5052,13 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
   </div>
   <div id="payStep2" hidden>
    <div style="background:var(--soft,#E6EDF8);border-radius:14px;padding:14px;margin-bottom:12px">
-    <div class="note" style="margin:0 0 4px">Shu kartaga <b id="payPrice2"></b> o'tkazing:</div>
+    <div class="note" style="margin:0 0 4px">Shu kartaga aynan <b id="payPrice2" style="font-size:18px"></b> <button type="button" id="payAmtCopy" style="border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:8px;padding:2px 8px;font:inherit;font-size:12px;cursor:pointer">nusxa</button> o'tkazing:</div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b id="payCard" style="font-size:22px;letter-spacing:1px;font-variant-numeric:tabular-nums"></b><button type="button" id="payCopy" style="border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:10px;padding:8px 12px;font:600 14px inherit;cursor:pointer">📋 Nusxa</button></div>
     <div class="note" id="payHolder" style="margin:4px 0 0"></div>
    </div>
-   <label for="payFile" style="display:block;font-weight:700;margin-bottom:6px">Chek rasmini yuklang</label>
+   <div id="payAuto" hidden style="display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:12px;background:#EEF4FF;border:1px solid #B9CCF5;margin:0 0 12px;font-size:14px;line-height:1.45"><span class="payspin" style="flex:0 0 18px;width:18px;height:18px;border:3px solid #9DB8EE;border-top-color:#1F5FE0;border-radius:50%;animation:payspin 1s linear infinite;margin-top:2px"></span><span id="payAutoTxt"><b>Pul tushishini kutyapmiz…</b><br>Summani <b>aynan</b> shunday (oxirgi raqamlari bilan) o'tkazing — pul tushishi bilan Premium <b>o'zi ochiladi</b>, chek shart emas. Bu oynani yopmang.</span></div>
+   <style>@keyframes payspin{to{transform:rotate(360deg)}}</style>
+   <label for="payFile" style="display:block;font-weight:700;margin-bottom:6px" id="payFileLbl">Chek rasmini yuklang</label>
    <label id="payDrop" for="payFile" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:130px;border:2px dashed var(--line,#C9D3E2);border-radius:14px;cursor:pointer;padding:10px;text-align:center">
     <span id="payDropTxt">📷 Rasm tanlash uchun bosing<br><small class="note">Click, Payme yoki bank ilovasidagi chek skrinshoti</small></span>
     <img id="payPrev" alt="Chek" hidden style="max-width:100%;max-height:260px;border-radius:10px">
@@ -5074,9 +5076,9 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
   <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line,#D6DEEA);font-size:14px;line-height:1.5">
    <b>Qanday ishlaydi?</b>
    <ol style="margin:6px 0 0;padding-left:20px">
-    <li>«To'lash»ni bosing va ko'rsatilgan kartaga pul o'tkazing.</li>
-    <li>To'lov chekining rasmini (skrinshot) yuklab, «Chekni yuborish»ni bosing.</li>
-    <li>Admin chekni tekshirib ruxsat beradi — odatda bir necha soat ichida.</li>
+    <li>«To'lash»ni bosing — sizga <b>noyob summa</b> chiqadi (masalan 25 137 so'm).</li>
+    <li>Shu summani aynan o'zini kartaga o'tkazing — pul tushishi bilan Premium <b>bir necha soniyada o'zi ochiladi</b>.</li>
+    <li>Agar 10 daqiqada ochilmasa — chek rasmini yuklang, admin qo'lda tasdiqlaydi.</li>
     <li>Ruxsatdan keyin <b>2 ta uy</b> loyihasini to'liq chiqarasiz: reja, 3D, mebel va PDF.</li>
    </ol>
    <p class="note" style="margin:8px 0 0">Savol bo'lsa: Telegram <a href="https://t.me/amirhonsh" target="_blank" rel="noopener">@amirhonsh</a></p>
@@ -5139,7 +5141,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
     $p('payLead').textContent=credits()?`Siz ${credits()} ta uydan hammasini ishlatdingiz. Yana ${PAY.per} ta uy loyihasi uchun obunani yangilang.`:`Uyingizni ko'rish uchun obuna oling — bir to'lovga ${PAY.per} ta uy loyihasi: reja, 3D, mebel va PDF.`;
     $p('payStep1').hidden=pend; $p('payStep2').hidden=true; $p('payWait').hidden=!pend; $p('payErr').textContent=''; }
   function open(){ view(); box.hidden=false; document.body.style.overflow='hidden'; }
-  function close(){ box.hidden=true; document.body.style.overflow=''; }
+  function close(){ box.hidden=true; document.body.style.overflow=''; if(typeof autoOrder==='function'&&autoOrder()) autoPoll(20000); }
   window.payStart=function(fn){ if(!PAY_ON||left()>0) return true; after=fn; open(); refresh().then(()=>{ badge(); if(left()>0){ close(); const f=after; after=null; if(f) f(); } else view(); }); return false; };
   $p('premBtn').onclick=()=>{ if(vip()&&!owner()){ toast(`⭐ VIP: yana ${Math.max(1,Math.ceil((vipUntil()-Date.now())/864e5))} kun cheksiz`); go('start'); return; } if(owner()){ toast('👑 Siz sayt egasisiz — cheksiz'); go('start'); return; } if(left()>0){ toast(`Sizda yana ${left()} ta uy loyihasi bor`); go('start'); return; } after=()=>go('start'); open(); refresh().then(()=>{ badge(); view(); }); };
   refresh().then(badge); try{ const ru=renderUser; renderUser=function(){ const r=ru.apply(this,arguments); badge(); return r; }; }catch(_){}
@@ -5147,7 +5149,23 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
     refresh().then(()=>{ if(allowed(k)){ use(k); close(); toast("✅ Ruxsat berilgan — uyingiz chiqarilmoqda"); const f=after; after=null; if(f) f(); } else view(); }); return false; };
   $p('payPrice').textContent=PAY.price; $p('payPrice2').textContent=PAY.price; $p('payCard').textContent=PAY.card; $p('payHolder').textContent=PAY.holder;
   $p('payX').onclick=close; box.addEventListener('click',e=>{ if(e.target===box) close(); });
-  $p('payShow').onclick=()=>{ img=''; $p('payFile').value=''; $p('payPrev').hidden=true; $p('payPrev').removeAttribute('src'); $p('payDropTxt').hidden=false; $p('paySend').disabled=true; $p('payStep1').hidden=true; $p('payStep2').hidden=false; };
+  /* --- Avto-to'lov: noyob summa, bank SMS orqali avtomatik tasdiq --- */
+  const PAYAPI='https://uychizma-bot.macbookmmacbook.workers.dev';
+  const baseNum=()=>parseInt(String(PAY.price).replace(/\D/g,''),10)||25000;
+  const fmtS=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+" so'm";
+  let poll=0;
+  function autoOrder(){ const o=LS.get('autoPay',null); return o&&Date.now()-o.at<864e5&&o.base===baseNum()?o:null; }
+  async function autoNew(){ let o=autoOrder(); if(o) return o; try{ const r=await fetch(PAYAPI+'/pay/new',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({base:baseNum(),cid:cid()})}); const j=await r.json(); if(j.ok){ o={id:j.id,amount:j.amount,at:Date.now(),base:baseNum()}; LS.set('autoPay',o); return o; } }catch(_){} return null; }
+  async function autoCheck(){ const o=autoOrder(); if(!o) return false; try{ const j=await (await fetch(PAYAPI+'/pay/st?id='+o.id,{cache:'no-store'})).json();
+      if(j.status==='paid'){ const l=pays(); if(!l.some(x=>x.id==='auto_'+o.id)){ l.push({id:'auto_'+o.id,status:'ok'}); LS.set('pays',l); } LS.set('autoPay',null); clearInterval(poll); poll=0; badge();
+        if(!box.hidden){ close(); } toast("✅ To'lov qabul qilindi — Premium ochildi! Yana "+PAY.per+" ta uy loyihasi"); const f=after; after=null; if(f) f(); return true; }
+      if(j.status==='none'){ LS.set('autoPay',null); } }catch(_){} return false; }
+  function autoPoll(ms){ clearInterval(poll); poll=setInterval(()=>{ if(!autoOrder()){ clearInterval(poll); poll=0; return; } autoCheck(); },ms); }
+  if(autoOrder()){ setTimeout(autoCheck,2500); autoPoll(20000); }
+  $p('payAmtCopy').onclick=async()=>{ const t=$p('payPrice2').textContent.replace(/\D/g,''); try{ await navigator.clipboard.writeText(t); toast('Summa nusxalandi: '+t); }catch(_){ toast(t); } };
+  $p('payShow').onclick=async()=>{ $p('payAuto').hidden=true; $p('payPrice2').textContent=PAY.price; $p('payFileLbl').textContent='Chek rasmini yuklang';
+    const o=await autoNew(); if(o){ $p('payPrice2').textContent=fmtS(o.amount); $p('payAuto').hidden=false; $p('payFileLbl').textContent="Avtomatik ochilmasa — chek rasmini yuklang"; autoPoll(5000); } };
+  $p('payShow').addEventListener('click',()=>{ img=''; $p('payFile').value=''; $p('payPrev').hidden=true; $p('payPrev').removeAttribute('src'); $p('payDropTxt').hidden=false; $p('paySend').disabled=true; $p('payStep1').hidden=true; $p('payStep2').hidden=false; });
   $p('payCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(PAY.card.replace(/\s/g,'')); toast('Karta raqami nusxalandi'); }catch(_){ toast(PAY.card); } };
   async function shrink(file){ let src=null, w=0, h=0;
     try{ src=await createImageBitmap(file); w=src.width; h=src.height; }catch(_){ src=null; }
