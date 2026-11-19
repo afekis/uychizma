@@ -4754,33 +4754,38 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
     await Promise.all([...Array((2*N+1)**2)].map((_,i)=>new Promise(res=>{ const dx=i%(2*N+1)-N, dy=Math.floor(i/(2*N+1))-N, im=new Image(); im.crossOrigin='anonymous'; im.onload=()=>{ x.drawImage(im,(dx+N)*256,(dy+N)*256); res(); }; im.onerror=res; im.src=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty+dy}/${tx+dx}`; })));
     const mpp=40075016.686*Math.cos(c.lat*R2)/(256*n), size=cv.width*mpp; const ox=(fx-tx+N)*256*mpp-size/2, oy=(fy-ty+N)*256*mpp-size/2; // markazning tekstura markazidan siljishi
     return {cv,size,ox,oy}; }
+  async function osm(g){ const ck='uychizma:osm:'+g.lat.toFixed(4)+','+g.lng.toFixed(4); try{ const c=JSON.parse(localStorage.getItem(ck)||'null'); if(c&&c.length) return c; }catch(_){}
+    const q=`[out:json][timeout:12];way[building](around:110,${g.lat},${g.lng});out tags geom;`;
+    const one=async sv=>{ const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),15000); try{ const r=await fetch(sv,{method:'POST',body:'data='+encodeURIComponent(q),signal:ac.signal}); if(!r.ok) throw new Error(r.status); const j=await r.json(); return (j.elements||[]).filter(e=>e.geometry&&e.geometry.length>2).map(e=>({tags:e.tags||{},geometry:e.geometry.map(p=>({lat:p.lat,lon:p.lon}))})); } finally{ clearTimeout(tm); } };
+    const b=await Promise.any(['https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter','https://overpass.kumi.systems/api/interpreter'].map(one));
+    try{ localStorage.setItem(ck,JSON.stringify(b)); }catch(_){} return b; }
   async function open3d(){ const g=GEO(); const el=$g('geo3d'); stop3d();
     if(!g){ el.innerHTML='<p style="padding:20px">Avval <b>🛰 Xaritada</b> uyingizni joylab, «Shu yerga joylash»ni bosing.</p>'; return; }
-    el.innerHTML='<p style="padding:20px">⏳ Atrofdagi binolar yuklanmoqda…</p>'; $g('geoInfo').textContent='';
-    let blds=[]; const ck='uychizma:osm:'+g.lat.toFixed(4)+','+g.lng.toFixed(4); try{ blds=JSON.parse(localStorage.getItem(ck)||'null')||[]; }catch(_){ blds=[]; }
-    if(!blds.length){ const q=`[out:json][timeout:15];way[building](around:110,${g.lat},${g.lng});out tags geom;`;
-      for(const sv of ['https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
-        try{ const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),12000); const r=await fetch(sv,{method:'POST',body:'data='+encodeURIComponent(q),signal:ac.signal}); clearTimeout(tm); if(!r.ok) continue; const j=await r.json(); blds=(j.elements||[]).filter(e=>e.geometry&&e.geometry.length>2).map(e=>({tags:e.tags||{},geometry:e.geometry.map(p=>({lat:p.lat,lon:p.lon}))})); try{ localStorage.setItem(ck,JSON.stringify(blds)); }catch(_){} break; }catch(_){} } }
-    let T=null; try{ T=await tiles(g); }catch(_){}
+    el.innerHTML='<p style="padding:20px">⏳ 3D tayyorlanmoqda…</p>'; $g('geoInfo').textContent='';
+    let T=null; try{ T=await Promise.race([tiles(g),new Promise(r=>setTimeout(()=>r(null),8000))]); }catch(_){}
     el.innerHTML=''; const W=el.clientWidth||360, H=el.clientHeight||400; const r=new THREE.WebGLRenderer({antialias:true}); r.setPixelRatio(Math.min(2,devicePixelRatio)); r.setSize(W,H); el.appendChild(r.domElement);
     const sc=new THREE.Scene(); sc.background=new THREE.Color(0xbfd6f0); sc.add(new THREE.HemisphereLight(0xffffff,0x556677,0.85)); const dl=new THREE.DirectionalLight(0xffffff,0.75); dl.position.set(-40,80,50); sc.add(dl);
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(T?T.size:260,T?T.size:260),new THREE.MeshLambertMaterial(T?{map:new THREE.CanvasTexture(T.cv)}:{color:0x7d8a66})); ground.rotation.x=-Math.PI/2; if(T) ground.position.set(-T.ox,0,-T.oy); sc.add(ground);
-    const hs=[], mat=new THREE.MeshLambertMaterial({color:0xd9d4c8}), roofM=new THREE.MeshLambertMaterial({color:0x9aa3ad});
-    blds.forEach(b=>{ const t=b.tags||{}; let h=parseFloat(t.height)||((parseFloat(t['building:levels'])||0)*3.2)||0, est=!h; if(!h) h=t.building==='apartments'?12:3.6;
-      const pts=b.geometry.map(p=>toXY(p.lat,p.lon,g)); const sh=new THREE.Shape(pts.map(([x,y])=>new THREE.Vector2(x,y)));
-      const geo=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false}); geo.rotateX(-Math.PI/2); const m=new THREE.Mesh(geo,[roofM,mat]); sc.add(m);
-      const c=pts.reduce((a,p)=>[a[0]+p[0]/pts.length,a[1]+p[1]/pts.length],[0,0]); if(Math.hypot(c[0],c[1])>Math.max(PW,PL)/2+1) hs.push({h,est}); });
-    const P=plotGroup(); P.g.rotation.y=-(g.rot||0)*R2; sc.add(P.g); const ring=new THREE.Mesh(new THREE.RingGeometry(Math.hypot(PW,PL)/2+1,Math.hypot(PW,PL)/2+1.8,48),new THREE.MeshBasicMaterial({color:0xffd84d,transparent:true,opacity:0.85,side:THREE.DoubleSide})); ring.rotation.x=-Math.PI/2; ring.position.y=0.08; sc.add(ring);
+    const P=plotGroup(); P.g.rotation.y=-(g.rot||0)*R2; sc.add(P.g);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(Math.hypot(PW,PL)/2+1,Math.hypot(PW,PL)/2+1.8,48),new THREE.MeshBasicMaterial({color:0xffd84d,transparent:true,opacity:0.85,side:THREE.DoubleSide})); ring.rotation.x=-Math.PI/2; ring.position.y=0.08; sc.add(ring);
     const cam=new THREE.PerspectiveCamera(50,W/H,0.5,2000); let th=-0.5, ph=0.72, rad=Math.max(95,Math.max(PW,PL)*3.5);
     const upd=()=>{ cam.position.set(rad*Math.sin(ph)*Math.sin(th),rad*Math.cos(ph),rad*Math.sin(ph)*Math.cos(th)); cam.lookAt(0,4,0); };
     upd(); let drag=null, pinch=0; const cvs=r.domElement;
     cvs.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; cvs.setPointerCapture(e.pointerId); });
     cvs.addEventListener('pointermove',e=>{ if(!drag) return; th-=(e.clientX-drag.x)*0.008; ph=Math.min(1.45,Math.max(0.15,ph-(e.clientY-drag.y)*0.006)); drag={x:e.clientX,y:e.clientY}; upd(); });
     cvs.addEventListener('pointerup',()=>drag=null); cvs.addEventListener('wheel',e=>{ e.preventDefault(); rad=Math.min(260,Math.max(15,rad*(1+Math.sign(e.deltaY)*0.12))); upd(); },{passive:false});
-    cvs.addEventListener('touchmove',e=>{ if(e.touches.length===2){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); if(pinch) { rad=Math.min(260,Math.max(15,rad*pinch/d)); upd(); } pinch=d; drag=null; } },{passive:true}); cvs.addEventListener('touchend',()=>pinch=0);
-    VIEW3={r,raf:0}; const loop=()=>{ r.render(sc,cam); VIEW3&&(VIEW3.raf=requestAnimationFrame(loop)); }; loop();
-    const my=P.h, avg=hs.length?hs.reduce((s,x)=>s+x.h,0)/hs.length:0, mx=hs.length?Math.max(...hs.map(x=>x.h)):0, est=hs.filter(x=>x.est).length;
-    $g('geoInfo').innerHTML=`🏠 Sizning uyingiz balandligi: <b>${my.toFixed(1)} m</b> (${S.variants[S.active].floors.length} qavat). `+(hs.length?`Atrofda ${hs.length} ta bino: o'rtacha <b>${avg.toFixed(1)} m</b>, eng balandi <b>${mx.toFixed(1)} m</b>. Uyingiz qo'shnilardan <b>${my>avg+0.5?'balandroq':(my<avg-0.5?'pastroq':'deyarli bir xil')}</b>.`+(est?` <small>(${est} ta binoning balandligi xaritada yozilmagan — taxminan 3.6 m olindi)</small>`:''):"Atrofdagi binolar xaritada topilmadi.")+` <small>Barmoq bilan aylantiring, ikki barmoq bilan yaqinlashtiring.</small>`; }
+    cvs.addEventListener('touchmove',e=>{ if(e.touches.length===2){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); if(pinch){ rad=Math.min(260,Math.max(15,rad*pinch/d)); upd(); } pinch=d; drag=null; } },{passive:true}); cvs.addEventListener('touchend',()=>pinch=0);
+    const me=VIEW3={r,raf:0}; const loop=()=>{ r.render(sc,cam); if(VIEW3===me) me.raf=requestAnimationFrame(loop); }; loop();
+    const my=P.h, head=`🏠 Sizning uyingiz balandligi: <b>${my.toFixed(1)} m</b> (${S.variants[S.active].floors.length} qavat). `, tail=` <small>Barmoq bilan aylantiring, ikki barmoq bilan yaqinlashtiring.</small>`;
+    $g('geoInfo').innerHTML=head+'⏳ Atrofdagi binolar yuklanmoqda…'+tail;
+    let blds=[]; try{ blds=await osm(g); }catch(_){ if(VIEW3===me) $g('geoInfo').innerHTML=head+"Atrofdagi binolar ma'lumoti hozir olinmadi (xarita serveri band). Birozdan keyin bu bo'limni qayta oching."+tail; return; }
+    if(VIEW3!==me) return;
+    const hs=[], mat=new THREE.MeshLambertMaterial({color:0xd9d4c8}), roofM=new THREE.MeshLambertMaterial({color:0x9aa3ad});
+    blds.forEach(b=>{ const t=b.tags||{}; let h=parseFloat(t.height)||((parseFloat(t['building:levels'])||0)*3.2)||0, est=!h; if(!h) h=t.building==='apartments'?12:3.6;
+      const pts=b.geometry.map(p=>toXY(p.lat,p.lon,g)); const c=pts.reduce((a,p)=>[a[0]+p[0]/pts.length,a[1]+p[1]/pts.length],[0,0]); if(Math.hypot(c[0],c[1])<Math.max(PW,PL)/2) return;
+      try{ const sh=new THREE.Shape(pts.map(([x,y])=>new THREE.Vector2(x,y))); const geo=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false}); geo.rotateX(-Math.PI/2); sc.add(new THREE.Mesh(geo,[roofM,mat])); hs.push({h,est}); }catch(_){} });
+    const avg=hs.length?hs.reduce((s,x)=>s+x.h,0)/hs.length:0, mx=hs.length?Math.max(...hs.map(x=>x.h)):0, est=hs.filter(x=>x.est).length;
+    $g('geoInfo').innerHTML=head+(hs.length?`Atrofda ${hs.length} ta bino: o'rtacha <b>${avg.toFixed(1)} m</b>, eng balandi <b>${mx.toFixed(1)} m</b>. Uyingiz qo'shnilardan <b>${my>avg+0.5?'balandroq':(my<avg-0.5?'pastroq':'deyarli bir xil')}</b>.`+(est?` <small>(${est} ta binoning balandligi xaritada yozilmagan — taxminan 3.6 m olindi)</small>`:''):"Atrofda xaritaga kiritilgan bino topilmadi.")+tail; }
   /* ---- Shu joyda AR (GPS + kompas bo'yicha taxminiy) ---- */
   function heading(){ return new Promise(async res=>{ let done=false; const fin=v=>{ if(done) return; done=true; removeEventListener('deviceorientationabsolute',h1); removeEventListener('deviceorientation',h2); res(v); };
     try{ if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){ const p=await DeviceOrientationEvent.requestPermission(); if(p!=='granted') return fin(null); } }catch(_){ }
