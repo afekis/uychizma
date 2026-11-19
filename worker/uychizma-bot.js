@@ -156,12 +156,48 @@ function faq(l, text) {
 }
 const clean = s => String(s).replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#+\s*/gm, '').slice(0, 3500);
 
+
+/* ===== AVTO-TO'LOV: noyob summa + bank SMS (Android "SMS to URL Forwarder") ===== */
+const PAY_ORIGINS = [/^https?:\/\/(www\.)?uychzma\.uz$/, /^https:\/\/afekis\.github\.io$/, /^https?:\/\/localhost(:\d+)?$/];
+function cors(req) { const o = req.headers.get('Origin') || ''; return { 'Access-Control-Allow-Origin': PAY_ORIGINS.some(r => r.test(o)) ? o : 'https://uychzma.uz', 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Vary': 'Origin' }; }
+const J = (req, o, st) => new Response(JSON.stringify(o), { status: st || 200, headers: { ...cors(req), 'content-type': 'application/json' } });
+async function smsKey(env) { const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sms:' + env.BOT_TOKEN)); return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32); }
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+/* SMS matnidan kirim summasini olish: "Kartaga o'tkazma: ... Miqdor:25037.00 UZS" */
+function parseSms(t) { t = String(t || ''); const inc = /kartaga\s*o.?tkazma|popolnenie|пополнение|зачисление|kirim|postuplenie/i.test(t); if (!inc || /kartadan\s*chiqim|списание|oplata|оплата/i.test(t)) return 0;
+  const m = t.match(/(?:miqdor|summa|сумма|amount)\s*[:=]?\s*([\d\s]+(?:[.,]\d{1,2})?)/i) || t.match(/([\d][\d\s]{2,}(?:[.,]\d{2})?)\s*(?:UZS|so.?m|сум)/i); if (!m) return 0; return Math.round(parseFloat(m[1].replace(/\s/g, '').replace(',', '.'))) || 0; }
+async function payRoute(req, env, url) {
+  if (req.method === 'OPTIONS') return new Response(null, { headers: cors(req) });
+  if (!env.PAYKV) return J(req, { ok: false, error: 'no_kv' }, 500);
+  if (url.pathname === '/pay/new' && req.method === 'POST') {
+    const b = await req.json().catch(() => ({})); const base = Math.round(+b.base || 0), cid = String(b.cid || '').slice(0, 40);
+    if (!(base >= 1000 && base <= 10000000) || !cid) return J(req, { ok: false, error: 'bad' }, 400);
+    for (let i = 0; i < 25; i++) { const amount = base + 1 + Math.floor(Math.random() * 299); if (await env.PAYKV.get('amt:' + amount)) continue;
+      const id = crypto.randomUUID().replace(/-/g, '').slice(0, 16), o = { id, cid, amount, at: Date.now(), status: 'wait' };
+      await env.PAYKV.put('amt:' + amount, id, { expirationTtl: 86400 }); await env.PAYKV.put('ord:' + id, JSON.stringify(o), { expirationTtl: 3 * 86400 });
+      return J(req, { ok: true, id, amount }); }
+    return J(req, { ok: false, error: 'busy' }, 503);
+  }
+  if (url.pathname === '/pay/st') { const o = JSON.parse(await env.PAYKV.get('ord:' + String(url.searchParams.get('id') || '').slice(0, 20)) || 'null'); return J(req, o ? { ok: true, status: o.status, amount: o.amount } : { ok: false, status: 'none' }); }
+  if (url.pathname === '/sms' && req.method === 'POST') {
+    if (url.searchParams.get('k') !== await smsKey(env)) return new Response('forbidden', { status: 403 });
+    const raw = await req.text(); let text = raw; try { const j = JSON.parse(raw); text = j.text || j.message || j.body || raw; } catch (_) { try { const f = new URLSearchParams(raw); text = f.get('text') || f.get('message') || raw; } catch (_) {} }
+    const sum = parseSms(text); if (!sum) return new Response('skip');
+    const id = await env.PAYKV.get('amt:' + sum); const o = id ? JSON.parse(await env.PAYKV.get('ord:' + id) || 'null') : null;
+    if (o && o.status === 'wait') { o.status = 'paid'; o.paidAt = Date.now(); await env.PAYKV.put('ord:' + id, JSON.stringify(o), { expirationTtl: 3 * 86400 }); await env.PAYKV.delete('amt:' + sum); await env.PAYKV.put('done:' + sum, '1', { expirationTtl: 3600 });
+      await notifyAdmin(env, `💳 <b>Avtomatik to'lov</b>: ${fmt(sum)} so'm — Premium o'zi ochildi ✅\n🆔 <code>${o.cid}</code>`); return new Response('paid'); }
+    if (await env.PAYKV.get('done:' + sum)) return new Response('dup');
+    await notifyAdmin(env, `💳 Kartaga <b>${fmt(sum)} so'm</b> tushdi — saytdagi buyurtma topilmadi (qo'lda tekshiring).`); return new Response('nomatch');
+  }
+  return J(req, { ok: false }, 404);
+}
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     if (!env.BOT_TOKEN) return new Response('BOT_TOKEN sozlanmagan (Settings → Variables and Secrets → Secret: BOT_TOKEN)', { status: 500 });
     const secret = await secretOf(env.BOT_TOKEN);
 
+    if (url.pathname.startsWith('/pay/') || url.pathname === '/sms') return payRoute(req, env, url);
     if (url.pathname === '/setup') {
       const hook = url.origin + '/hook';
       const a = await tg(env, 'setWebhook', { url: hook, secret_token: secret, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
@@ -208,6 +244,7 @@ async function handle(env, u) {
   const m = u.message; if (!m || !m.from || (m.chat && m.chat.type !== 'private')) return;
   const txt = (m.text || '').trim(), chat = m.chat.id, uid = String(m.from.id);
 
+  if (/^\/smsurl\b/.test(txt) && env.ADMIN_CHAT_ID && String(chat) === String(env.ADMIN_CHAT_ID)) return tg(env, 'sendMessage', { chat_id: chat, parse_mode: 'HTML', text: `📲 <b>SMS to URL Forwarder</b> sozlamasi\n\nSender: <code>5800</code>\nURL:\n<code>https://uychizma-bot.macbookmmacbook.workers.dev/sms?k=${await smsKey(env)}</code>\n\nBu havolani hech kimga bermang.` });
   if (/^\/myid\b/.test(txt)) return tg(env, 'sendMessage', { chat_id: chat, text: `Sizning chat ID: <code>${chat}</code>`, parse_mode: 'HTML' });
 
   // 1) Telefon raqami keldi → til so'raladi
