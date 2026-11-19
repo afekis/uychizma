@@ -5055,6 +5055,11 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
     <div class="note" style="margin:0 0 4px">Shu kartaga aynan <b id="payPrice2" style="font-size:18px"></b> <button type="button" id="payAmtCopy" style="border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:8px;padding:2px 8px;font:inherit;font-size:12px;cursor:pointer">nusxa</button> o'tkazing:</div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b id="payCard" style="font-size:22px;letter-spacing:1px;font-variant-numeric:tabular-nums"></b><button type="button" id="payCopy" style="border:1px solid var(--line,#C9D3E2);background:var(--card,#fff);color:inherit;border-radius:10px;padding:8px 12px;font:600 14px inherit;cursor:pointer">📋 Nusxa</button></div>
     <div class="note" id="payHolder" style="margin:4px 0 0"></div>
+    <div class="note" id="payCopied" hidden style="margin:6px 0 0;color:#127A3E;font-weight:700">✅ Karta raqami nusxalandi — ilovada "Kartaga o'tkazma"ga qo'ying</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+     <a href="https://payme.uz/" target="_blank" rel="noopener" style="flex:1;text-align:center;padding:12px;border-radius:12px;background:#00CCCC;color:#fff;font-weight:800;text-decoration:none">Payme ochish</a>
+     <a href="https://my.click.uz/" target="_blank" rel="noopener" style="flex:1;text-align:center;padding:12px;border-radius:12px;background:#0084FF;color:#fff;font-weight:800;text-decoration:none">Click ochish</a>
+    </div>
    </div>
    <div id="payAuto" hidden style="display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:12px;background:#EEF4FF;border:1px solid #B9CCF5;margin:0 0 12px;font-size:14px;line-height:1.45"><span class="payspin" style="flex:0 0 18px;width:18px;height:18px;border:3px solid #9DB8EE;border-top-color:#1F5FE0;border-radius:50%;animation:payspin 1s linear infinite;margin-top:2px"></span><span id="payAutoTxt"><b>Pul tushishini kutyapmiz…</b><br>Summani <b>aynan</b> shunday (oxirgi raqamlari bilan) o'tkazing — pul tushishi bilan Premium <b>o'zi ochiladi</b>, chek shart emas. Bu oynani yopmang.</span></div>
    <style>@keyframes payspin{to{transform:rotate(360deg)}}</style>
@@ -5163,7 +5168,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   function autoPoll(ms){ clearInterval(poll); poll=setInterval(()=>{ if(!autoOrder()){ clearInterval(poll); poll=0; return; } autoCheck(); },ms); }
   if(autoOrder()){ setTimeout(autoCheck,2500); autoPoll(20000); }
   $p('payAmtCopy').onclick=async()=>{ const t=$p('payPrice2').textContent.replace(/\D/g,''); try{ await navigator.clipboard.writeText(t); toast('Summa nusxalandi: '+t); }catch(_){ toast(t); } };
-  $p('payShow').onclick=async()=>{ $p('payAuto').hidden=true; $p('payPrice2').textContent=PAY.price; $p('payFileLbl').textContent='Chek rasmini yuklang';
+  $p('payShow').onclick=async()=>{ try{ navigator.clipboard.writeText(PAY.card.replace(/\s/g,'')).then(()=>{ $p('payCopied').hidden=false; },()=>{}); }catch(_){} $p('payAuto').hidden=true; $p('payPrice2').textContent=PAY.price; $p('payFileLbl').textContent='Chek rasmini yuklang';
     const o=await autoNew(); if(o){ $p('payPrice2').textContent=fmtS(o.amount); $p('payAuto').hidden=false; $p('payFileLbl').textContent="Avtomatik ochilmasa — chek rasmini yuklang"; autoPoll(5000); } };
   $p('payShow').addEventListener('click',()=>{ img=''; $p('payFile').value=''; $p('payPrev').hidden=true; $p('payPrev').removeAttribute('src'); $p('payDropTxt').hidden=false; $p('paySend').disabled=true; $p('payStep1').hidden=true; $p('payStep2').hidden=false; });
   $p('payCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(PAY.card.replace(/\s/g,'')); toast('Karta raqami nusxalandi'); }catch(_){ toast(PAY.card); } };
