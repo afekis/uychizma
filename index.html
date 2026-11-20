@@ -19,7 +19,7 @@ html[lang=uz] .langsw .lz,html[lang=ru] .langsw .lr{background:var(--accent);col
 .refShare{background:#1F9D55!important;color:#fff!important;border:0}
 .refrow{display:flex;gap:6px;flex-wrap:wrap}.refrow input{flex:1 1 160px;min-width:0;font:inherit;font-size:13px;padding:8px 10px;border:1px solid #E7CF86;border-radius:10px;background:#fff;color:#333}
 .refrow .btn{min-height:38px}.refTg{background:#229ED9!important;color:#fff!important;text-decoration:none;display:inline-flex;align-items:center}
-@media (prefers-color-scheme:dark){.refcard{background:#2A2410;color:#F5E6B8;border-color:#8A6D10}.refcard .note{color:#D9C78F}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .refcard{background:#2A2410;color:#F5E6B8;border-color:#8A6D10}:root:not([data-theme="light"]) .refcard .note{color:#D9C78F}}:root[data-theme="dark"] .refcard{background:#2A2410;color:#F5E6B8;border-color:#8A6D10}:root[data-theme="dark"] .refcard .note{color:#D9C78F}
 .smtot{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
 .smtot div{background:var(--soft,#EEF2F8);border-radius:12px;padding:10px 12px}.smtot small{display:block;color:var(--muted);font-size:12px}.smtot b{font-size:17px}
 .smtot .big{background:var(--accent);color:#fff}.smtot .big small{color:#dbe6ff}
@@ -58,7 +58,8 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 #arBox .arGo{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);border:0;border-radius:14px;background:#1F5FE0;color:#fff;font:inherit;font-weight:700;font-size:16px;padding:14px 20px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #arBox .arMsg{color:#cfd8ea;text-align:center;font-size:13px;padding:0 16px 6px}
 .seo{padding:28px 0 36px}.seo h2{font-size:20px;margin:0 0 10px}.seo p{line-height:1.55;margin:0 0 12px;color:var(--ink2,#3A4558)}.seoq details{border:1px solid var(--line,#E2E7EF);border-radius:12px;padding:10px 14px;margin:0 0 8px;background:var(--card,#fff)}.seoq summary{cursor:pointer;font-weight:600}.seoq details p{margin:8px 0 2px}
-</style></head><body>
+</style><script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
   <h3 style="margin:0 0 6px">Sayt sizga yoqdimi?</h3><p class="note" style="margin:0 0 8px">Fikringiz saytdagi «Odamlar fikri» bo'limida hammaga ko'rinadi. Telefon raqamingiz ko'rinmaydi.</p>
@@ -526,6 +527,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 /* ===== Tepa menyu (oddiy, hamma bo'lim ko'rinadi) ===== */
 .nav .ni{width:18px;height:18px;flex:none;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .nav button,.nav a.navbj{display:inline-flex;align-items:center;white-space:nowrap}
+.hthem{flex:none;border:1px solid var(--line);border-radius:99px;background:none;color:var(--head-ink);width:34px;height:30px;font-size:15px;line-height:1;cursor:pointer;margin-left:6px;display:inline-grid;place-items:center}
 .hlang{display:inline-flex;flex:none;border:1px solid var(--line);border-radius:99px;overflow:hidden;font-size:12px;margin-left:6px}
 .hlang button{border:0;background:none;padding:6px 9px;cursor:pointer;color:var(--head-muted);font:inherit;font-weight:700}
 html[lang=uz] .hlang .lz,html[lang=ru] .hlang .lr,html:not([lang=ru]) .hlang .lz{background:#1F5FE0;color:#fff}
@@ -590,7 +592,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <a href="ustalar.html" class="navbj"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.5h17"/><path d="M5.5 12.5a6.5 6.5 0 0 1 13 0"/><path d="M12 6v3.5"/><path d="M7.5 15.5a4.5 4.5 0 0 0 9 0"/></svg><span class="ln">Usta topish</span><span class="sn">Ustalar</span></a>
       <a href="biznes.html" class="navbj"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 10h4a1 1 0 0 1 1 1v10"/><path d="M3 21h18"/><path d="M8 8h3M8 12h3M8 16h3"/></svg><span class="ln">Biznes</span><span class="sn">Biznes</span></a>
     </nav>
-    <div class="hlang" role="group" aria-label="Til / Язык"><button type="button" data-lang="uz" class="lz">UZ</button><button type="button" data-lang="ru" class="lr">RU</button></div>
+    <button type="button" id="themeBtn" class="hthem" aria-label="Rangni almashtirish (oq / qora)" title="Oq / qora rang">🌙</button><div class="hlang" role="group" aria-label="Til / Язык"><button type="button" data-lang="uz" class="lz">UZ</button><button type="button" data-lang="ru" class="lr">RU</button></div>
     <button type="button" id="premBtn" style="border:0;border-radius:999px;padding:7px 12px;font:700 13px/1 inherit;background:linear-gradient(135deg,#FFC93C,#F59E0B);color:#3A2500;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px -6px rgba(245,158,11,.8);flex:none"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;fill:currentColor"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg><span class="pl"> Premium</span></button><style>@media (max-width:480px){#premBtn{padding:7px 9px}#premBtn .pl{display:none}}</style>
     <button type="button" class="chip" id="userChip" aria-label="Akkaunt"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="userName">Kirish</span></button>
   </div>
@@ -5146,7 +5148,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   function view(){ const h=LS.get('houses',[]), pend=pays().some(x=>x.status==='pending');
     $p('payLead').textContent=credits()?`Siz ${credits()} ta uydan hammasini ishlatdingiz. Yana ${PAY.per} ta uy loyihasi uchun obunani yangilang.`:`Uyingizni ko'rish uchun obuna oling — bir to'lovga ${PAY.per} ta uy loyihasi: reja, 3D, mebel va PDF.`;
     $p('payStep1').hidden=pend; $p('payStep2').hidden=true; $p('payWait').hidden=!pend; $p('payErr').textContent=''; }
-  function open(){ view(); box.hidden=false; document.body.style.overflow='hidden'; }
+  function open(){ if(typeof S!=='undefined'&&!S.user){ toast("Avval ro'yxatdan o'ting — keyin to'lov qilasiz"); try{ accTab(false); }catch(_){} try{ show('register'); }catch(_){} return; } view(); box.hidden=false; document.body.style.overflow='hidden'; }
   function close(){ box.hidden=true; document.body.style.overflow=''; if(typeof autoOrder==='function'&&autoOrder()) autoPoll(20000); }
   window.payStart=function(fn){ if(!PAY_ON||left()>0) return true; after=fn; open(); refresh().then(()=>{ badge(); if(left()>0){ close(); const f=after; after=null; if(f) f(); } else view(); }); return false; };
   $p('premBtn').onclick=()=>{ if(vip()&&!owner()){ toast(`⭐ VIP: yana ${Math.max(1,Math.ceil((vipUntil()-Date.now())/864e5))} kun cheksiz`); go('start'); return; } if(owner()){ toast('👑 Siz sayt egasisiz — cheksiz'); go('start'); return; } if(left()>0){ toast(`Sizda yana ${left()} ta uy loyihasi bor`); go('start'); return; } after=()=>go('start'); open(); refresh().then(()=>{ badge(); view(); }); };
@@ -5300,4 +5302,8 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
 })();
 </script>
 
+<script>(function(){ var b=document.getElementById('themeBtn'); if(!b) return; var R=document.documentElement;
+ function cur(){ var t=R.getAttribute('data-theme'); if(t) return t; return (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'; }
+ function ic(){ b.textContent=cur()==='dark'?'☀️':'🌙'; }
+ b.addEventListener('click',function(){ var n=cur()==='dark'?'light':'dark'; R.setAttribute('data-theme',n); try{ localStorage.setItem('uychizma:theme',n); }catch(e){} ic(); }); ic(); })();</script>
 </body></html>
