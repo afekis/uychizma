@@ -58,7 +58,9 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 #arBox .arGo{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);border:0;border-radius:14px;background:#1F5FE0;color:#fff;font:inherit;font-weight:700;font-size:16px;padding:14px 20px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #arBox .arMsg{color:#cfd8ea;text-align:center;font-size:13px;padding:0 16px 6px}
 .seo{padding:28px 0 36px}.seo h2{font-size:20px;margin:0 0 10px}.seo p{line-height:1.55;margin:0 0 12px;color:var(--ink2,#3A4558)}.seoq details{border:1px solid var(--line,#E2E7EF);border-radius:12px;padding:10px 14px;margin:0 0 8px;background:var(--card,#fff)}.seoq summary{cursor:pointer;font-weight:600}.seoq details p{margin:8px 0 2px}
-</style><script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
+<style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
+<script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0A1120"><link rel="apple-touch-icon" href="/img/apple-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="UyChizma">
 </head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
