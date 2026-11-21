@@ -56,11 +56,12 @@ textarea{min-height:80px;resize:vertical}
 .steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;list-style:none;padding:0;margin:0}
 .steps li{counter-increment:s;border-left:3px solid var(--accent);padding:4px 0 4px 12px}.steps li::before{content:counter(s);font-family:var(--fd);color:var(--accent);font-weight:700;margin-right:6px}
 .foot{text-align:center;color:var(--muted);font-size:13px;margin-top:20px}.foot a{color:var(--accent)}
-</style>
+.svtabs{display:flex;gap:6px;margin:14px 0 4px;overflow-x:auto;scrollbar-width:none}.svtabs::-webkit-scrollbar{display:none}.svtabs a{flex:none;padding:9px 14px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}.svtabs a[aria-current]{background:#fff;color:#123;border-color:#fff}</style>
 </head>
 <body>
 <header><div class="wrap">
   <div class="top"><a href="./">← UyChizma</a><span class="badge">BIZNES</span></div>
+  <nav class="svtabs" aria-label="Xizmatlar"><a href="bosh-joy.html">🛋 Bo'sh joy</a><a href="ustalar.html">👷 Ustalar</a><a href="biznes.html" aria-current="page">🏢 Biznes</a></nav>
   <h1>Mijozingizga uyini 1 daqiqada ko'rsating — o'z logotipingiz bilan</h1>
   <p class="lead">Quruvchi firmalar, rieltorlar va arxitektorlar uchun: reja, 3D, AR, smeta va ustaga tayyor PDF. Mijoz uchrashuvdayoq uyini ko'radi va shartnoma tezroq imzolanadi.</p>
   <a class="cta" href="#ariza">💳 Tarifni sotib olish →</a>
