@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "uz.uychzma.twa",
+    "sha256_cert_fingerprints": ["4E:84:0E:C4:8D:2E:A6:E3:26:28:64:3B:29:47:8E:FE:72:72:C6:0B:2A:88:AA:B7:A6:24:57:2A:47:14:95:61"]
+  }
+}]
