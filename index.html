@@ -59,6 +59,7 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 #arBox .arMsg{color:#cfd8ea;text-align:center;font-size:13px;padding:0 16px 6px}
 .seo{padding:28px 0 36px}.seo h2{font-size:20px;margin:0 0 10px}.seo p{line-height:1.55;margin:0 0 12px;color:var(--ink2,#3A4558)}.seoq details{border:1px solid var(--line,#E2E7EF);border-radius:12px;padding:10px 14px;margin:0 0 8px;background:var(--card,#fff)}.seoq summary{cursor:pointer;font-weight:600}.seoq details p{margin:8px 0 2px}
 </style><script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0A1120"><link rel="apple-touch-icon" href="/img/apple-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="UyChizma">
 </head><body>
 <button class="fbfab" id="fbFab" type="button" aria-label="Fikr bildirish">💬 <span>Fikr</span></button>
 <div class="fbm" id="fbModal" hidden role="dialog" aria-label="Fikr bildirish"><div class="fbbox">
@@ -5306,4 +5307,17 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
  function cur(){ var t=R.getAttribute('data-theme'); if(t) return t; return (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'; }
  function ic(){ b.textContent=cur()==='dark'?'☀️':'🌙'; }
  b.addEventListener('click',function(){ var n=cur()==='dark'?'light':'dark'; R.setAttribute('data-theme',n); try{ localStorage.setItem('uychizma:theme',n); }catch(e){} ic(); }); ic(); })();</script>
+<div id="appSplash" hidden style="position:fixed;inset:0;z-index:9999;background:url(/img/splash.webp) center/auto 80% no-repeat,linear-gradient(180deg,#10224C 0%,#0F1E3F 45%,#090F1D 100%);transition:opacity .5s"></div>
+<button type="button" id="installBtn" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;border:0;border-radius:99px;padding:12px 18px;background:#1F5FE0;color:#fff;font:700 15px var(--f-body);box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer">📲 Ilovani telefonga o'rnatish <span id="installX" style="margin-left:8px;opacity:.75">✕</span></button>
+<script>(function(){
+ var st=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
+ var sp=document.getElementById('appSplash');
+ if(st||/[?&]app=1/.test(location.search)){ try{ if(!sessionStorage.getItem('uc_spl')){ sessionStorage.setItem('uc_spl','1'); sp.hidden=false; setTimeout(function(){ sp.style.opacity='0'; setTimeout(function(){ sp.remove(); },520); },1600); } }catch(e){} }
+ if('serviceWorker' in navigator){ addEventListener('load',function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); }); }
+ var dp=null, b=document.getElementById('installBtn');
+ function off(){ try{ return localStorage.getItem('uychizma:noInstall')==='1'; }catch(e){ return false; } }
+ addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); dp=e; if(!st&&!off()) b.hidden=false; });
+ b.addEventListener('click',function(ev){ if(ev.target.id==='installX'){ b.hidden=true; try{ localStorage.setItem('uychizma:noInstall','1'); }catch(e){} return; } if(!dp) return; dp.prompt(); dp.userChoice.finally(function(){ dp=null; b.hidden=true; }); });
+ addEventListener('appinstalled',function(){ b.hidden=true; });
+})();</script>
 </body></html>
