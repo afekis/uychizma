@@ -3316,7 +3316,7 @@ async function regSubmit(){ const btn=$('#regGo'); if(btn.disabled) return;
   finally{ btn.disabled=false; btn.textContent="Ro'yxatdan o'tish"; } }
 async function regCreate(d){ const {name,phone,city,email,pass}=d;
   try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'};
-    const cr=await firebase.auth().createUserWithEmailAndPassword(email,pass); try{ await cr.user.updateProfile({displayName:name}); }catch(_){}
+    let cr=null; for(let k=0;;k++){ try{ cr=await firebase.auth().createUserWithEmailAndPassword(email,pass); break; }catch(x){ const busy=/too-many-requests|network-request-failed|internal-error/.test((x&&x.code)||''); if(!busy||k>=8) throw x; const w=Math.min(30,3*Math.pow(1.6,k))*(0.7+Math.random()*0.6); $('#regErr').textContent="⏳ Hozir ko'p odam ro'yxatdan o'tyapti — biroz kuting, o'zimiz qayta urinamiz…"; await new Promise(r=>setTimeout(r,w*1000)); } } $('#regErr').textContent=''; try{ await cr.user.updateProfile({displayName:name}); }catch(_){}
     S.user={name,phone,city,email:isTelMail(email)?'':email,uid:cr.user.uid,via:'password',at:Date.now()}; CLOUD.user=cr.user;
     if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); await cloudSyncUser(); try{ cloudReg(); }catch(e){} renderUser(); toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; }
   catch(e){ console.warn(e); let m=authMsg(e); if(isTelMail(email)) m=m.replace(/Gmail/g,'telefon raqam'); if(/email-already|invalid-email/.test(e&&e.code)) ferr('regEmail',m); else if(/weak-password/.test(e&&e.code)) ferr('regPass',m); $('#regErr').textContent=m; return false; } }
