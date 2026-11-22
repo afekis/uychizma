@@ -23,7 +23,7 @@ const T = {
     notYours: "Iltimos, o'zingizning raqamingizni pastdagi tugma orqali yuboring 🙏",
     aiFail: "Kechirasiz, hozir javob bera olmadim 😔 Birozdan keyin qayta yozing yoki adminga murojaat qiling: @amirhonsh",
     ready: "Tayyor! ✅ Pastdagi menyudan kerakli bo'limni tanlang yoki savolingizni shu yerga yozing 👇",
-    m: { house: '🏠 Uy loyihasi', empty: "🛋 Bo'sh joy", usta: '👷 Usta topish', biz: '🏢 Firmalar uchun', price: '💰 Narxlar', ask: '❓ Savol berish', admin: '✈️ Admin', lang: '🌐 Tilni almashtirish' },
+    m: { house: '🏠 Uy loyihasi', empty: "🛋 Bo'sh joy", usta: '👷 Usta topish', biz: '🏢 Firmalar uchun', price: '💰 Narxlar', ask: '❓ Savol berish', admin: '✈️ Admin', lang: '🌐 Tilni almashtirish', app: '📲 Ilovani yuklab olish' },
     price: "💰 <b>Narxlar</b>\n\n🎁 Birinchi uy loyihasi — <b>bepul</b>\n⭐ Premium — <b>25 000 so'm</b>, 2 ta uy loyihasi (reja, 3D, smeta, PDF). Yoqmasa pul qaytariladi.\n👥 2 ta do'stingiz ro'yxatdan o'tsa — 1 ta uy bepul.\n\n🏢 Firmalar uchun (oyiga): Start 490 000 · Biznes 700 000 · Korporativ 1 200 000 so'm",
     askQ: "Savolingizni yozing — darhol javob beraman 🙂",
     adminTxt: "Admin bilan bog'lanish: @amirhonsh",
@@ -42,7 +42,7 @@ const T = {
     notYours: 'Пожалуйста, отправьте свой номер кнопкой ниже 🙏',
     aiFail: 'Извините, сейчас не смог ответить 😔 Напишите чуть позже или админу: @amirhonsh',
     ready: 'Готово! ✅ Выберите раздел в меню ниже или напишите свой вопрос сюда 👇',
-    m: { house: '🏠 Проект дома', empty: '🛋 Пустое помещение', usta: '👷 Найти мастера', biz: '🏢 Для компаний', price: '💰 Цены', ask: '❓ Задать вопрос', admin: '✈️ Админ', lang: '🌐 Сменить язык' },
+    m: { house: '🏠 Проект дома', empty: '🛋 Пустое помещение', usta: '👷 Найти мастера', biz: '🏢 Для компаний', price: '💰 Цены', ask: '❓ Задать вопрос', admin: '✈️ Админ', lang: '🌐 Сменить язык', app: '📲 Скачать приложение' },
     price: "💰 <b>Цены</b>\n\n🎁 Первый проект дома — <b>бесплатно</b>\n⭐ Премиум — <b>25 000 сум</b>, 2 проекта дома (план, 3D, смета, PDF). Не понравится — вернём деньги.\n👥 Пригласите 2 друзей (они зарегистрируются) — 1 дом бесплатно.\n\n🏢 Для компаний (в месяц): Start 490 000 · Biznes 700 000 · Korporativ 1 200 000 сум",
     askQ: 'Напишите ваш вопрос — сразу отвечу 🙂',
     adminTxt: 'Связаться с админом: @amirhonsh',
@@ -85,6 +85,7 @@ function menuKb(l) {
     [{ text: m.usta, web_app: app(l, 'ustalar.html') }, { text: m.biz, web_app: app(l, 'biznes.html') }],
     [{ text: m.price }, { text: m.ask }],
     [{ text: m.admin }, { text: m.lang }],
+    [{ text: m.app }],
   ], resize_keyboard: true, is_persistent: true };
 }
 
@@ -274,6 +275,7 @@ async function handle(env, u) {
   if (/^\/joy\b/.test(txt) || txt === M.empty) return one(M.empty, 'bosh-joy.html');
   if (/^\/usta\b/.test(txt) || txt === M.usta) return one(M.usta, 'ustalar.html');
   if (txt === M.biz) return one(M.biz, 'biznes.html');
+  if (/^\/app\b/.test(txt) || txt === T.uz.m.app || txt === T.ru.m.app) return tg(env, 'sendMessage', { chat_id: chat, text: l === 'ru' ? '📲 Приложение UyChizma для Android. Нажмите кнопку → скачайте файл → «Установить».\niPhone: откройте uychzma.uz в Safari → «Поделиться» → «На экран Домой».' : "📲 UyChizma ilovasi (Android). Tugmani bosing → faylni yuklab oling → «Установить».\niPhone: Safari'da uychzma.uz → «Ulashish» → «Ekranga qo'shish».", reply_markup: { inline_keyboard: [[{ text: '🤖 Android — yuklab olish', url: 'https://github.com/afekis/uychizma/releases/latest/download/UyChizma.apk' }]] } });
   if (/^\/help\b/.test(txt)) return tg(env, 'sendMessage', { chat_id: chat, text: t.help, reply_markup: menuKb(l) });
   if (m.photo || m.document) return one(M.house, '');
   if (!txt) return;
