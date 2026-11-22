@@ -1,0 +1,24 @@
+name: Ilova APK reliz
+on:
+  push:
+    branches: [main]
+    paths: ['app/apk-url.txt']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: APK ni yuklab olish
+        run: |
+          curl -fsSL -o pkg.zip "$(head -1 app/apk-url.txt)"
+          unzip -o pkg.zip UyChizma.apk
+          ls -la UyChizma.apk
+      - name: Reliz yangilash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete ilova --yes --cleanup-tag || true
+          gh release create ilova UyChizma.apk --title "UyChizma ilovasi (Android)" --notes "UyChizma Android ilovasi. Telefonga yuklab o'rnating." --latest
