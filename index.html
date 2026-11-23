@@ -67,6 +67,12 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 [data-screen=home] .steps3{margin-top:18px}[data-screen=home] .step3 h3{margin:4px 0 0;font-size:15px;white-space:nowrap}
 .seomore>summary{cursor:pointer;font-weight:700;color:var(--muted,#667);list-style:none;text-align:center;padding:6px 0}.seomore>summary::-webkit-details-marker{display:none}
 [data-screen=home] .steps3{display:none!important}.homego{display:flex;justify-content:center;margin:20px 0 6px}.homego .btn{width:100%;max-width:420px;min-height:54px;font-size:17px}
+[data-screen=home] .hero{display:flex;flex-direction:column;gap:18px;align-items:stretch}
+[data-screen=home] .hero .viewer{order:-1;width:100%;height:min(75vw,68vh);min-height:300px;aspect-ratio:auto}
+@media (min-width:900px){[data-screen=home] .hero .viewer{height:clamp(320px,calc(100vh - 360px),700px)}[data-screen=home] .hero{gap:14px}[data-screen=home] .hero h1{margin:4px 0 4px}}
+[data-screen=home] .hero .copy{text-align:center}[data-screen=home] .hero .copy>p{margin:0 auto!important;max-width:none}
+[data-screen=home] .hero .actions{display:none!important}
+[data-screen=home] .homego{margin:8px 0 6px}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
