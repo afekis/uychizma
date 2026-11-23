@@ -60,6 +60,12 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 .seo{padding:28px 0 36px}.seo h2{font-size:20px;margin:0 0 10px}.seo p{line-height:1.55;margin:0 0 12px;color:var(--ink2,#3A4558)}.seoq details{border:1px solid var(--line,#E2E7EF);border-radius:12px;padding:10px 14px;margin:0 0 8px;background:var(--card,#fff)}.seoq summary{cursor:pointer;font-weight:600}.seoq details p{margin:8px 0 2px}
 .hero .actions{flex-wrap:nowrap}.hero .actions .btn{flex:1 1 0;min-width:0;padding:0 10px;white-space:nowrap}
 .appdl{margin:28px 0 8px;padding:20px;border-radius:18px;background:linear-gradient(135deg,#13285C,#0F1E3F);color:#fff;display:flex;gap:16px;align-items:center;flex-wrap:wrap}.appdl img{width:64px;height:64px;border-radius:16px;flex:none}.appdl .t{flex:1 1 220px}.appdl h2{margin:0 0 4px;font-size:clamp(20px,2.6vw,26px);color:#fff}.appdl p{margin:0;color:#C9D6F2;font-size:14px;line-height:1.45}.appdl .b{display:flex;gap:8px;flex-wrap:wrap;flex:1 1 220px}.appdl a,.appdl button{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:0 14px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;border:0;cursor:pointer;white-space:nowrap}.appdl .and{background:#3DDC84;color:#062B14}.appdl .ios{background:#fff;color:#0F1E3F}.appdl .tip{flex-basis:100%;display:none;background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;font-size:14px;color:#E6EEFF}html.inapp .appdl{display:none!important}
+
+/* Soddalashtirilgan bosh sahifa */
+[data-screen=home] #promo,[data-screen=home] .hero .eyebrow,[data-screen=home] .hero .bjblk,[data-screen=home] .hero .refcard,[data-screen=home] .hero .copy>p.note,[data-screen=home] .vhint,[data-screen=home] .steps3 .step3 p,[data-screen=home] #vguide,[data-screen=home] .showcase,[data-screen=home] .appdl .t p{display:none!important}
+[data-screen=home] .hero h1{margin-bottom:8px}[data-screen=home] .hero .copy>p{margin:0 0 18px}
+[data-screen=home] .steps3{margin-top:18px}[data-screen=home] .step3 h3{margin:4px 0 0;font-size:15px;white-space:nowrap}
+.seomore>summary{cursor:pointer;font-weight:700;color:var(--muted,#667);list-style:none;text-align:center;padding:6px 0}.seomore>summary::-webkit-details-marker{display:none}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -614,8 +620,8 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
     <div class="hero">
       <div class="copy">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div class="eyebrow">🏠 Uy · 3D · reja · narx</div></div>
-        <h1>Uyingizni qurishdan oldin 3D-da ko'ring</h1>
-        <p>Yeringiz o'lchamini yozing yoki chizmangizni yuklang. 1 daqiqada uyning rejasi, 3D ko'rinishi va narxi tayyor.</p>
+        <h1>Uyingizni 3D-da ko'ring</h1>
+        <p>Reja, 3D va narx — 1 daqiqada.</p>
         <a class="bjblk" href="bosh-joy.html">
           <span class="bjic">🛋️</span>
           <span class="bjtx"><b>Bo'sh joy dizayni <i>YANGI</i></b><small>Bo'sh xona yoki hovli rasmini oling — AI jihozlab, chiroyli qilib chizib beradi</small></span>
@@ -660,7 +666,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
     </div>
     <div class="appdl" id="appDl">
       <img src="img/icon-192.png" alt="UyChizma ilovasi">
-      <div class="t"><h2>📲 UyChizma ilovasi</h2><p>Telefoningizga o'rnating — saytga kirmasdan, ilovadan foydalaning.</p></div>
+      <div class="t"><h2>📲 Ilovani yuklab oling</h2><p>Telefoningizga o'rnating — saytga kirmasdan, ilovadan foydalaning.</p></div>
       <div class="b">
         <a class="and" href="https://github.com/afekis/uychizma/releases/latest/download/UyChizma.apk" rel="noopener">🤖 Android uchun yuklab olish</a>
         <button type="button" class="ios" id="iosDl">🍏 iPhone uchun</button>
@@ -1069,14 +1075,14 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
 <section class="revs" id="revs"><div class="wrap">
   <div class="revs-h"><h2>Odamlar fikri</h2><div class="revs-avg" id="revsAvg"></div><button class="btn primary small" id="revsAdd" type="button">✍️ Fikr qoldirish</button></div>
   <div class="revs-list" id="revsList"><p class="note">Fikrlar yuklanmoqda…</p></div></div></section>
-<section class="seo" id="seoInfo"><div class="wrap">
+<section class="seo" id="seoInfo"><div class="wrap"><details class="seomore"><summary>Ko'proq ma'lumot</summary>
   <h2>Uy chizma, uy dizayni va uy loyihasi — onlayn</h2>
   <p><b>UyChizma</b> — O'zbekistonda uy qurmoqchi bo'lganlar uchun bepul onlayn xizmat. Yer o'lchamini yozing yoki qo'lda chizilgan <b>uy chizmasini</b> yuklang — sayt 1 daqiqada <b>uy loyihasi</b>, <b>uy rejasi</b>, <b>3D uy dizayni</b>, qurilish narxi va smetani tayyorlaydi. Bir qavatli va ikki qavatli uylar, hovli, ayvon va ichki dizayn.</p>
   <div class="seoq"><details><summary>Uy chizmasini qanday qilish mumkin?</summary><p>UyChizma saytida yer o'lchamini (masalan 12 × 20 m) yozing yoki qo'lda chizilgan chizmangizni yuklang. Sayt 1 daqiqada 3 xil uy loyihasini chizadi: reja, 3D ko'rinish va narx.</p></details><details><summary>Uy loyihasi qancha turadi?</summary><p>Birinchi uy loyihasi bepul. Premium — 25 000 so'm, 2 ta uy loyihasi (reja, 3D, smeta, PDF).</p></details><details><summary>Uy dizaynini 3D-da ko'rsa bo'ladimi?</summary><p>Ha. Har bir loyiha 3D-da aylantirib ko'riladi, telefonda AR orqali uyni o'z hovlingizda turgandek ko'rish mumkin.</p></details><details><summary>Qurilish narxini hisoblab beradimi?</summary><p>Ha, sayt materiallar va ishlar bo'yicha taxminiy qurilish smetasini O'zbekiston narxlarida chiqaradi va PDF qilib beradi.</p></details><details><summary>Bo'sh xona dizaynini qilib beradimi?</summary><p>Ha. «Bo'sh joy dizayni» bo'limida xona yoki hovli rasmini yuklasangiz, AI uni jihozlab, chiroyli dizayn rasmini va mebel narxlarini ko'rsatadi.</p></details></div>
   <p class="note">Проект дома, план дома и 3D дизайн онлайн — сайт работает на узбекском и русском языках.</p>
-</div></section>
+</details></div></section>
 <footer class="ctbar" id="ctBar" hidden><div class="wrap" style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:14px 16px">
-  <span>Savol bo'lsa yoki loyihani buyurtma qilmoqchi bo'lsangiz:</span><a class="ct-phone" href="#"><b class="cf-num"></b></a><a class="ct-tg" href="#" target="_blank" rel="noopener" hidden>Telegram</a><a class="ct-bot" href="https://t.me/uychzma_bot?start=sayt" target="_blank" rel="noopener">🤖 Bot: @uychzma_bot</a></div></footer>
+  <span>Savol bo'lsa:</span><a class="ct-phone" href="#"><b class="cf-num"></b></a><a class="ct-tg" href="#" target="_blank" rel="noopener" hidden>Telegram</a><a class="ct-bot" href="https://t.me/uychzma_bot?start=sayt" target="_blank" rel="noopener">🤖 Bot: @uychzma_bot</a></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
