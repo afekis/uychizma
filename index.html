@@ -74,6 +74,12 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 [data-screen=home] .hero .actions{display:none!important}
 [data-screen=home] .homego{margin:8px 0 6px}
 .vbadge{position:absolute;top:12px;left:12px;z-index:3;padding:6px 12px;border-radius:99px;background:rgba(10,17,32,.72);color:#fff;font-weight:700;font-size:14px;pointer-events:none;backdrop-filter:blur(4px)}
+.coach{position:fixed;z-index:9000;max-width:290px;background:#1F5FE0;color:#fff;border-radius:14px;padding:12px 14px 10px;box-shadow:0 14px 34px -10px rgba(0,0,0,.45);font-size:15px;line-height:1.4;animation:coachIn .25s ease}
+.coach b{display:block;font-size:16px;margin-bottom:2px}.coach .ck{margin-top:8px;display:flex;justify-content:flex-end}.coach .ck button{border:0;background:#fff;color:#1F5FE0;font-weight:800;border-radius:99px;padding:6px 14px;cursor:pointer}
+.coach::after{content:"";position:absolute;left:var(--ax,50%);transform:translateX(-50%);border:9px solid transparent}.coach.up::after{top:100%;border-top-color:#1F5FE0}.coach.down::after{bottom:100%;border-bottom-color:#1F5FE0}
+.coach-ring{position:fixed;z-index:8999;border-radius:16px;pointer-events:none;box-shadow:0 0 0 4px #FFC93C,0 0 0 9999px rgba(10,17,32,.35);animation:coachPulse 1.4s ease-in-out infinite}
+@keyframes coachPulse{50%{box-shadow:0 0 0 8px rgba(255,201,60,.55),0 0 0 9999px rgba(10,17,32,.35)}}@keyframes coachIn{from{opacity:0;transform:translateY(6px)}}
+.helplink{display:block;margin:6px auto 0;border:0;background:none;color:var(--muted,#5b6475);font-weight:600;cursor:pointer;text-decoration:underline;font-size:14px}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -659,7 +665,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
         <span class="vbadge">Namuna</span>
       </div>
     </div>
-    <div class="homego"><button class="btn primary" data-go="start">Loyiha boshlash</button></div>
+    <div class="homego" style="flex-direction:column;align-items:center"><button class="btn primary" data-go="start">Loyiha boshlash</button><button type="button" class="helplink" id="helpBtn">❓ Qanday ishlatiladi?</button></div>
     <div class="steps3 steps4">
       <div class="step3"><svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="10" y="8" width="44" height="48" rx="8" fill="#E8F0FE"/><circle cx="32" cy="26" r="8" fill="#2D6BE4"/><path d="M18 48c2-8 8-12 14-12s12 4 14 12" fill="#2D6BE4"/></svg><b>1</b><h3>Ro'yxatdan o'ting</h3><p>Ism va telefon.</p></div>
       <div class="step3"><svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="8" y="8" width="48" height="48" rx="10" fill="#FFF4D6"/><path d="M14 40 32 24 50 40V52H14Z" fill="#F2A93B"/><path d="M10 41 32 21 54 41" stroke="#8A5A12" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="28" y="40" width="8" height="12" fill="#8A5A12"/></svg><b>2</b><h3>Uyingizni tanlang</h3><p>Yer, qavat, xonalar, uslub.</p></div>
@@ -5350,4 +5356,40 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
  addEventListener('appinstalled',function(){ b.hidden=true; });
 })();</script>
 <script>(function(){var i=document.getElementById('iosDl');if(!i)return;i.onclick=function(){var t=document.getElementById('iosTip');t.style.display=t.style.display==='block'?'none':'block';};var a=document.querySelector('#appDl .and');a.addEventListener('click',function(){document.getElementById('andTip').style.display='block';});})();</script>
+<script>(function(){
+ var TIPS={
+  home:{t:'.homego .btn',h:'👋 Xush kelibsiz!',m:"Shu tugmani bosing — uyingiz 1 daqiqada tayyor bo'ladi."},
+  register:{t:'#regGo',h:'1-qadam: ro\'yxatdan o\'ting',m:"Ismingiz va telefon raqamingizni yozing, keyin shu tugmani bosing."},
+  wizard:{t:'#wizNext',h:'2-qadam: savollarga javob bering',m:"Javobni tanlang va «Keyingi» ni bosing. Bilmasangiz — shundayicha o'tkazib yuboring."},
+  result:{t:'#dlAll',h:'🎉 Uyingiz tayyor!',m:"3D uyni barmoq bilan aylantiring. Shu tugma — reja va narxni yuklab olish."}
+ };
+ var box=null,ring=null,cur=null;
+ function seen(k){try{return localStorage.getItem('uychizma:coach:'+k)==='1'}catch(e){return false}}
+ function mark(k){try{localStorage.setItem('uychizma:coach:'+k,'1')}catch(e){}}
+ function close(){ if(box)box.remove(); if(ring)ring.remove(); box=ring=null; if(cur)mark(cur); cur=null; }
+ function place(){ if(!box||!cur)return; var el=document.querySelector(TIPS[cur].t); if(!el||!el.offsetParent){close();return;}
+  var r=el.getBoundingClientRect(),W=innerWidth,H=innerHeight;
+  ring.style.cssText+='left:'+(r.left-6)+'px;top:'+(r.top-6)+'px;width:'+(r.width+12)+'px;height:'+(r.height+12)+'px';
+  var bw=Math.min(290,W-24),bh=box.offsetHeight,x=Math.max(12,Math.min(W-bw-12,r.left+r.width/2-bw/2)),up=r.top>bh+24;
+  var y=up?r.top-bh-16:r.bottom+16; box.style.width=bw+'px'; box.style.left=x+'px'; box.style.top=Math.max(8,Math.min(H-bh-8,y))+'px';
+  box.className='coach '+(up?'up':'down'); box.style.setProperty('--ax',Math.max(18,Math.min(bw-18,r.left+r.width/2-x))+'px'); }
+ function open(k,force){ if(!TIPS[k]||(!force&&seen(k)))return; var el=document.querySelector(TIPS[k].t); if(!el||!el.offsetParent)return;
+  close(); cur=k; el.scrollIntoView({block:'center',behavior:'smooth'});
+  ring=document.createElement('div'); ring.className='coach-ring';
+  box=document.createElement('div'); box.className='coach'; box.setAttribute('role','dialog');
+  box.innerHTML='<b></b><span></span><div class="ck"><button type="button">Tushunarli 👍</button></div>';
+  box.querySelector('b').textContent=TIPS[k].h; box.querySelector('span').textContent=TIPS[k].m;
+  box.querySelector('button').onclick=close;
+  document.body.appendChild(ring); document.body.appendChild(box);
+  setTimeout(place,350); place(); }
+ function curScreen(){ var s=document.querySelector('section[data-screen]:not([hidden])'); return s&&s.dataset.screen; }
+ function check(force){ var k=curScreen(); if(cur&&cur!==k)close(); if(k) setTimeout(function(){ if(curScreen()===k) open(k,force); },900); }
+ addEventListener('scroll',place,{passive:true}); addEventListener('resize',place);
+ document.addEventListener('click',function(e){ if(box&&!box.contains(e.target)){ var el=cur&&document.querySelector(TIPS[cur].t); if(el&&el.contains(e.target)) close(); } },true);
+ document.addEventListener('focusin',function(e){ if(box&&!box.contains(e.target)&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) close(); });
+ var mo=new MutationObserver(function(){ check(false); });
+ document.querySelectorAll('section[data-screen]').forEach(function(s){ mo.observe(s,{attributes:true,attributeFilter:['hidden']}); });
+ var hb=document.getElementById('helpBtn'); if(hb) hb.onclick=function(){ try{Object.keys(TIPS).forEach(function(k){localStorage.removeItem('uychizma:coach:'+k)})}catch(e){} open('home',true); };
+ setTimeout(function(){ check(false); },2500);
+})();</script>
 </body></html>
