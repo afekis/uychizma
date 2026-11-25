@@ -75,7 +75,7 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 [data-screen=home] .homego{margin:8px 0 6px}
 .vbadge{position:absolute;top:12px;left:12px;z-index:3;padding:6px 12px;border-radius:99px;background:rgba(10,17,32,.72);color:#fff;font-weight:700;font-size:14px;pointer-events:none;backdrop-filter:blur(4px)}
 .coach{position:fixed;z-index:9000;max-width:290px;background:#1F5FE0;color:#fff;border-radius:14px;padding:12px 14px 10px;box-shadow:0 14px 34px -10px rgba(0,0,0,.45);font-size:15px;line-height:1.4;animation:coachIn .25s ease}
-.coach b{display:block;font-size:16px;margin-bottom:2px}.coach .ck{margin-top:8px;display:flex;justify-content:flex-end}.coach .ck button{border:0;background:#fff;color:#1F5FE0;font-weight:800;border-radius:99px;padding:6px 14px;cursor:pointer}
+.coach b{display:block;font-size:16px;margin-bottom:2px}.coach .ck{margin-top:10px;display:flex;justify-content:flex-end;align-items:center;gap:6px}.coach .ck button,.coach .ck small{white-space:nowrap}.coach .cskip{font-size:13px;padding:6px 4px!important;font-weight:600!important}.coach .cn{font-size:12px}.coach .ck button{border:0;background:#fff;color:#1F5FE0;font-weight:800;border-radius:99px;padding:6px 14px;cursor:pointer}
 .coach::after{content:"";position:absolute;left:var(--ax,50%);transform:translateX(-50%);border:9px solid transparent}.coach.up::after{top:100%;border-top-color:#1F5FE0}.coach.down::after{bottom:100%;border-bottom-color:#1F5FE0}
 .coach-ring{position:fixed;z-index:8999;border-radius:16px;pointer-events:none;box-shadow:0 0 0 4px #FFC93C,0 0 0 9999px rgba(10,17,32,.35);animation:coachPulse 1.4s ease-in-out infinite}
 @keyframes coachPulse{50%{box-shadow:0 0 0 8px rgba(255,201,60,.55),0 0 0 9999px rgba(10,17,32,.35)}}@keyframes coachIn{from{opacity:0;transform:translateY(6px)}}
@@ -5374,34 +5374,52 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
 <script>(function(){var i=document.getElementById('iosDl');if(!i)return;i.onclick=function(){var t=document.getElementById('iosTip');t.style.display=t.style.display==='block'?'none':'block';};var a=document.querySelector('#appDl .and');a.addEventListener('click',function(){document.getElementById('andTip').style.display='block';});})();</script>
 <script>(function(){
  var TIPS={
-  home:{t:'.homego .btn',h:'👋 Xush kelibsiz!',m:"Shu tugmani bosing — uyingiz 1 daqiqada tayyor bo'ladi."},
-  register:{t:'#regGo',h:'1-qadam: ro\'yxatdan o\'ting',m:"Ismingiz va telefon raqamingizni yozing, keyin shu tugmani bosing."},
-  wizard:{t:'#wizNext',h:'2-qadam: savollarga javob bering',m:"Javobni tanlang va «Keyingi» ni bosing. Bilmasangiz — shundayicha o'tkazib yuboring."},
-  result:{t:'#dlAll',h:'🎉 Uyingiz tayyor!',m:"3D uyni barmoq bilan aylantiring. Shu tugma — reja va narxni yuklab olish."}
+  home:[
+   {t:'.homego .btn',h:'👋 Xush kelibsiz!',m:"Uy loyihasini boshlash uchun shu tugmani bosing — uyingiz 1 daqiqada tayyor bo'ladi."},
+   {t:'#heroViewer',h:'🏠 Bu namuna 3D uy',m:"Barmoq yoki sichqoncha bilan aylantiring, ikki barmoq bilan kattalashtiring."},
+   {t:'.nav button[data-go="projects"]',h:'📁 Loyihalar',m:"Siz chizgan va saqlagan uylar shu yerda turadi."},
+   {t:'.nav .navbj',h:'🛋 Xizmatlar',m:"Bo'sh xonaga AI dizayn, ustalar va qurilish firmalari."},
+   {t:'#premBtn',h:'⭐ Premium',m:"Ko'proq loyiha, PDF reja va AI dizayn — cheklovsiz."},
+   {t:'.hlang',h:'🌐 Til',m:"O'zbekcha yoki ruscha. Yonidagi 🌙 — tungi rejim."},
+   {t:'#fbFab',h:'💬 Savol bormi?',m:"Savol yoki taklifingizni shu tugma orqali yozing."}
+  ],
+  register:[{t:'#regGo',h:'1-qadam: ro\'yxatdan o\'ting',m:"Ismingiz va telefon raqamingizni yozing, keyin shu tugmani bosing."}],
+  wizard:[{t:'#wizNext',h:'2-qadam: savollarga javob bering',m:"Javobni tanlang va «Keyingi» ni bosing. Bilmasangiz — shundayicha o'tkazib yuboring."}],
+  result:[{t:'#dlAll',h:'🎉 Uyingiz tayyor!',m:"3D uyni barmoq bilan aylantiring. Shu tugma — reja va narxni yuklab olish."}]
  };
- var box=null,ring=null,cur=null;
+ var box=null,ring=null,cur=null,idx=0,L=[];
  function seen(k){try{return localStorage.getItem('uychizma:coach:'+k)==='1'}catch(e){return false}}
  function mark(k){try{localStorage.setItem('uychizma:coach:'+k,'1')}catch(e){}}
- function close(){ if(box)box.remove(); if(ring)ring.remove(); box=ring=null; if(cur)mark(cur); cur=null; }
- function place(){ if(!box||!cur)return; var el=document.querySelector(TIPS[cur].t); if(!el||!el.offsetParent){close();return;}
+ function vis(el){return el&&el.offsetParent!==null&&el.getBoundingClientRect().width>0}
+ function step(){return cur&&L[idx]}
+ function close(){ if(box)box.remove(); if(ring)ring.remove(); box=ring=null; if(cur)mark(cur); cur=null; idx=0; }
+ function place(){ var st=step(); if(!box||!st)return; var el=document.querySelector(st.t); if(!vis(el)){return;}
   var r=el.getBoundingClientRect(),W=innerWidth,H=innerHeight;
-  ring.style.cssText+='left:'+(r.left-6)+'px;top:'+(r.top-6)+'px;width:'+(r.width+12)+'px;height:'+(r.height+12)+'px';
-  var bw=Math.min(290,W-24),bh=box.offsetHeight,x=Math.max(12,Math.min(W-bw-12,r.left+r.width/2-bw/2)),up=r.top>bh+24;
-  var y=up?r.top-bh-16:r.bottom+16; box.style.width=bw+'px'; box.style.left=x+'px'; box.style.top=Math.max(8,Math.min(H-bh-8,y))+'px';
+  ring.style.left=(r.left-6)+'px';ring.style.top=(r.top-6)+'px';ring.style.width=(r.width+12)+'px';ring.style.height=(r.height+12)+'px';
+  var bw=Math.min(300,W-24); box.style.width=bw+'px'; var bh=box.offsetHeight,x=Math.max(12,Math.min(W-bw-12,r.left+r.width/2-bw/2)),up=r.top>bh+24&&r.bottom>H*0.5;
+  if(r.height>H*0.5){ up=false; var y=Math.min(H-bh-12,r.top+40); } else var y=up?r.top-bh-16:r.bottom+16;
+  box.style.left=x+'px'; box.style.top=Math.max(8,Math.min(H-bh-8,y))+'px';
   box.className='coach '+(up?'up':'down'); box.style.setProperty('--ax',Math.max(18,Math.min(bw-18,r.left+r.width/2-x))+'px'); }
- function open(k,force){ if(!TIPS[k]||(!force&&seen(k)))return; var el=document.querySelector(TIPS[k].t); if(!el||!el.offsetParent)return;
-  close(); cur=k; el.scrollIntoView({block:'center',behavior:'smooth'});
+ function render(){ var list=L,st=list[idx]; var el=document.querySelector(st.t);
+  if(!vis(el)){ if(idx<list.length-1){idx++;return render();} return close(); }
+  var top=document.querySelector('.top'); if(top) top.classList.remove('tophide');
+  if(!(top&&top.contains(el))) el.scrollIntoView({block:'center',behavior:'smooth'});
+  box.querySelector('b').textContent=st.h; box.querySelector('span').textContent=st.m;
+  var last=idx>=list.length-1, n=box.querySelector('.cn'); n.textContent=list.length>1?(idx+1)+' / '+list.length:'';
+  box.querySelector('.cnext').textContent=list.length>1?(last?'Boshladik 🚀':'Keyingi ▶'):'Tushunarli 👍';
+  box.querySelector('.cskip').style.display=(list.length>1&&!last)?'':'none';
+  place(); setTimeout(place,380); }
+ function open(k,force){ if(!TIPS[k]||(!force&&seen(k)))return; close(); L=TIPS[k].filter(function(x){return vis(document.querySelector(x.t))}); if(!L.length)return; cur=k; idx=0;
   ring=document.createElement('div'); ring.className='coach-ring';
   box=document.createElement('div'); box.className='coach'; box.setAttribute('role','dialog');
-  box.innerHTML='<b></b><span></span><div class="ck"><button type="button">Tushunarli 👍</button></div>';
-  box.querySelector('b').textContent=TIPS[k].h; box.querySelector('span').textContent=TIPS[k].m;
-  box.querySelector('button').onclick=close;
-  document.body.appendChild(ring); document.body.appendChild(box);
-  setTimeout(place,350); place(); }
+  box.innerHTML='<b></b><span></span><div class="ck"><small class="cn" style="margin-right:auto;opacity:.8;align-self:center"></small><button type="button" class="cskip" style="background:none;color:#fff;text-decoration:underline;margin-right:6px">O\'tkazib yuborish</button><button type="button" class="cnext"></button></div>';
+  box.querySelector('.cskip').onclick=close;
+  box.querySelector('.cnext').onclick=function(){ if(idx<L.length-1){idx++;render();} else close(); };
+  document.body.appendChild(ring); document.body.appendChild(box); render(); }
  function curScreen(){ var s=document.querySelector('section[data-screen]:not([hidden])'); return s&&s.dataset.screen; }
- function check(force){ var k=curScreen(); if(cur&&cur!==k)close(); if(k) setTimeout(function(){ if(curScreen()===k) open(k,force); },900); }
+ function check(force){ var k=curScreen(); if(cur&&cur!==k)close(); if(k) setTimeout(function(){ if(curScreen()===k&&!cur) open(k,force); },900); }
  addEventListener('scroll',place,{passive:true}); addEventListener('resize',place);
- document.addEventListener('click',function(e){ if(box&&!box.contains(e.target)){ var el=cur&&document.querySelector(TIPS[cur].t); if(el&&el.contains(e.target)) close(); } },true);
+ document.addEventListener('click',function(e){ var st=step(); if(box&&st&&!box.contains(e.target)){ var el=document.querySelector(st.t); if(el&&el.contains(e.target)) close(); } },true);
  document.addEventListener('focusin',function(e){ if(box&&!box.contains(e.target)&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) close(); });
  var mo=new MutationObserver(function(){ check(false); });
  document.querySelectorAll('section[data-screen]').forEach(function(s){ mo.observe(s,{attributes:true,attributeFilter:['hidden']}); });
