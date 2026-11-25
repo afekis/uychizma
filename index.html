@@ -92,6 +92,7 @@ html[lang=uz] .hlang .lz,html[lang=ru] .hlang .lr,html:not([lang=ru]) .hlang .lz
 :root[data-theme=dark] .top,:root[data-theme=dark] .ctbar{background:linear-gradient(115deg,#0E2C7E 0%,#163FA8 60%,#2453C9 100%)!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .top,:root:not([data-theme=light]) .ctbar{background:linear-gradient(115deg,#0E2C7E 0%,#163FA8 60%,#2453C9 100%)!important}}
 .appdl{position:relative}.appdl[hidden]{display:none!important}.appdl .x{position:absolute;top:10px;right:10px;width:32px;height:32px;min-height:0;padding:0;flex:none;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px;line-height:1}
+.revsmore>summary{list-style:none;cursor:pointer;display:flex;justify-content:center;align-items:center;margin:0 auto;max-width:420px;min-height:50px;border-radius:14px;border:1px solid var(--line,#d8deea);background:var(--card,#fff);font-weight:800;font-size:16px;color:var(--ink,#0b1220)}.revsmore>summary::-webkit-details-marker{display:none}.revsmore[open]>summary{margin-bottom:14px}.revsmore .revs-h{justify-content:space-between;gap:10px}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -1102,9 +1103,9 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
 </main>
 <div class="toast" id="toast" role="status" hidden></div>
 <a class="callfab" id="callFab" hidden href="#" aria-label="Qo'ng'iroq qilish">📞 <span class="cf-num"></span></a>
-<section class="revs" id="revs"><div class="wrap">
-  <div class="revs-h"><h2>Odamlar fikri</h2><div class="revs-avg" id="revsAvg"></div><button class="btn primary small" id="revsAdd" type="button">✍️ Fikr qoldirish</button></div>
-  <div class="revs-list" id="revsList"><p class="note">Fikrlar yuklanmoqda…</p></div></div></section>
+<section class="revs" id="revs"><div class="wrap"><details class="revsmore"><summary>💬 Fikrlarni o'qish</summary>
+  <div class="revs-h"><div class="revs-avg" id="revsAvg"></div><button class="btn primary small" id="revsAdd" type="button">✍️ Fikr qoldirish</button></div>
+  <div class="revs-list" id="revsList"><p class="note">Fikrlar yuklanmoqda…</p></div></details></div></section>
 <section class="seo" id="seoInfo"><div class="wrap"><details class="seomore"><summary>Ko'proq ma'lumot</summary>
   <h2>Uy chizma, uy dizayni va uy loyihasi — onlayn</h2>
   <p><b>UyChizma</b> — O'zbekistonda uy qurmoqchi bo'lganlar uchun bepul onlayn xizmat. Yer o'lchamini yozing yoki qo'lda chizilgan <b>uy chizmasini</b> yuklang — sayt 1 daqiqada <b>uy loyihasi</b>, <b>uy rejasi</b>, <b>3D uy dizayni</b>, qurilish narxi va smetani tayyorlaydi. Bir qavatli va ikki qavatli uylar, hovli, ayvon va ichki dizayn.</p>
