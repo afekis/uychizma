@@ -69,7 +69,7 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 [data-screen=home] .steps3{display:none!important}.homego{display:flex;justify-content:center;margin:20px 0 6px}.homego .btn{width:100%;max-width:420px;min-height:54px;font-size:17px}
 [data-screen=home] .hero{display:flex;flex-direction:column;gap:18px;align-items:stretch}
 [data-screen=home] .hero .viewer{order:-1;width:100%;max-width:860px;margin:0 auto;height:min(64vw,52vh);min-height:240px;aspect-ratio:auto}
-@media (min-width:900px){[data-screen=home] .hero .viewer{height:clamp(300px,calc(100vh - 400px),500px)}[data-screen=home] .hero{gap:14px}[data-screen=home] .hero h1{margin:4px 0 4px}}
+@media (min-width:900px){[data-screen=home] .hero .viewer{height:clamp(300px,calc(100vh / var(--z,1) - 400px),500px)}[data-screen=home] .hero{gap:14px}[data-screen=home] .hero h1{margin:4px 0 4px}}
 [data-screen=home] .hero .copy{text-align:center}[data-screen=home] .hero .copy>p{margin:0 auto!important;max-width:none}
 [data-screen=home] .hero .actions{display:none!important}
 [data-screen=home] .homego{margin:8px 0 6px}
@@ -102,6 +102,13 @@ body{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/
 main.wrap,footer,.revs,.seo{position:relative;z-index:1}.revs,.seo{background:transparent!important}
 [data-screen=home]{padding-bottom:0!important}.seo{padding:4px 0 12px!important;border-top:0!important}.seomore>summary{padding:2px 0!important}
 main.wrap{padding-bottom:6px!important}[data-screen=home] .hero{padding-bottom:0!important;margin-bottom:0!important}[data-screen=home] .homego{margin-bottom:0!important}
+/* Katta ekranda (yoki brauzer kichraytirilganda) sayt ekranga moslashib kattalashadi */
+@media (min-width:1500px){body{zoom:1.12}:root{--z:1.12}}
+@media (min-width:1750px){body{zoom:1.28}:root{--z:1.28}}
+@media (min-width:2050px){body{zoom:1.5}:root{--z:1.5}}
+@media (min-width:2500px){body{zoom:1.8}:root{--z:1.8}}
+@media (min-width:3100px){body{zoom:2.2}:root{--z:2.2}}
+@media (min-width:3800px){body{zoom:2.7}:root{--z:2.7}}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
