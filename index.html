@@ -80,6 +80,18 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 .coach-ring{position:fixed;z-index:8999;border-radius:16px;pointer-events:none;box-shadow:0 0 0 4px #FFC93C,0 0 0 9999px rgba(10,17,32,.35);animation:coachPulse 1.4s ease-in-out infinite}
 @keyframes coachPulse{50%{box-shadow:0 0 0 8px rgba(255,201,60,.55),0 0 0 9999px rgba(10,17,32,.35)}}@keyframes coachIn{from{opacity:0;transform:translateY(6px)}}
 .helplink{display:block;margin:6px auto 0;border:0;background:none;color:var(--muted,#5b6475);font-weight:600;cursor:pointer;text-decoration:underline;font-size:14px}
+
+/* Ko'k sarlavha va pastki qator */
+.top,.ctbar{background:linear-gradient(115deg,#1340B5 0%,#1F5FE0 55%,#3B7CFF 100%)!important;color:#fff}
+.top{border-bottom:0!important;box-shadow:0 8px 24px -14px rgba(19,64,181,.7);--head-muted:rgba(255,255,255,.85);--head-ink:#fff}
+.nav button[aria-current="page"]{background:#fff!important;color:#1340B5!important;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
+.nav button:hover{color:#fff;background:rgba(255,255,255,.12)}
+html[lang=uz] .hlang .lz,html[lang=ru] .hlang .lr,html:not([lang=ru]) .hlang .lz{background:#fff!important;color:#1340B5!important}
+.hlang,.hthem,.top .ubtn,.top [id=userBtn]{border-color:rgba(255,255,255,.45)!important}
+.ctbar{border-top:0}
+:root[data-theme=dark] .top,:root[data-theme=dark] .ctbar{background:linear-gradient(115deg,#0E2C7E 0%,#163FA8 60%,#2453C9 100%)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .top,:root:not([data-theme=light]) .ctbar{background:linear-gradient(115deg,#0E2C7E 0%,#163FA8 60%,#2453C9 100%)!important}}
+.appdl{position:relative}.appdl[hidden]{display:none!important}.appdl .x{position:absolute;top:10px;right:10px;width:32px;height:32px;min-height:0;padding:0;flex:none;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px;line-height:1}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -681,7 +693,8 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div class="sc-head"><div class="eyebrow">Namunaviy natija</div><h2 style="font-size:clamp(22px,3vw,30px)">Natija shunday bo'ladi</h2><p class="note">Sizning uyingiz uchun ham shunday rasmlar chiqadi.</p></div>
       <div class="sc-grid"><figure class="sc-card"><img alt="Tashqi ko'rinish" loading="lazy" src="img/namuna-1.webp"><figcaption><b>Tashqi ko'rinish</b><span>Qurilib bitgandagi fotodek ko'rinish</span></figcaption></figure><figure class="sc-card"><img alt="Kesim (dollhouse)" loading="lazy" src="img/namuna-2.webp"><figcaption><b>Kesim (dollhouse)</b><span>Tomi olingan, xonalar jihozlari bilan</span></figcaption></figure><figure class="sc-card"><img alt="Mehmonxona interyeri" loading="lazy" src="img/namuna-3.webp"><figcaption><b>Mehmonxona interyeri</b><span>Ichki dizayn</span></figcaption></figure></div>
     </div>
-    <div class="appdl" id="appDl">
+    <div class="appdl" id="appDl" hidden>
+      <button type="button" class="x" id="appDlX" aria-label="Yopish">✕</button>
       <img src="img/icon-192.png" alt="UyChizma ilovasi">
       <div class="t"><h2>📲 Ilovani yuklab oling</h2><p>Telefoningizga o'rnating — saytga kirmasdan, ilovadan foydalaning.</p></div>
       <div class="b">
@@ -5392,4 +5405,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
  var hb=document.getElementById('helpBtn'); if(hb) hb.onclick=function(){ try{Object.keys(TIPS).forEach(function(k){localStorage.removeItem('uychizma:coach:'+k)})}catch(e){} open('home',true); };
  setTimeout(function(){ check(false); },2500);
 })();</script>
+<script>(function(){var b=document.getElementById('appDl');if(!b)return;var K='uychizma:appDlSeen';var seen=false;try{seen=localStorage.getItem(K)==='1'}catch(e){}
+if(!seen){b.hidden=false;try{localStorage.setItem(K,'1')}catch(e){}}
+var x=document.getElementById('appDlX');if(x)x.onclick=function(){b.hidden=true;};})();</script>
 </body></html>
