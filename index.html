@@ -82,17 +82,18 @@ table.smeta input.ch{border-color:#E0A100;background:#FFF8E1;color:#5A4300}
 .helplink{display:block;margin:6px auto 0;border:0;background:none;color:var(--muted,#5b6475);font-weight:600;cursor:pointer;text-decoration:underline;font-size:14px}
 
 /* Ko'k sarlavha va pastki qator */
-.top,.ctbar{background:linear-gradient(115deg,#1340B5 0%,#1F5FE0 55%,#3B7CFF 100%)!important;color:#fff}
+.top,.ctbar{background:linear-gradient(115deg,#0A2470 0%,#0F3394 55%,#1A47B8 100%)!important;color:#fff}
 .top{border-bottom:0!important;box-shadow:0 8px 24px -14px rgba(19,64,181,.7);--head-muted:rgba(255,255,255,.85);--head-ink:#fff}
-.nav button[aria-current="page"]{background:#fff!important;color:#1340B5!important;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
+.nav button[aria-current="page"]{background:#fff!important;color:#0F3394!important;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
 .nav button:hover{color:#fff;background:rgba(255,255,255,.12)}
-html[lang=uz] .hlang .lz,html[lang=ru] .hlang .lr,html:not([lang=ru]) .hlang .lz{background:#fff!important;color:#1340B5!important}
+html[lang=uz] .hlang .lz,html[lang=ru] .hlang .lr,html:not([lang=ru]) .hlang .lz{background:#fff!important;color:#0F3394!important}
 .hlang,.hthem,.top .ubtn,.top [id=userBtn]{border-color:rgba(255,255,255,.45)!important}
 .ctbar{border-top:0}
 :root[data-theme=dark] .top,:root[data-theme=dark] .ctbar{background:linear-gradient(115deg,#0E2C7E 0%,#163FA8 60%,#2453C9 100%)!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .top,:root:not([data-theme=light]) .ctbar{background:linear-gradient(115deg,#0E2C7E 0%,#163FA8 60%,#2453C9 100%)!important}}
 .appdl{position:relative}.appdl[hidden]{display:none!important}.appdl .x{position:absolute;top:10px;right:10px;width:32px;height:32px;min-height:0;padding:0;flex:none;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px;line-height:1}
 .revsmore>summary{list-style:none;cursor:pointer;display:flex;justify-content:center;align-items:center;margin:0 auto;max-width:420px;min-height:50px;border-radius:14px;border:1px solid var(--line,#d8deea);background:var(--card,#fff);font-weight:800;font-size:16px;color:var(--ink,#0b1220)}.revsmore>summary::-webkit-details-marker{display:none}.revsmore[open]>summary{margin-bottom:14px}.revsmore .revs-h{justify-content:space-between;gap:10px}
+.top{position:fixed!important;top:0!important;left:0;right:0;padding-top:env(safe-area-inset-top,0px)}body{padding-top:var(--toph,110px)}html,body{overscroll-behavior-y:none}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -5409,4 +5410,5 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
 <script>(function(){var b=document.getElementById('appDl');if(!b)return;var K='uychizma:appDlSeen';var seen=false;try{seen=localStorage.getItem(K)==='1'}catch(e){}
 if(!seen){b.hidden=false;try{localStorage.setItem(K,'1')}catch(e){}}
 var x=document.getElementById('appDlX');if(x)x.onclick=function(){b.hidden=true;};})();</script>
+<script>(function(){var t=document.querySelector('.top');if(!t)return;function f(){document.body.style.setProperty('--toph',t.offsetHeight+'px')}f();addEventListener('resize',f);if(window.ResizeObserver)new ResizeObserver(f).observe(t);})();</script>
 </body></html>
