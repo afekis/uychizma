@@ -95,6 +95,14 @@ html[lang=uz] .hlang .lz,html[lang=ru] .hlang .lr,html:not([lang=ru]) .hlang .lz
 .revsmore>summary{list-style:none;cursor:pointer;display:flex;justify-content:center;align-items:center;margin:0 auto;max-width:420px;min-height:50px;border-radius:14px;border:1px solid var(--line,#d8deea);background:var(--card,#fff);font-weight:800;font-size:16px;color:var(--ink,#0b1220)}.revsmore>summary::-webkit-details-marker{display:none}.revsmore[open]>summary{margin-bottom:14px}.revsmore .revs-h{justify-content:space-between;gap:10px}
 .top{position:fixed!important;top:0!important;left:0;right:0;padding-top:env(safe-area-inset-top,0px)}body{padding-top:var(--toph,110px)}html,body{overscroll-behavior-y:none}
 .top{transition:transform .28s ease}.top.tophide{transform:translateY(-100%)}
+
+body{background:radial-gradient(1200px 600px at 10% -10%,rgba(31,95,224,.10),transparent 60%),radial-gradient(900px 500px at 110% 110%,rgba(31,95,224,.08),transparent 60%),var(--paper)!important;background-attachment:fixed!important}
+#bgMark{position:relative;z-index:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#1F5FE0;opacity:.09;padding:36px 0 30px;overflow:hidden}
+#bgMark svg{width:min(26vw,120px);height:auto}#bgMark span{font-family:var(--f-display);font-weight:700;font-size:clamp(44px,12vw,150px);letter-spacing:-.02em;line-height:1}
+main.wrap,footer,.revs,.seo{position:relative;z-index:1}.revs,.seo{background:transparent!important}
+:root[data-theme=dark] #bgMark{color:#6E9BFF;opacity:.07}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #bgMark{color:#6E9BFF;opacity:.07}}
+html.inapp #bgMark{opacity:.04}
 </style><script>try{if(/[?&]app=1/.test(location.search))sessionStorage.setItem('uc_app','1');if(sessionStorage.getItem('uc_app')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.documentElement.classList.add('inapp');}catch(e){}</script>
 <style>html.inapp #seoInfo,html.inapp #installBtn{display:none!important}html.inapp body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}html.inapp input,html.inapp textarea,html.inapp [contenteditable]{-webkit-user-select:text;user-select:text}</style>
 <script>try{var t=localStorage.getItem('uychizma:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
@@ -1114,6 +1122,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
   <div class="seoq"><details><summary>Uy chizmasini qanday qilish mumkin?</summary><p>UyChizma saytida yer o'lchamini (masalan 12 × 20 m) yozing yoki qo'lda chizilgan chizmangizni yuklang. Sayt 1 daqiqada 3 xil uy loyihasini chizadi: reja, 3D ko'rinish va narx.</p></details><details><summary>Uy loyihasi qancha turadi?</summary><p>Birinchi uy loyihasi bepul. Premium — 25 000 so'm, 2 ta uy loyihasi (reja, 3D, smeta, PDF).</p></details><details><summary>Uy dizaynini 3D-da ko'rsa bo'ladimi?</summary><p>Ha. Har bir loyiha 3D-da aylantirib ko'riladi, telefonda AR orqali uyni o'z hovlingizda turgandek ko'rish mumkin.</p></details><details><summary>Qurilish narxini hisoblab beradimi?</summary><p>Ha, sayt materiallar va ishlar bo'yicha taxminiy qurilish smetasini O'zbekiston narxlarida chiqaradi va PDF qilib beradi.</p></details><details><summary>Bo'sh xona dizaynini qilib beradimi?</summary><p>Ha. «Bo'sh joy dizayni» bo'limida xona yoki hovli rasmini yuklasangiz, AI uni jihozlab, chiroyli dizayn rasmini va mebel narxlarini ko'rsatadi.</p></details></div>
   <p class="note">Проект дома, план дома и 3D дизайн онлайн — сайт работает на узбекском и русском языках.</p>
 </details></div></section>
+<div id="bgMark" aria-hidden="true"><svg viewBox="0 0 30 30"><rect x="2" y="2" width="26" height="26" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7 21V13l8-6 8 6v8h-5v-5h-6v5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>UyChizma</span></div>
 <footer class="ctbar" id="ctBar" hidden><div class="wrap" style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:14px 16px">
   <span>Savol bo'lsa:</span><a class="ct-phone" href="#"><b class="cf-num"></b></a><a class="ct-tg" href="#" target="_blank" rel="noopener" hidden>Telegram</a><a class="ct-bot" href="https://t.me/uychzma_bot?start=sayt" target="_blank" rel="noopener">🤖 Bot: @uychzma_bot</a></div></footer>
 
