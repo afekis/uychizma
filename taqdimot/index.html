@@ -1,0 +1,247 @@
+<!DOCTYPE html><html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UyChizma — taqdimot</title><link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400..800&family=Golos+Text:wght@400..700&display=swap">
+<style>:root{--navy:#061A55;--navy2:#0A2672;--blue:#1F5FE0;--paper:#F3F6FB;--ink:#0E1B3D;--soft:#4A5878;--gold:#F5B83D;--line:#D6DFEE;--mist:#C9D6F2}
+section{padding:128px;background:var(--paper);color:var(--ink);font-family:'Golos Text',Arial,sans-serif;font-size:30px;line-height:1.4;box-sizing:border-box}
+section.dark{background:linear-gradient(115deg,#061A55 0%,#0A2672 55%,#11358F 100%);color:#F3F6FB}
+section.accent{background:var(--blue);color:#F3F6FB}
+h1,h2,h3{font-family:'Unbounded',Verdana,sans-serif;margin:0;letter-spacing:-0.01em}
+h1{font-size:104px;line-height:1.05;font-weight:700}
+h2{font-size:60px;line-height:1.12;font-weight:700;color:var(--ink)}
+.dark h2,.accent h2{color:#F3F6FB}
+h3{font-size:32px;line-height:1.2;font-weight:600;color:var(--ink)}
+.dark h3{color:#F3F6FB}
+p{margin:0}
+.eyebrow{font-family:'Unbounded',Verdana,sans-serif;font-size:24px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--blue);margin-bottom:24px}
+.dark .eyebrow{color:var(--gold)}
+.accent .eyebrow{color:#FFE2A3}
+.lead{font-size:32px;line-height:1.45;color:var(--soft);margin-top:28px}
+.dark .lead{color:#C9D6F2}
+.accent .lead{color:#E4ECFF}
+.split{display:flex;gap:80px;align-items:center;height:100%}
+.split .txt{flex:1;display:flex;flex-direction:column}
+.shot{border-radius:20px;box-shadow:0 24px 60px rgba(6,26,85,0.22);border:2px solid var(--line);object-fit:contain;background:#fff}
+.dark .shot{border-color:rgba(255,255,255,0.18);box-shadow:0 30px 80px rgba(0,0,0,0.4)}
+.phone{border-radius:36px;border:10px solid #0E1B3D;box-shadow:0 24px 60px rgba(6,26,85,0.25);object-fit:cover;object-position:top;background:#fff}
+.points{display:flex;flex-direction:column;gap:28px;margin-top:44px}
+.pt{display:flex;gap:20px;align-items:flex-start}
+.pt .n{font-family:'Unbounded',Verdana,sans-serif;font-size:24px;font-weight:700;color:#F3F6FB;background:var(--blue);border-radius:50%;width:48px;height:48px;min-width:48px;display:flex;align-items:center;justify-content:center}
+.dark .pt .n{background:var(--gold);color:var(--navy)}
+.pt p{font-size:28px;line-height:1.4;color:var(--soft)}
+.dark .pt p{color:#C9D6F2}
+.pt b{color:var(--ink)}
+.dark .pt b{color:#F3F6FB}
+.cards{display:flex;gap:32px;margin-top:56px}
+.card{flex:1;background:#FBFCFE;border:2px solid var(--line);border-radius:24px;padding:40px;display:flex;flex-direction:column;gap:16px}
+.dark .card{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.16)}
+.card .big{font-family:'Unbounded',Verdana,sans-serif;font-size:60px;font-weight:700;color:var(--blue);line-height:1}
+.dark .card .big{color:var(--gold)}
+.card .ctext{font-size:26px;line-height:1.4;color:var(--soft)}
+.dark .card .ctext{color:#C9D6F2}
+.chip{display:inline-block;font-size:24px;font-weight:600;padding:10px 22px;border-radius:999px;background:#E3EBFB;color:var(--navy2)}
+.dark .chip{background:rgba(255,255,255,0.12);color:#F3F6FB}
+.chips{display:flex;flex-wrap:wrap;gap:14px;margin-top:36px}
+.foot{position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:var(--soft);display:flex;justify-content:space-between}
+.dark .foot{color:#9FB3E0}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.rise{animation:rise .6s ease-out both}
+.d1{animation-delay:.15s}.d2{animation-delay:.3s}.d3{animation-delay:.45s}
+.fade{animation:fadein .7s ease-out both}
+
+html,body{margin:0;height:100%;background:#030C2B;overflow:hidden}
+#stage{position:fixed;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center}
+#stage>section{position:absolute;inset:0;width:1920px;height:1080px;display:none}
+#stage>section.on{display:block}
+#nav{position:fixed;top:14px;right:16px;opacity:.75;display:flex;gap:10px;align-items:center;font:600 16px 'Golos Text',Arial,sans-serif;color:#C9D6F2;z-index:9}
+#nav button{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:22px;cursor:pointer}
+</style></head><body><div id="stage"><section id="cover" class="dark" data-transition="fade">
+<div class="split">
+<div class="txt rise">
+<p class="eyebrow">uychzma.uz</p>
+<h1>UyChizma</h1>
+<p class="lead" style="font-size:40px;color:#F3F6FB;margin-top:36px">Uyingizni qurishdan oldin 3D’da ko‘ring</p>
+<p class="lead">Bir necha savolga javob bering — sayt uy rejasi, 3D ko‘rinish va taxminiy narxni tayyorlab beradi.</p>
+</div>
+<img class="shot rise d2" src="img/home_desktop.jpg" alt="UyChizma bosh sahifasi, kompyuterda" style="width:880px;height:550px">
+</div>
+<p class="foot"><span>Amirhon Jumanyozov · AFEKS COMPANY</span><span>2026</span></p>
+
+</section>
+<section id="muammo">
+<p class="eyebrow">Muammo</p>
+<h2 style="width:1400px">Uy qurishdan oldin odam uyini ko‘ra olmaydi</h2>
+<div class="cards">
+<div class="card rise"><h3>Arxitektor qimmat</h3><p class="ctext">Oddiy oila uchun loyiha buyurtma qilish katta xarajat va uzoq kutish.</p></div>
+<div class="card rise d1"><h3>Narx noma’lum</h3><p class="ctext">Qurilish qancha turishini oldindan bilish qiyin — byudjet ko‘pincha oshib ketadi.</p></div>
+<div class="card rise d2"><h3>Tasavvur qilish qiyin</h3><p class="ctext">Qog‘ozdagi chizmadan xonalar qanday bo‘lishini tushunish oson emas.</p></div>
+</div>
+
+</section>
+<section id="yechim" class="accent">
+<p class="eyebrow">Yechim</p>
+<h2 style="width:1500px">3 qadam — va uyingiz ekranda</h2>
+<div class="cards">
+<div class="card rise" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.25)"><p class="big" style="color:#F5B83D">01</p><h3 style="color:#F3F6FB">Savollarga javob</h3><p class="ctext" style="color:#E4ECFF">Yer o‘lchami, xonalar soni, qavat, uslub.</p></div>
+<div class="card rise d1" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.25)"><p class="big" style="color:#F5B83D">02</p><h3 style="color:#F3F6FB">3 ta variant</h3><p class="ctext" style="color:#E4ECFF">Sayt avtomatik 3 xil reja va 3D ko‘rinish chizadi.</p></div>
+<div class="card rise d2" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.25)"><p class="big" style="color:#F5B83D">03</p><h3 style="color:#F3F6FB">Narx va rejalar</h3><p class="ctext" style="color:#E4ECFF">Maydonlar, taxminiy narx, hovli va tom rejasi.</p></div>
+</div>
+
+</section>
+<section id="bosh">
+<div class="split" style="gap:64px">
+<div class="txt" style="flex:0 0 460px">
+<p class="eyebrow">Bosh sahifa</p>
+<h2>Kirgan zahoti — 3D uy</h2>
+<p class="lead">Tepada namunaviy uy 3D’da aylanadi, pastda bitta katta “Loyihani boshlash” tugmasi.</p>
+<div class="chips"><span class="chip">Kompyuter</span><span class="chip">Telefon</span></div>
+</div>
+<img class="shot rise" src="img/home_desktop.jpg" alt="Bosh sahifa kompyuterda" style="width:776px;height:485px">
+<img class="phone rise d1" src="img/home_mobile.jpg" alt="Bosh sahifa telefonda" style="width:300px;height:650px">
+</div>
+
+</section>
+<section id="savollar">
+<div class="split" style="gap:64px">
+<div class="txt" style="flex:0 0 520px">
+<p class="eyebrow">1-qadam · Savollar</p>
+<h2>Oddiy savollar, tayyor javoblar</h2>
+<div class="points">
+<div class="pt"><span class="n">1</span><p><b>Yer o‘lchami</b> — eni va bo‘yi</p></div>
+<div class="pt"><span class="n">2</span><p><b>Oila</b> — xonalar, qavatlar</p></div>
+<div class="pt"><span class="n">3</span><p><b>Uslub</b> — zamonaviy, klassik</p></div>
+</div>
+</div>
+<img class="shot rise" src="img/wizard.jpg" alt="Savollar oynasi" style="width:1080px;height:675px">
+</div>
+
+</section>
+<section id="natija">
+<div class="split" style="gap:64px">
+<div class="txt" style="flex:0 0 520px">
+<p class="eyebrow">2-qadam · Natija</p>
+<h2>3 ta variant va 3D ko‘rinish</h2>
+<p class="lead">A, B, C variantlarini solishtiring, uyni 3D’da aylantiring, uslubni bir bosishda almashtiring.</p>
+</div>
+<img class="shot rise" src="img/result_variants.jpg" alt="Natija: 3 ta variant" style="width:1080px;height:675px">
+</div>
+
+</section>
+<section id="narx">
+<p class="eyebrow">3-qadam · Narx va rejalar</p>
+<h2>Maydonlar, narx va chizmalar</h2>
+<div style="display:flex;gap:48px;margin-top:56px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<img class="shot rise" src="img/result_price.jpg" alt="Maydonlar va taxminiy narx jadvali" style="width:808px;height:505px">
+<p style="font-size:26px;color:#4A5878">Xonalar maydoni va qurilishning taxminiy narxi</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<img class="shot rise d1" src="img/result_plans.jpg" alt="Hovli va tom rejasi" style="width:808px;height:505px">
+<p style="font-size:26px;color:#4A5878">Hovli rejasi va tom rejasi</p>
+</div>
+</div>
+
+</section>
+<section id="xizmatlar">
+<p class="eyebrow">Xizmatlar</p>
+<h2>Uydan tashqari yana 3 bo‘lim</h2>
+<div style="display:flex;gap:40px;margin-top:56px">
+<div class="card rise" style="padding:24px;gap:20px"><img class="shot" src="img/svc_boshjoy.jpg" alt="Bo‘sh joy bo‘limi" style="width:470px;height:248px"><h3>Bo‘sh joy</h3><p class="ctext">Bo‘sh xona yoki hovli rasmini yuklang — AI uni qanday bezash mumkinligini ko‘rsatadi.</p></div>
+<div class="card rise d1" style="padding:24px;gap:20px"><img class="shot" src="img/svc_ustalar.jpg" alt="Ustalar bo‘limi" style="width:470px;height:248px"><h3>Ustalar</h3><p class="ctext">Quruvchi va ustalarni topish, ular bilan bog‘lanish.</p></div>
+<div class="card rise d2" style="padding:24px;gap:20px"><img class="shot" src="img/svc_biznes.jpg" alt="Biznes bo‘limi" style="width:470px;height:248px"><h3>Biznes</h3><p class="ctext">Qurilish firmalari uchun alohida tarif.</p></div>
+</div>
+
+</section>
+<section id="qulaylik">
+<div class="split" style="gap:56px">
+<div class="txt" style="flex:0 0 460px">
+<p class="eyebrow">Qulaylik</p>
+<h2>Hamma uchun oson</h2>
+<div class="points">
+<div class="pt"><span class="n">1</span><p><b>Yo‘l-yo‘riq</b> — birinchi kirganda qaysi tugmani bosishni ko‘rsatadi</p></div>
+<div class="pt"><span class="n">2</span><p><b>O‘zbek / rus</b> — sahifa qayta yuklanmasdan</p></div>
+<div class="pt"><span class="n">3</span><p><b>Tungi rejim</b> — bir bosishda</p></div>
+</div>
+</div>
+<img class="phone rise" src="img/tour_mobile.jpg" alt="Yo‘l-yo‘riq, telefonda" style="width:330px;height:714px">
+<div style="display:flex;flex-direction:column;gap:32px">
+<img class="shot rise d1" src="img/dark_desktop.jpg" alt="Tungi rejim" style="width:578px;height:361px">
+<img class="shot rise d2" src="img/ru_desktop.jpg" alt="Rus tilidagi sahifa" style="width:578px;height:361px">
+</div>
+</div>
+
+</section>
+<section id="ilova" class="dark">
+<div class="split" style="gap:64px">
+<div class="txt">
+<p class="eyebrow">Ilova va bot</p>
+<h2>Telefonda — xuddi dastur kabi</h2>
+<div class="points">
+<div class="pt"><span class="n">1</span><p><b>Android ilova (APK)</b> — o‘z belgisi va ochilish ekrani bilan</p></div>
+<div class="pt"><span class="n">2</span><p><b>Telegram bot</b> — @uychzma_bot orqali ham kirish mumkin</p></div>
+<div class="pt"><span class="n">3</span><p><b>Ro‘yxatdan o‘tish</b> — ism va telefon raqami, bir daqiqada</p></div>
+</div>
+</div>
+<img class="phone rise" src="img/app_mobile.jpg" alt="Ilovani yuklab olish bloki" style="width:340px;height:736px;border-color:#F3F6FB">
+<img class="phone rise d1" src="img/register_mobile.jpg" alt="Ro‘yxatdan o‘tish oynasi" style="width:340px;height:736px;border-color:#F3F6FB">
+</div>
+
+</section>
+<section id="daromad">
+<div class="split" style="gap:72px">
+<div class="txt">
+<p class="eyebrow">Daromad modeli</p>
+<h2>Qanday pul topadi</h2>
+<div class="cards" style="flex-direction:column;gap:20px;margin-top:44px">
+<div class="card rise" style="flex-direction:row;align-items:center;gap:32px;padding:28px 36px"><p class="big" style="font-size:44px;min-width:300px">25 000</p><p class="ctext"><b style="color:#0E1B3D">so‘m</b> — 2 ta uy loyihasi: reja, 3D, mebel, PDF</p></div>
+<div class="card rise d1" style="flex-direction:row;align-items:center;gap:32px;padding:28px 36px"><p class="big" style="font-size:44px;min-width:300px">2 → 1</p><p class="ctext"><b style="color:#0E1B3D">Referal</b> — 2 do‘st taklif qilsa, 1 loyiha bepul</p></div>
+<div class="card rise d2" style="flex-direction:row;align-items:center;gap:32px;padding:28px 36px"><p class="big" style="font-size:44px;min-width:300px">Biznes</p><p class="ctext"><b style="color:#0E1B3D">Firmalar uchun tarif</b> — qurilish kompaniyalari</p></div>
+</div>
+<p class="lead" style="font-size:26px">To‘lov Click / Payme orqali, SMS bo‘yicha avtomatik tasdiqlanadi.</p>
+</div>
+<img class="shot rise d1" src="img/paywall.jpg" alt="Premium to‘lov oynasi" style="width:400px;height:739px">
+</div>
+
+</section>
+<section id="texnologiya" class="dark">
+<p class="eyebrow">Texnologiya</p>
+<h2>Tez, arzon va ishonchli</h2>
+<div class="cards">
+<div class="card rise"><p class="big">1000</p><h3>bir vaqtda tashrif</h3><p class="ctext">Yuklama sinovida sayt to‘xtamadi</p></div>
+<div class="card rise d1"><p class="big">1000</p><h3>ro‘yxatdan o‘tish</h3><p class="ctext">Sinovdan o‘tdi, keyin test akkauntlar o‘chirildi</p></div>
+<div class="card rise d2"><p class="big">3D</p><h3>brauzerda</h3><p class="ctext">Hech narsa o‘rnatish shart emas</p></div>
+</div>
+<div class="chips"><span class="chip">three.js</span><span class="chip">Firebase</span><span class="chip">Cloudflare Workers</span><span class="chip">AI</span><span class="chip">GitHub Pages</span><span class="chip">Capacitor (Android)</span></div>
+
+</section>
+<section id="keyingi">
+<p class="eyebrow">Keyingi qadamlar</p>
+<h2>Bundan keyin nima qilamiz</h2>
+<div class="cards">
+<div class="card rise"><p class="big">01</p><h3>Play Market</h3><p class="ctext">Ilovani rasmiy do‘konga joylash</p></div>
+<div class="card rise d1"><p class="big">02</p><h3>Reklama</h3><p class="ctext">Instagram va Telegram’da qisqa videolar</p></div>
+<div class="card rise d2"><p class="big">03</p><h3>Firmalar</h3><p class="ctext">Qurilish kompaniyalari bilan hamkorlik</p></div>
+<div class="card rise d3"><p class="big">04</p><h3>Ko‘proq uslub</h3><p class="ctext">Yangi uy turlari va 3D modellar</p></div>
+</div>
+
+</section>
+<section id="aloqa" class="dark">
+<div style="display:flex;flex-direction:column;justify-content:center;height:100%">
+<p class="eyebrow rise">Rahmat!</p>
+<h1 class="rise d1" style="font-size:112px">uychzma.uz</h1>
+<p class="lead rise d2" style="font-size:40px;color:#F3F6FB">Uyingizni bugun 3D’da ko‘ring</p>
+<div class="chips rise d3" style="margin-top:64px"><span class="chip" style="font-size:30px;padding:16px 32px">Telegram: @amirhonsh</span><span class="chip" style="font-size:30px;padding:16px 32px">Bot: @uychzma_bot</span></div>
+</div>
+
+</section>
+</div>
+<div id="nav"><button id="pv" aria-label="Oldingi">‹</button><span id="cn"></span><button id="nx" aria-label="Keyingi">›</button></div>
+<script>
+const S=[...document.querySelectorAll('#stage>section')],st=document.getElementById('stage');let i=0;
+function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);st.style.transform='translate(-50%,-50%) scale('+k+')'}
+function go(n){i=Math.max(0,Math.min(S.length-1,n));S.forEach((s,j)=>s.classList.toggle('on',j==i));document.getElementById('cn').textContent=(i+1)+' / '+S.length;history.replaceState(null,'','#'+(i+1))}
+addEventListener('resize',fit);fit();go((parseInt(location.hash.slice(1))||1)-1);
+addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key))go(i+1);if(['ArrowLeft','PageUp'].includes(e.key))go(i-1)});
+pv.onclick=()=>go(i-1);nx.onclick=()=>go(i+1);
+let x0=null;addEventListener('touchstart',e=>x0=e.touches[0].clientX);addEventListener('touchend',e=>{if(x0==null)return;const d=e.changedTouches[0].clientX-x0;if(Math.abs(d)>40)go(i+(d<0?1:-1));x0=null});
+</script></body></html>
