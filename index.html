@@ -1684,7 +1684,13 @@ function computeDoors(f){
   // dahliz/hol opening into zal (wide arch)
   f.rooms.filter(q=>q.t==='circ').forEach(c=>{ f.rooms.filter(q=>q.t==='zal'&&!q.part).forEach(z=>{ const e=sharedEdge(c,z); if(e&&e.len>2.0 && !f.doors.some(d=>d.room===z)) f.opens.push(Object.assign({},e,{a0:(e.a0+e.a1)/2-0.8,a1:(e.a0+e.a1)/2+0.8,arch:true})); }); });
 }
+/* Barcha o'lchamlarni 1 sm to'rga tekislash: chegaralar (x va x+w) yaxlitlanadi — bo'laklar yig'indisi umumiy o'lchamga aynan teng chiqadi */
+function snapCm(v){ const q=n=>Math.round(n*100)/100;
+  const rect=r=>{ if(!r||typeof r!=='object'||typeof r.x!=='number'||typeof r.y!=='number'||typeof r.w!=='number'||typeof r.h!=='number') return; const x0=q(r.x), y0=q(r.y), x1=q(r.x+r.w), y1=q(r.y+r.h); r.x=x0; r.y=y0; r.w=q(x1-x0); r.h=q(y1-y0); if(typeof r.area==='number') r.area=q(r.w*r.h); };
+  if(typeof v.W==='number') v.W=q(v.W); if(typeof v.D==='number') v.D=q(v.D);
+  (v.floors||[]).forEach(f=>{ Object.keys(f).forEach(k=>{ const a=f[k]; if(Array.isArray(a)) a.forEach(rect); }); }); }
 function finalize(v,A){
+  snapCm(v);
   v.lux=luxOf(A); v.roof=roofOf(v.style||A.style,v.forceRoof?Object.assign({},A,{roofShape:'auto',roofMat:'auto',roofCol:'auto'}):A,v.rv);
   const AW=(v.sub&&SUBS[v.sub]&&(!A.winSize||A.winSize==='auto'))?Object.assign({},A,{winSize:SUBS[v.sub].win}):A;
   v.floors.forEach(f=>{ computeOpenings(f,v.style||A.style,AW); computeDoors(f); f.doorH=+A.intDoorH||2.1; });
@@ -1786,7 +1792,7 @@ function materials(v,A){
   ];
 }
 function fmt(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' '); }
-function fmt1(n){ return (Math.round(n*10)/10).toString().replace('.',','); }
+function fmt1(n){ return (Math.round(n*100)/100).toString().replace('.',','); } /* santimetrgacha aniq */
 function fmtA(n){ return (Math.round(n*100)/100).toFixed(2).replace('.',','); }
 function fmt2(n){ return (Math.round(n*100)/100).toFixed(2).replace('.',','); }
 function money(n){ return '$'+fmt(Math.round(n/100)*100); }
@@ -1965,7 +1971,7 @@ function planSVG(v,k,opt){
     const vertical = r.w<1.8 && r.h>r.w*1.6;
     if(r.t==='stair'){ o.push(`<text x="${cx}" y="${Y(r.y+0.6)}" font-size="0.3" text-anchor="middle" fill="#2B2B2B">Zina</text>`); return; }
     if(vertical){ o.push(`<g transform="translate(${cx} ${cy}) rotate(-90)"><text y="-0.05" font-size="${fs}" text-anchor="middle" fill="#2B2B2B">${esc(nm)}</text><text y="${fa+0.08}" font-size="${fa}" text-anchor="middle" fill="#2B2B2B" text-decoration="underline" font-family="JetBrains Mono, monospace">${fmtA(ra)}</text></g>`); return; }
-    o.push(`<text x="${cx}" y="${cy-0.05}" font-size="${fs}" text-anchor="middle" fill="#2B2B2B">${esc(nm)}</text><text x="${cx}" y="${cy+fa+0.1}" font-size="${fa}" text-anchor="middle" fill="#2B2B2B" text-decoration="underline" font-family="JetBrains Mono, monospace">${fmtA(ra)}</text>`+(small?'':`<text x="${cx}" y="${cy+fa+0.5}" font-size="0.24" text-anchor="middle" fill="#6A6A6A" font-family="JetBrains Mono, monospace">${fmt2(r.lw||r.w)} × ${fmt2(r.lh||r.h)}</text>`));
+    o.push(`<text x="${cx}" y="${cy-0.05}" font-size="${fs}" text-anchor="middle" fill="#2B2B2B">${esc(nm)}</text><text x="${cx}" y="${cy+fa+0.1}" font-size="${fa}" text-anchor="middle" fill="#2B2B2B" text-decoration="underline" font-family="JetBrains Mono, monospace">${fmtA(ra)}</text>`+(small?'':`<text x="${cx}" y="${cy+fa+0.5}" font-size="0.24" text-anchor="middle" fill="#6A6A6A" font-family="JetBrains Mono, monospace">${fmt2(r.lw||r.w)} × ${fmt2(r.lh||r.h)}${r.lw&&r.lh?'':f.rooms.filter(q=>q.part===r).map(q=>' + '+fmt2(q.w)+' × '+fmt2(q.h)).join('')}</text>`));
   });
   f.open.forEach(b=>{ if(b.type==='columns') return; const nm={passage:'Darvozaxona',ayvon:'Ayvon',balcony:'Balkon'}[b.type]; if(!nm) return; const vert=b.w<2.4&&b.h>b.w; const cx=b.x+b.w/2, cy=Y(b.y+b.h/2);
     o.push(vert?`<text transform="translate(${cx} ${cy}) rotate(-90)" font-size="0.34" text-anchor="middle" fill="#555">${nm} ${fmtA(b.w*b.h)}</text>`:`<text x="${cx}" y="${cy+0.12}" font-size="0.36" text-anchor="middle" fill="#555">${nm} ${fmtA(b.w*b.h)}</text>`); });
@@ -1977,11 +1983,12 @@ function planSVG(v,k,opt){
   o.push(`<text transform="translate(${lx-0.15} ${Y((y0+y1)/2)}) rotate(-90)" font-size="0.36" text-anchor="middle" font-family="JetBrains Mono, monospace" fill="#222">${fmt((y1-y0)*1000)}</text>`);
   // dimension chains along the main front row and left side
   const chain=(vals,horiz,pos)=>{ if(vals.length<3) return; const a=vals[0], b=vals[vals.length-1];
-    if(horiz){ o.push(`<line x1="${a}" y1="${pos}" x2="${b}" y2="${pos}" stroke="#222" stroke-width="0.03"></line>`); vals.forEach(v=>o.push(`<path d="M${v-0.12} ${pos+0.12}L${v+0.12} ${pos-0.12}" stroke="#222" stroke-width="0.04"></path>`)); for(let i=0;i<vals.length-1;i++){ const L=vals[i+1]-vals[i]; if(L>0.6) o.push(`<text x="${(vals[i]+vals[i+1])/2}" y="${pos-0.1}" font-size="0.26" text-anchor="middle" font-family="JetBrains Mono, monospace" fill="#222">${fmt(L*1000)}</text>`); } }
-    else { o.push(`<line x1="${pos}" y1="${Y(a)}" x2="${pos}" y2="${Y(b)}" stroke="#222" stroke-width="0.03"></line>`); vals.forEach(v=>o.push(`<path d="M${pos-0.12} ${Y(v)+0.12}L${pos+0.12} ${Y(v)-0.12}" stroke="#222" stroke-width="0.04"></path>`)); for(let i=0;i<vals.length-1;i++){ const L=vals[i+1]-vals[i]; if(L>0.6) o.push(`<text transform="translate(${pos-0.1} ${Y((vals[i]+vals[i+1])/2)}) rotate(-90)" font-size="0.26" text-anchor="middle" font-family="JetBrains Mono, monospace" fill="#222">${fmt(L*1000)}</text>`); } } };
+    if(horiz){ o.push(`<line x1="${a}" y1="${pos}" x2="${b}" y2="${pos}" stroke="#222" stroke-width="0.03"></line>`); vals.forEach(v=>o.push(`<path d="M${v-0.12} ${pos+0.12}L${v+0.12} ${pos-0.12}" stroke="#222" stroke-width="0.04"></path>`)); for(let i=0;i<vals.length-1;i++){ const L=vals[i+1]-vals[i]; if(L>0.009) o.push(`<text x="${(vals[i]+vals[i+1])/2}" y="${pos-(L>0.6?0.1:0.42)}" font-size="0.26" text-anchor="middle" font-family="JetBrains Mono, monospace" fill="#222">${fmt(L*1000)}</text>`); } }
+    else { o.push(`<line x1="${pos}" y1="${Y(a)}" x2="${pos}" y2="${Y(b)}" stroke="#222" stroke-width="0.03"></line>`); vals.forEach(v=>o.push(`<path d="M${pos-0.12} ${Y(v)+0.12}L${pos+0.12} ${Y(v)-0.12}" stroke="#222" stroke-width="0.04"></path>`)); for(let i=0;i<vals.length-1;i++){ const L=vals[i+1]-vals[i]; if(L>0.009) o.push(`<text transform="translate(${pos-(L>0.6?0.1:0.42)} ${Y((vals[i]+vals[i+1])/2)}) rotate(-90)" font-size="0.26" text-anchor="middle" font-family="JetBrains Mono, monospace" fill="#222">${fmt(L*1000)}</text>`); } } };
   const uniq=a=>[...new Set(a.map(v=>Math.round(v*100)/100))].sort((p,q)=>p-q);
-  chain(uniq(f.rooms.filter(r=>!r.part&&Math.abs(r.y)<1e-6).flatMap(r=>[r.x,r.x+r.w])),true,Y(y0)+0.65);
-  chain(uniq(f.rooms.filter(r=>!r.part&&Math.abs(r.x-x0)<1e-6).flatMap(r=>[r.y,r.y+r.h])),false,x0-0.65);
+  /* zanjir o'lchamlari umumiy o'lcham bilan aynan bir xil bo'lishi uchun chetki nuqtalar (ayvon, chiqiq) ham qo'shiladi */
+  chain(uniq([x0,x1].concat(f.rooms.filter(r=>!r.part&&Math.abs(r.y)<1e-6).flatMap(r=>[r.x,r.x+r.w]))),true,Y(y0)+0.65);
+  chain(uniq([y0,y1].concat(f.rooms.filter(r=>!r.part&&Math.abs(r.x)<1e-6).flatMap(r=>[r.y,r.y+r.h]))),false,x0-0.65);
   o.push(`<text x="${(x0+x1)/2}" y="${by+0.75}" font-size="0.3" text-anchor="middle" fill="#666" letter-spacing="0.08">↓ KO'CHA TOMONI</text>`);
   o.push('</svg>');
   return o.join('');
@@ -3261,7 +3268,7 @@ async function makePdf(){
     frame('Hovli rejasi','3. Hovli rejasi'); { const s=await svgToPng(siteSVG(v,A),2000); let h=H-46, w=h/s.ar; if(w>180){ w=180; h=w*s.ar; } doc.addImage(s.data,'JPEG',14,24,w,h); }
     frame('Tom rejasi','4. Tom rejasi'); { const s=await svgToPng(roofSVG(v,A),2000); let h=H-80, w=h/s.ar; if(w>180){ w=180; h=w*s.ar; } doc.addImage(s.data,'JPEG',14,24,w,h); table(200,28,['Tom','Qiymat'],roofRows(v,A).slice(0,6),[30,50]); }
     for(let k=0;k<v.floors.length;k++){ frame(`${k+1}-qavat rejasi`,k===0?'5. Qavat rejalari':null); const img=await svgToPng(planSVG(v,k),2400); const mw=170, mh=H-46; let w=mw,h=w*img.ar; if(h>mh){h=mh;w=h/img.ar;} doc.addImage(img.data,'JPEG',12,24,w,h);
-      const f=v.floors[k]; const rows=mainRooms(f).map((r,i)=>[String(i+1),r.n,`${fmt2(r.lw||r.w)} × ${fmt2(r.lh||r.h)}`,fmtA(roomA(r,f))]); rows.push(['','Jami','',fmtA(sum(f.rooms.filter(r=>r.t!=='garage'),r=>r.w*r.h))]);
+      const f=v.floors[k]; const rows=mainRooms(f).map((r,i)=>[String(i+1),r.n,`${fmt2(r.lw||r.w)} × ${fmt2(r.lh||r.h)}${r.lw&&r.lh?'':f.rooms.filter(q=>q.part===r).map(q=>' + '+fmt2(q.w)+' × '+fmt2(q.h)).join('')}`,fmtA(roomA(r,f))]); rows.push(['','Jami','',fmtA(sum(f.rooms.filter(r=>r.t!=='garage'),r=>r.w*r.h))]);
       table(188,28,['No','Xona','O\'lcham, m','m2'],rows,[8,44,26,16]); }
     for(let k=0;k<v.floors.length;k++){ frame(`${k+1}-qavat - mebel joylashuvi`,k===0?'5.1 Mebel joylashuvi rejasi (o\'lchamlar mm)':null); const img=await svgToPng(planSVG(v,k,{furn:1,A}),2600); const mw=170, mh=H-46; let w=mw,h=w*img.ar; if(h>mh){h=mh;w=h/img.ar;} doc.addImage(img.data,'JPEG',12,24,w,h);
       if(k===v.floors.length-1){ const ml=mebelList(v,A).slice(0,26); table(188,28,['Mebel','O\'lcham','Soni'],ml,[40,34,12]); } }
