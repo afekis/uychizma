@@ -15,7 +15,6 @@ export default {
     if (!env.PAYKV) return J(req, { ok: false, error: 'no_kv' }, 500);
 
     if (url.pathname === '/pay/chek' && req.method === 'POST') {
-      if (!env.BOT_TOKEN || !env.ADMIN_CHAT_ID) return J(req, { ok: false, error: 'not_configured' }, 500);
       const b = await req.json().catch(() => ({})); const img = String(b.img || ''), cid = String(b.cid || '').slice(0, 40);
       const m = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(img);
       if (!m || img.length > 1200000 || !cid) return J(req, { ok: false, error: 'bad' }, 400);
@@ -25,6 +24,8 @@ export default {
       const id = 'c' + crypto.randomUUID().replace(/-/g, '').slice(0, 15);
       const o = { id, cid, name: String(b.name || '').slice(0, 60), phone: String(b.phone || '').slice(0, 20), n: Math.max(1, Math.min(10, +b.n || 1)), at: Date.now(), status: 'wait' };
       await env.PAYKV.put('ord:' + id, JSON.stringify(o), { expirationTtl: 30 * 86400 });
+      await env.PAYKV.put('img:' + id, img, { expirationTtl: 30 * 86400 });
+      if (!env.BOT_TOKEN || !env.ADMIN_CHAT_ID) return J(req, { ok: true, id });
       const base = url.origin + '/pay/act?id=' + id;
       const okU = base + '&a=ok&s=' + await sign(env, id + '|ok'), noU = base + '&a=no&s=' + await sign(env, id + '|no');
       const bin = Uint8Array.from(atob(m[2]), c => c.charCodeAt(0)), fd = new FormData();
@@ -33,7 +34,6 @@ export default {
       fd.append('caption', `🧾 Yangi chek (saytdan)\n👤 ${o.name || '—'}\n📞 ${o.phone || '—'}\n🏠 ${o.n} ta uy\n🆔 ${cid}`);
       fd.append('reply_markup', JSON.stringify({ inline_keyboard: [[{ text: '✅ Tasdiqlash', url: okU }, { text: '❌ Rad etish', url: noU }]] }));
       const tr = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd }).then(r => r.json()).catch(() => ({}));
-      if (!tr.ok) { await env.PAYKV.delete('ord:' + id); return J(req, { ok: false, error: 'tg' }, 502); }
       return J(req, { ok: true, id });
     }
 
@@ -43,6 +43,25 @@ export default {
       const o = JSON.parse(await env.PAYKV.get('ord:' + id) || 'null'); if (!o) return H('Chek topilmadi (eskirgan)', false);
       o.status = a === 'ok' ? 'paid' : 'no'; o.doneAt = Date.now(); await env.PAYKV.put('ord:' + id, JSON.stringify(o), { expirationTtl: 30 * 86400 });
       return a === 'ok' ? H(`✅ Tasdiqlandi<br><small>${esc(o.name)} — Premium ochildi</small>`, true) : H(`❌ Rad etildi<br><small>${esc(o.name)}</small>`, false);
+    }
+
+    /* Admin sahifasi: /admin?k=ADMIN_KEY — cheklar ro'yxati, ✅/❌ */
+    if (url.pathname === '/admin' || url.pathname === '/admin/act') {
+      if (!env.ADMIN_KEY || url.searchParams.get('k') !== env.ADMIN_KEY) return H('⛔ Ruxsat yo\'q', false);
+      const k = encodeURIComponent(env.ADMIN_KEY);
+      if (url.pathname === '/admin/act' && req.method === 'POST') {
+        const f = await req.formData(); const id = String(f.get('id') || '').slice(0, 20), a = f.get('a') === 'ok' ? 'paid' : 'no';
+        const o = JSON.parse(await env.PAYKV.get('ord:' + id) || 'null'); if (o) { o.status = a; o.doneAt = Date.now(); await env.PAYKV.put('ord:' + id, JSON.stringify(o), { expirationTtl: 30 * 86400 }); }
+        return Response.redirect(url.origin + '/admin?k=' + k, 303);
+      }
+      const ls = await env.PAYKV.list({ prefix: 'ord:', limit: 200 }); const rows = [];
+      for (const x of ls.keys) { const o = JSON.parse(await env.PAYKV.get(x.name) || 'null'); if (o && o.id && o.id[0] === 'c') rows.push(o); }
+      rows.sort((a, b) => (a.status === 'wait' ? 0 : 1) - (b.status === 'wait' ? 0 : 1) || b.at - a.at);
+      const cards = await Promise.all(rows.slice(0, 60).map(async o => { const img = await env.PAYKV.get('img:' + o.id) || '';
+        const st = o.status === 'wait' ? '<b style="color:#B26A00">⏳ Kutilmoqda</b>' : o.status === 'paid' ? '<b style="color:#1F7A4D">✅ Tasdiqlangan</b>' : '<b style="color:#C62828">❌ Rad etilgan</b>';
+        return `<div class="c">${img ? `<a href="${img}" target="_blank"><img src="${img}" alt="chek"></a>` : ''}<div class="i"><div>${st}</div><div>👤 ${esc(o.name) || '—'}</div><div>📞 ${esc(o.phone) || '—'}</div><div>🏠 ${o.n} ta uy · ${new Date(o.at + 5 * 3600e3).toISOString().slice(0, 16).replace('T', ' ')}</div>
+          <form method="post" action="/admin/act?k=${k}"><input type="hidden" name="id" value="${o.id}"><button name="a" value="ok" class="ok">✅ Tasdiqlash</button><button name="a" value="no" class="no">❌ Rad etish</button></form></div></div>`; }));
+      return new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UyChizma — cheklar</title><style>body{font:15px system-ui;margin:0;background:#F3F6FB;color:#0E1626}h1{font-size:20px;margin:0;padding:14px 16px;background:#061A55;color:#fff}.w{padding:12px;display:grid;gap:12px;max-width:760px;margin:0 auto}.c{background:#fff;border:1px solid #D6DEEA;border-radius:14px;padding:10px;display:flex;gap:12px}.c img{width:120px;height:160px;object-fit:cover;border-radius:10px;background:#eee}.i{display:grid;gap:4px;flex:1}form{display:flex;gap:8px;margin-top:6px}button{flex:1;border:0;border-radius:10px;padding:10px;font:inherit;font-weight:700;cursor:pointer}.ok{background:#1F7A4D;color:#fff}.no{background:#FDECEC;color:#C62828}</style><h1>🧾 Cheklar (${rows.filter(r => r.status === 'wait').length} ta kutilmoqda)</h1><div class="w">${cards.join('') || '<p>Hozircha chek yo\'q.</p>'}</div>`, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
     }
 
     if (url.pathname === '/pay/st') {
