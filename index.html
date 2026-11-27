@@ -996,7 +996,7 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div class="viewer" id="resViewer"></div>
       <div class="panel summary" id="summary"></div>
     </div>
-    <div class="arbar"><button class="btn primary" id="arBtn" type="button">📱 Uyni yeringizda ko'ring (AR)</button><button class="btn" id="geoBtn" type="button">🗺 Xaritada joylash · qo'shnilar bilan solishtirish</button><span class="note">Telefon kamerasini yeringizga qarating — uy o'sha joyda turgandek ko'rinadi.</span></div>
+    <div class="arbar"><button class="btn primary" id="arBtn" type="button">📱 Uyni yeringizda ko'ring (AR)</button><button class="btn" id="phBtn" type="button">🏘 Yer rasmiga qo'yish · qo'shnilar bilan</button><button class="btn" id="geoBtn" type="button">🗺 Xaritada joylash · qo'shnilar bilan solishtirish</button><span class="note">Telefon kamerasini yeringizga qarating — uy o'sha joyda turgandek ko'rinadi. Yoki bo'sh yeringizni qo'shni uylar bilan rasmga oling — uyingizni o'sha rasmga qo'yib beramiz.</span></div>
     <div class="panel" id="roomEdit">
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end">
         <div style="display:flex;flex-direction:column;gap:4px"><div class="eyebrow">Xonalarni o'zingiz sozlang</div><h2 style="font-size:20px">Xonalar ro'yxati</h2><span class="note">Maydonni − / + bilan o'zgartiring, keraksiz xonani o'chiring yoki yangi xona qo'shing. "Qo'llash"ni bossangiz, 3 variant qaytadan chiziladi.</span></div>
@@ -4726,13 +4726,16 @@ async function smetaPdf(){ if(!window.jspdf) await loadScript('https://cdnjs.clo
 
 /* Ustalar bozori: natijadan loyiha havolasi bilan ochish */
 document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if(!a) return; try{ const v=S.variants[S.active]; const u=new URL('ustalar.html',location.href); u.searchParams.set('p',shareUrl()); u.searchParams.set('n',`Variant ${v.key}: ${v.name}`); u.searchParams.set('d',`${v.floors.length} qavatli uy, ${fmtA(v.area)} m², ${fmt1(v.W)}×${fmt1(v.D)} m`); a.href=u.toString(); }catch(_){} });
+/* teksturalarni yangidan chizib qurish: brauzer eski (GPU'ga yuklangan) canvas'larni bo'shatib yuborishi mumkin */
+function ucFreshBuild(v,A){ const sT=Object.assign({},TEX), sM=Object.assign({},MATS); Object.keys(TEX).forEach(k=>delete TEX[k]); Object.keys(MATS).forEach(k=>delete MATS[k]);
+    try{ return buildHouse(v,A); } finally{ Object.keys(TEX).forEach(k=>delete TEX[k]); Object.keys(MATS).forEach(k=>delete MATS[k]); Object.assign(TEX,sT); Object.assign(MATS,sM); } }
 /* ===== AR: uyni telefon kamerasida yerda ko'rish (model-viewer: WebXR / Scene Viewer / Quick Look) ===== */
 (function(){
   const $a=id=>document.getElementById(id); let busy=false, urls={};
   async function need(){ if(!THREE.GLTFExporter) await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js');
     if(!customElements.get('model-viewer')) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.type='module'; s.src='https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js'; s.onload=res; s.onerror=()=>rej(new Error('mv')); document.head.appendChild(s); }); }
   function glb(scale){ const v=S.variants[S.active], A=S.A, key=(A.seed||0)+'|'+v.key+'|'+v.name+'|'+(v.sub||v.style)+'|'+v.roof.shape+'|'+scale; if(urls[key]) return Promise.resolve(urls[key]);
-    const B=buildHouse(v,A), g=new THREE.Group(); g.add(B.group); B.group.position.set(-B.cx,0,-B.cz); g.scale.setScalar(scale);
+    const B=ucFreshBuild(v,A), g=new THREE.Group(); g.add(B.group); B.group.position.set(-B.cx,0,-B.cz); g.scale.setScalar(scale);
     g.traverse(o=>{ if(o.isLine||o.isLineSegments||o.isPoints||o.isSprite) o.visible=false; if(o.material&&o.material.transparent&&o.material.opacity<0.05) o.visible=false; });
     /* faqat yer uchastkasi ichidagilar: uy, hovli, zabor (ko'cha, qo'shnilar, shahar olib tashlanadi) */
     g.updateMatrixWorld(true); const PP=B.plotPts||[], x0=Math.min(...PP.map(p=>p[0]))-0.6, x1=Math.max(...PP.map(p=>p[0]))+0.6, y0=Math.min(...PP.map(p=>p[1]))-0.6, y1=Math.max(...PP.map(p=>p[1]))+0.6, bb=new THREE.Box3(), c=new THREE.Vector3(), sz=new THREE.Vector3();
@@ -4755,6 +4758,86 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
     catch(er){ console.error(er); toast("AR ochilmadi. Internetni tekshirib, qayta urinib ko'ring."); }
     btn.textContent=t; btn.disabled=false; busy=false; });
 })();
+/* ===== YER RASMIGA QO'YISH: bo'sh yer rasmini yuklab, uyni qo'shnilar orasida ko'rish (+ AI bilan tabiiy qilish) ===== */
+(function(){
+  const $p=id=>document.getElementById(id); const P={photo:null,house:null,yaw:-0.45,x:0.5,y:0.86,s:0.55,ai:null,busy:false};
+  function css(){ if($p('phCss')) return; const st=document.createElement('style'); st.id='phCss'; st.textContent=`
+  #phBox{position:fixed;inset:0;z-index:310;background:#0A1120;color:#fff;display:flex;flex-direction:column}#phBox[hidden]{display:none}
+  #phBox .pTop{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:#0E1626}#phBox .pTop b{flex:1;font-size:15px}
+  #phBox .pX{border:0;border-radius:99px;width:40px;height:40px;font-size:18px;background:#fff;color:#0A1120;cursor:pointer}
+  #phStage{flex:1;min-height:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#05080f;touch-action:none}
+  #phWrap{position:relative;max-width:100%;max-height:100%}#phWrap>img.bg{display:block;max-width:100%;max-height:calc(100vh - 250px);user-select:none;-webkit-user-drag:none}
+  #phHouse{position:absolute;transform:translate(-50%,-100%);cursor:grab;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 6px 6px rgba(0,0,0,.35))}
+  #phAi{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none;background:#05080f}#phStage.showai #phAi{display:block}
+  #phEmpty{text-align:center;padding:24px;max-width:420px;color:#cfd8ea;line-height:1.5}#phEmpty .big{font-size:46px}
+  #phBox .pBar{padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));background:#0E1626;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+  #phBox .pBar label{display:flex;align-items:center;gap:8px;flex:1 1 220px}#phBox .pBar input[type=range]{flex:1}
+  #phBox .pB{border:0;border-radius:10px;padding:10px 12px;background:#2a3754;color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:42px}#phBox .pB.pri{background:#1F5FE0}#phBox .pB:disabled{opacity:.5}
+  #phBox .pMsg{flex-basis:100%;color:#cfd8ea;margin:0}#phFile{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}`; document.head.appendChild(st); }
+  function houseGroup(){ const v=S.variants[S.active], A=S.A, B=ucFreshBuild(v,A), g=new THREE.Group(); g.add(B.group); B.group.position.set(-B.cx,0,-B.cz);
+    g.traverse(o=>{ if(o.isLine||o.isLineSegments||o.isPoints||o.isSprite) o.visible=false; if(o.material&&o.material.transparent&&o.material.opacity<0.05) o.visible=false; });
+    g.updateMatrixWorld(true); const PP=B.plotPts||[], bb=new THREE.Box3(), c=new THREE.Vector3(), sz=new THREE.Vector3();
+    if(PP.length){ const x0=Math.min(...PP.map(p=>p[0]))-0.3, x1=Math.max(...PP.map(p=>p[0]))+0.3, y0=Math.min(...PP.map(p=>p[1]))-0.3, y1=Math.max(...PP.map(p=>p[1]))+0.3;
+      g.traverse(o=>{ if(!o.isMesh||!o.visible) return; bb.setFromObject(o); if(bb.isEmpty()) return; bb.getCenter(c); bb.getSize(sz); const lx=c.x+B.cx, ly=-(c.z+B.cz); if(!(lx>=x0&&lx<=x1&&ly>=y0&&ly<=y1)||Math.max(sz.x,sz.z)>Math.max(x1-x0,y1-y0)+2) o.visible=false; }); }
+    /* materiallarni yangidan yaratish (asosiy 3D oynaning WebGL holatiga bog'lanmasin) */
+    const TC=new Map(), MC=new Map(); const tx=t=>{ if(!t||!t.image) return null; if(TC.has(t)) return TC.get(t); const n=new THREE.CanvasTexture(t.image); n.wrapS=t.wrapS; n.wrapT=t.wrapT; n.repeat.copy(t.repeat); n.offset.copy(t.offset); n.rotation=t.rotation; n.center.copy(t.center); n.encoding=t.encoding; n.anisotropy=4; TC.set(t,n); return n; };
+    const mm=m=>{ if(!m) return m; if(MC.has(m)) return MC.get(m); const n=new THREE.MeshStandardMaterial({color:m.color?m.color.clone():0xffffff,map:tx(m.map),roughness:m.roughness!=null?m.roughness:0.85,metalness:m.metalness||0,transparent:!!m.transparent,opacity:m.opacity!=null?m.opacity:1,side:m.side,emissive:m.emissive?m.emissive.clone():0x000000,emissiveIntensity:m.emissiveIntensity||0,polygonOffset:!!m.polygonOffset,polygonOffsetFactor:m.polygonOffsetFactor||0,polygonOffsetUnits:m.polygonOffsetUnits||0,depthWrite:m.depthWrite!==false}); MC.set(m,n); return n; };
+    g.traverse(o=>{ if(o.isMesh&&o.material) o.material=Array.isArray(o.material)?o.material.map(mm):mm(o.material); });
+    /* faqat uyning o'zi: hovli jihozlari va zabor rasmga qo'yilmaydi */
+    if(B.yardG) B.yardG.visible=false; if(B.fenceG) B.fenceG.visible=false;
+    /* tekis yer qatlamlarini (maysa, plitka) yashirish — rasmdagi haqiqiy yer ko'rinsin */
+    g.traverse(o=>{ if(!o.isMesh||!o.visible) return; bb.setFromObject(o); bb.getSize(sz); if(sz.y<0.06&&bb.max.y<0.12&&Math.max(sz.x,sz.z)>2.5) o.visible=false; });
+    return g; }
+  let G=null, GK='';
+  function render(){ const v=S.variants[S.active], key=(S.A.seed||0)+'|'+v.key+'|'+v.name+'|'+(v.sub||v.style)+'|'+v.roof.shape; if(GK!==key){ G=houseGroup(); GK=key; }
+    const W=1400,H=1050, r=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true}); r.setSize(W,H); try{ r.outputEncoding=THREE.sRGBEncoding; }catch(_){}
+    const sc=new THREE.Scene(); sc.add(new THREE.HemisphereLight(0xffffff,0x8a8070,0.85)); const dl=new THREE.DirectionalLight(0xfff4e0,0.85); dl.position.set(-25,40,30); sc.add(dl); sc.add(new THREE.AmbientLight(0xffffff,0.15)); sc.add(G);
+    const bb=new THREE.Box3(); G.traverse(o=>{ if(o.isMesh&&o.visible){ const b=new THREE.Box3().setFromObject(o); if(!b.isEmpty()) bb.union(b); } }); const sz=bb.getSize(new THREE.Vector3()), ct=bb.getCenter(new THREE.Vector3());
+    const R=Math.max(sz.x,sz.z,sz.y)*1.6+6, cam=new THREE.PerspectiveCamera(32,W/H,0.1,1000); cam.position.set(ct.x+Math.sin(P.yaw)*R, 1.7+sz.y*0.35, ct.z+Math.cos(P.yaw)*R); cam.lookAt(ct.x,sz.y*0.42,ct.z);
+    /* 1-o'tish: rang (qora fonda); 2-o'tish: niqob (oq siluet) — teksturali devorlar shaffof chiqib qolmasligi uchun */
+    r.setClearColor(0x000000,1); r.render(sc,cam); const cv=r.domElement, x=document.createElement('canvas'); x.width=W; x.height=H; const c2=x.getContext('2d'); c2.drawImage(cv,0,0);
+    const ov=new THREE.MeshBasicMaterial({color:0xffffff}); sc.overrideMaterial=ov; sc.children.forEach(o=>{ if(o.isLight) o.visible=false; }); r.render(sc,cam); const mk=document.createElement('canvas'); mk.width=W; mk.height=H; mk.getContext('2d').drawImage(cv,0,0); sc.overrideMaterial=null; ov.dispose(); sc.remove(G); r.dispose();
+    const im=c2.getImageData(0,0,W,H), md=mk.getContext('2d').getImageData(0,0,W,H).data; for(let i=0;i<im.data.length;i+=4) im.data[i+3]=md[i]; c2.putImageData(im,0,0);
+    const d=im.data; let a=W,b=H,e=0,f=0; for(let yy=0;yy<H;yy+=2) for(let xx=0;xx<W;xx+=2){ if(d[(yy*W+xx)*4+3]>8){ if(xx<a)a=xx; if(xx>e)e=xx; if(yy<b)b=yy; if(yy>f)f=yy; } }
+    if(e<=a||f<=b) return cv.toDataURL('image/png'); const o=document.createElement('canvas'); o.width=e-a+4; o.height=f-b+4; o.getContext('2d').drawImage(x,a-2,b-2,o.width,o.height,0,0,o.width,o.height); return o.toDataURL('image/png'); }
+  async function shrink(file,max=1600){ let src; try{ src=await createImageBitmap(file,{imageOrientation:'from-image'}); }catch(_){ src=await new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=URL.createObjectURL(file); }); }
+    let w=src.width||src.naturalWidth, h=src.height||src.naturalHeight; const k=Math.min(1,max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k); const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(src,0,0,w,h); return c.toDataURL('image/jpeg',0.88); }
+  function box(){ let b=$p('phBox'); if(b) return b; css(); b=document.createElement('div'); b.id='phBox'; b.hidden=true;
+    b.innerHTML=`<div class="pTop"><b>🏘 Uyingiz mahallada qanday turadi</b><button class="pX" type="button" aria-label="Yopish">✕</button></div>
+    <div id="phStage"><div id="phEmpty"><div class="big">📷</div><p><b>Bo'sh yeringizni rasmga oling</b><br>Ko'chadan turib, yer va yonidagi qo'shni uylar ko'rinadigan qilib suratga oling. Keyin uyingizni rasmga qo'yamiz.</p></div><div id="phWrap" hidden><img class="bg" id="phBg" alt="Yer rasmi"><img id="phHouse" alt="Sizning uyingiz" draggable="false"></div><img id="phAi" alt="AI natijasi"></div>
+    <div class="pBar"><label for="phFile" class="pB pri" style="flex:0 0 auto;cursor:pointer">📷 Rasm olish / tanlash</label><input id="phFile" type="file" accept="image/*">
+      <label>📏 Kattalik <input type="range" id="phSize" min="10" max="160" value="55"></label>
+      <button type="button" class="pB" id="phRotL" aria-label="Chapga burish">↺</button><button type="button" class="pB" id="phRotR" aria-label="O'ngga burish">↻</button>
+      <button type="button" class="pB pri" id="phAiBtn" disabled>✨ AI bilan tabiiy qilish</button><button type="button" class="pB" id="phCmp" hidden>👁 Oldin / keyin</button><button type="button" class="pB" id="phSave" disabled>⬇️ Saqlash</button>
+      <p class="pMsg" id="phMsg">Uyni barmoq bilan surib yerga qo'ying, kattaligini qo'shni uylarga moslang.</p></div>`;
+    document.body.appendChild(b);
+    b.querySelector('.pX').onclick=()=>{ b.hidden=true; document.body.style.overflow=''; };
+    $p('phFile').addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ P.photo=await shrink(f); P.ai=null; $p('phStage').classList.remove('showai'); $p('phCmp').hidden=true; $p('phBg').src=P.photo; $p('phEmpty').hidden=true; $p('phWrap').hidden=false; $p('phAiBtn').disabled=false; $p('phSave').disabled=false; place(); $p('phMsg').textContent="Uyni barmoq bilan surib yerga qo'ying, kattaligini qo'shni uylarga moslang. Keyin «AI bilan tabiiy qilish»ni bosing."; }catch(_){ toast("Rasmni o'qib bo'lmadi"); } e.target.value=''; });
+    $p('phSize').oninput=e=>{ P.s=+e.target.value/100; place(); dirty(); };
+    const rot=d=>{ P.yaw+=d; $p('phHouse').src=P.house=render(); dirty(); }; $p('phRotL').onclick=()=>rot(-0.35); $p('phRotR').onclick=()=>rot(0.35);
+    const hs=$p('phHouse'); let drag=null;
+    hs.addEventListener('pointerdown',e=>{ e.preventDefault(); const r=$p('phBg').getBoundingClientRect(); drag={r,dx:P.x*r.width-(e.clientX-r.left),dy:P.y*r.height-(e.clientY-r.top)}; hs.setPointerCapture(e.pointerId); hs.style.cursor='grabbing'; });
+    hs.addEventListener('pointermove',e=>{ if(!drag) return; const r=drag.r; P.x=Math.max(0,Math.min(1,(e.clientX-r.left+drag.dx)/r.width)); P.y=Math.max(0.05,Math.min(1.05,(e.clientY-r.top+drag.dy)/r.height)); place(); });
+    const up=()=>{ if(drag){ drag=null; hs.style.cursor='grab'; dirty(); } }; hs.addEventListener('pointerup',up); hs.addEventListener('pointercancel',up);
+    $p('phAiBtn').onclick=ai; $p('phSave').onclick=save; $p('phCmp').onclick=()=>$p('phStage').classList.toggle('showai');
+    return b; }
+  function dirty(){ if(P.ai){ P.ai=null; $p('phStage').classList.remove('showai'); $p('phCmp').hidden=true; } }
+  function place(){ const h=$p('phHouse'); h.style.left=(P.x*100)+'%'; h.style.top=(P.y*100)+'%'; h.style.width=(P.s*100)+'%'; }
+  function compose(withShadow){ return new Promise((res,rej)=>{ const bg=new Image(), hi=new Image(); let n=0; const go=()=>{ if(++n<2) return; const c=document.createElement('canvas'); c.width=bg.naturalWidth; c.height=bg.naturalHeight; const x=c.getContext('2d'); x.drawImage(bg,0,0);
+      const w=c.width*P.s, h=w*hi.naturalHeight/hi.naturalWidth, cx=P.x*c.width, by=P.y*c.height;
+      if(withShadow){ x.save(); x.fillStyle='rgba(0,0,0,0.28)'; x.filter='blur('+Math.max(4,w*0.02)+'px)'; x.beginPath(); x.ellipse(cx,by-h*0.02,w*0.5,Math.max(6,h*0.06),0,0,Math.PI*2); x.fill(); x.restore(); }
+      x.drawImage(hi,cx-w/2,by-h,w,h); res(c.toDataURL('image/jpeg',0.9)); }; bg.onload=go; hi.onload=go; bg.onerror=hi.onerror=rej; bg.src=P.photo; hi.src=P.house; }); }
+  async function ai(){ if(P.busy||!P.photo) return; const used=+localStorage.getItem('uychizma:phAi')||0; if(used>=10){ toast("Bugungi AI limiti tugadi. Ertaga qayta urinib ko'ring."); return; }
+    P.busy=true; const btn=$p('phAiBtn'), t=btn.textContent; btn.disabled=true; btn.textContent='⏳ AI chizmoqda… (20–60 s)'; $p('phMsg').textContent="AI uyingizni rasmdagi yorug'lik va soyaga moslab, tabiiy qilmoqda…";
+    try{ const img=await compose(true); const prompt="This is a real photo of an empty building plot on a residential street in Uzbekistan, with the neighbouring houses around it. A 3D-rendered house has been pasted onto the plot. Make the pasted house look like a real, newly built house actually photographed standing on that plot: match the photo's perspective, lighting direction, colour temperature, shadows, sharpness and grain, and ground it naturally on the soil with a realistic base and contact shadow. Keep the house design EXACTLY the same: same shape, number of floors, roof, windows, doors, wall and roof colours and size in the frame. Keep everything else in the photo EXACTLY unchanged: neighbouring houses, fences, street, trees, wires, sky, people and cars. Photorealistic photograph, no text, no watermark.";
+      const ctl=new AbortController(), tm=setTimeout(()=>ctl.abort(),130000); let j; try{ const r=await fetch(CF_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:'render',image:img,prompt}),signal:ctl.signal}); j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); } finally{ clearTimeout(tm); }
+      if(!j||!j.image) throw new Error('rasm kelmadi'); P.ai=j.image; $p('phAi').src=P.ai; $p('phStage').classList.add('showai'); $p('phCmp').hidden=false; try{ localStorage.setItem('uychizma:phAi',String(used+1)); }catch(_){}
+      $p('phMsg').textContent="Tayyor! «Oldin / keyin» tugmasi bilan solishtiring. Uyni surib, qaytadan AI bilan qilishingiz mumkin."; }
+    catch(e){ console.warn(e); $p('phMsg').textContent="AI hozir javob bermadi. Oddiy rasmni saqlashingiz yoki birozdan keyin qayta urinishingiz mumkin."; }
+    btn.textContent=t; btn.disabled=false; P.busy=false; }
+  async function save(){ try{ const u=(P.ai&&$p('phStage').classList.contains('showai'))?P.ai:await compose(true); const b=await (await fetch(u)).blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='uychizma-mahallada.jpg'; document.body.appendChild(a); a.click(); a.remove(); }catch(_){ toast("Saqlab bo'lmadi"); } }
+  document.addEventListener('click',e=>{ if(!e.target.closest('#phBtn')) return; if(!S.variants||!S.variants[S.active]) return; try{ const b=box(); b.hidden=false; document.body.style.overflow='hidden'; P.house=render(); $p('phHouse').src=P.house; place(); if(!P.photo) $p('phMsg').textContent="Avval bo'sh yeringiz rasmini oling yoki tanlang."; }catch(er){ console.error(er); toast("Ochilmadi, qayta urinib ko'ring"); } });
+})();
 /* ===== JOYLASHUV: uyni xaritada haqiqiy yerga joylash, tepadan ko'rish, qo'shni binolar bilan solishtirish, shu joyda AR ===== */
 (function(){
   const $g=id=>document.getElementById(id); let MAP=null, MK=null, VIEW3=null, built=false;
@@ -4764,7 +4847,7 @@ document.addEventListener('click',e=>{ const a=e.target.closest('#ustaFind'); if
   const inUZ=(la,lo)=>la>37&&la<46&&lo>55.5&&lo<73.5;
   const toXY=(lat,lng,c)=>[(lng-c.lng)*MPD*Math.cos(c.lat*R2),(lat-c.lat)*MPD]; // sharq, shimol (metr)
   /* hovli guruhi (uy+hovli+zabor), markazi uchastka o'rtasida, plan +y = shimol (-Z) */
-  function plotGroup(){ const v=S.variants[S.active], A=S.A, B=buildHouse(v,A), g=new THREE.Group(); g.add(B.group);
+  function plotGroup(){ const v=S.variants[S.active], A=S.A, B=ucFreshBuild(v,A), g=new THREE.Group(); g.add(B.group);
     const PP=B.plotPts||[[0,0],[A.plotW,0],[A.plotW,A.plotL],[0,A.plotL]], x0=Math.min(...PP.map(p=>p[0])), x1=Math.max(...PP.map(p=>p[0])), y0=Math.min(...PP.map(p=>p[1])), y1=Math.max(...PP.map(p=>p[1]));
     const mx=(x0+x1)/2, my=(y0+y1)/2; B.group.position.set(-mx,0,my);
     g.updateMatrixWorld(true); const bb=new THREE.Box3(), c=new THREE.Vector3(), sz=new THREE.Vector3();
