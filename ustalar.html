@@ -211,9 +211,9 @@ if(qs.get('r')&&REG.includes(qs.get('r'))) $('fReg').value=qs.get('r');
 const EXT=(window.USTA_EXT||[]).map((x,i)=>({id:'x'+i,own:false,name:x.n,work:x.w,region:x.r,city:x.c,src:x.s,url:x.u,about:x.d||''}));
 let OWN=[], picked=new Set(), shown=20;
 const normW=w=>[...new Set((w||[]).flatMap(k=>WORK[k]&&!OLDW[k]?[k]:(OLDW[k]||[k])))];
-async function loadOwn(){ if(!db) return;
-  try{ const q=await Promise.race([db.collection('ustalar').where('status','==','ok').limit(500).get(),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),12000))]);
-    OWN=q.docs.map(d=>{ const u=d.data(); return {id:d.id,own:true,name:u.name,work:normW(u.work),region:u.region,city:u.city||'',phone:u.phone||'',tg:u.tg||'',exp:u.exp||'',team:u.team||'',about:u.about||'',top:u.top||0,at:u.at||0}; })
+async function loadOwn(){
+  try{ const j=await (await fetch('https://uychizma-pay.uychizma.workers.dev/db/ustalar',{cache:'no-store'})).json();
+    OWN=(j.items||[]).map(u=>{ return {id:u.id,own:true,name:u.name,work:normW(u.work),region:u.region,city:u.city||'',phone:u.phone||'',tg:u.tg||'',exp:u.exp||'',team:u.team||'',about:u.about||'',top:u.top||0,at:u.at||0}; })
       .sort((a,b)=>(b.top-a.top)||(b.at-a.at));
   }catch(e){ console.warn(e); } }
 const curW=()=>([...$('fWork').children].find(x=>x.getAttribute('aria-pressed')==='true')||{dataset:{v:''}}).dataset.v;
@@ -258,7 +258,8 @@ fillCities(); render(); loadOwn().then(()=>{ fillCities(); render(); });
 
 /* yuborish */
 const okPhone=p=>String(p).replace(/\D/g,'').length>=9;
-async function save(col,data){ if(!db) throw new Error('net'); return await Promise.race([db.collection(col).add(data),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),15000))]); }
+const UCDB='https://uychizma-pay.uychizma.workers.dev'; /* zaxira server (Firebase to'xtatilgan) */
+async function save(col,data){ const r=await fetch(UCDB+'/db/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({col,doc:data})}); const j=await r.json().catch(()=>({})); if(!j.ok) throw new Error(j.error||('HTTP '+r.status)); return {id:j.id}; }
 const failMsg=(m,e)=>{ m.className='msg err'; m.innerHTML="Yuborib bo'lmadi ("+esc(e.code||e.message||'')+"). Telegramda yozing: <a href='https://t.me/amirhonsh'>@amirhonsh</a>"; };
 $('cSend').onclick=async()=>{ const m=$('cMsg'); m.className='msg'; m.textContent=''; const name=$('cName').value.trim(), phone=$('cPhone').value.trim();
   if(!name||!okPhone(phone)){ m.className='msg err'; m.textContent='Ism va telefon raqamini yozing.'; return; }
