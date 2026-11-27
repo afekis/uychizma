@@ -3369,11 +3369,20 @@ async function regSubmit(){ const btn=$('#regGo'); if(btn.disabled) return;
   if(!ok){ $('#regErr').textContent="Qizil bilan belgilangan joylarni to'g'rilang."; const f=document.querySelector('#regPane [aria-invalid=true]'); if(f) f.focus(); return; }
   btn.disabled=true; btn.textContent='Yuborilmoqda…';
   try{ if(tel){ await regCreate({name,phone:telPretty(tel),city,email:telMail(tel),pass}); return; }
+    if(!(await cloudReady())&&CLOUD.down){ await localReg({name,phone,city,email,pass}); return; }
     if(KOD_API){ FPM='reg'; FPE=email; REGD={name,phone,city,email,pass}; const r=await kodSend(); if(!r.ok){ const m=kodMsg(r); if(/exists|bad_email/.test(r.error)) ferr('regEmail',m); $('#regErr').textContent=m; return; } FP_N=0; fpGo('fpK'); return; }
     await regCreate({name,phone,city,email,pass}); }
   finally{ btn.disabled=false; btn.textContent="Ro'yxatdan o'tish"; } }
+/* Vaqtinchalik: server (Firebase) to'xtatilgan bo'lsa — akkaunt shu qurilmada saqlanadi */
+async function passHash(p){ try{ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('uc|'+p)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }catch(_){ let h=0; for(const c of 'uc|'+p) h=(h*31+c.charCodeAt(0))|0; return 'x'+h; } }
+async function localReg(d){ const {name,phone,city,email,pass}=d; const acc=LS.get('localAcc',{})||{}; const h=await passHash(pass);
+  const id='local-'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); acc[email]={name,phone,city,h,id,at:Date.now()}; LS.set('localAcc',acc);
+  S.user={name,phone,city,email:isTelMail(email)?'':email,uid:id,via:'local',at:Date.now()};
+  if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); $('#regErr').textContent=''; renderUser(); toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; }
+async function localLogin(id,pass){ const acc=(LS.get('localAcc',{})||{})[id]; if(!acc) return false; if(acc.h!==(await passHash(pass))) return 'bad';
+  S.user={name:acc.name,phone:acc.phone,city:acc.city,email:isTelMail(id)?'':id,uid:acc.id||('local-'+acc.h.slice(0,12)),via:'local',at:Date.now()}; LS.set('user',S.user); renderUser(); return true; }
 async function regCreate(d){ const {name,phone,city,email,pass}=d;
-  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'};
+  try{ if(!(await cloudReady())){ if(CLOUD.down) return await localReg(d); throw {code:'auth/network-request-failed'}; }
     let cr=null; for(let k=0;;k++){ try{ cr=await firebase.auth().createUserWithEmailAndPassword(email,pass); break; }catch(x){ const busy=/too-many-requests|network-request-failed|internal-error/.test((x&&x.code)||''); if(!busy||k>=8) throw x; const w=Math.min(30,3*Math.pow(1.6,k))*(0.7+Math.random()*0.6); $('#regErr').textContent="⏳ Hozir ko'p odam ro'yxatdan o'tyapti — biroz kuting, o'zimiz qayta urinamiz…"; await new Promise(r=>setTimeout(r,w*1000)); } } $('#regErr').textContent=''; try{ await cr.user.updateProfile({displayName:name}); }catch(_){}
     S.user={name,phone,city,email:isTelMail(email)?'':email,uid:cr.user.uid,via:'password',at:Date.now()}; CLOUD.user=cr.user;
     if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); await cloudSyncUser(); try{ cloudReg(); }catch(e){} renderUser(); toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; }
@@ -3382,7 +3391,8 @@ async function logSubmit(){ const btn=$('#logGo'); if(btn.disabled) return; cons
   const tel=telNorm(email);
   let ok=ferr('logEmail',!tel&&!okEmail(email)?"Gmail yoki telefon raqamni to'g'ri yozing.":''); ok=ferr('logPass',!pass?'Parolni yozing.':'')&&ok; if(!ok) return;
   btn.disabled=true; btn.textContent='Kirilmoqda…';
-  try{ if(!(await cloudReady())) throw {code:'auth/network-request-failed'}; await firebase.auth().signInWithEmailAndPassword(tel?telMail(tel):email,pass);
+  try{ if(!(await cloudReady())){ if(CLOUD.down){ const lr=await localLogin(tel?telMail(tel):email,pass); if(lr==='bad'){ $('#logErr').textContent="Parol noto'g'ri. Qayta yozing."; ferr('logPass',' '); return; } if(lr){ toast('Xush kelibsiz, '+(S.user.name||'')+'!'); go('start'); return; } $('#logErr').textContent="Server vaqtincha ishlamayapti. Shu telefonda akkaunt topilmadi — «Ro'yxatdan o'tish» orqali yangi akkaunt oching."; return; } throw {code:'auth/network-request-failed'}; }
+    await firebase.auth().signInWithEmailAndPassword(tel?telMail(tel):email,pass);
     for(let i=0;i<30&&!(S.user&&S.user.uid);i++) await new Promise(r=>setTimeout(r,100)); toast('Xush kelibsiz, '+((S.user&&S.user.name)||'')+'!'); cloudPull(); go('start'); }
   catch(e){ console.warn(e); let m=authMsg(e); if(tel) m=m.replace(/Gmail/g,'Telefon raqam').replace(/telefon raqam/g,'telefon raqam'); $('#logErr').textContent=m; if(/password|credential/.test(e&&e.code)) ferr('logPass',' '); }
   finally{ btn.disabled=false; btn.textContent='Kirish'; } }
