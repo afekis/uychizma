@@ -686,7 +686,6 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
           <span class="bjtx"><b>Telegram bot: @uychzma_bot <i>YANGI</i></b><small>Savolingizga darhol javob beradi, loyiha va ustalarni Telegram ichida ochadi</small></span>
           <span class="bjar">→</span>
         </a>
-        <div class="refcard" style="margin:-4px 0 14px"></div>
         <p class="note" style="margin:-6px 0 14px"><a href="biznes.html" style="color:var(--accent);font-weight:600">🏢 Quruvchi firmalar va rieltorlar uchun — UyChizma Biznes →</a></p>
         <div class="actions">
           <button class="btn primary" data-go="start">Loyiha boshlash</button>
@@ -1118,7 +1117,6 @@ html[lang=ru] .hlang .lz{background:none;color:var(--head-muted)}
       <div style="display:flex;flex-direction:column;gap:6px"><div class="eyebrow">Saqlanganlar</div><h2 style="font-size:28px">Mening loyihalarim</h2></div>
       <button class="btn primary small" data-go="start">Yangi loyiha</button>
     </div>
-    <div style="margin:4px 0 16px;max-width:620px"><div class="refcard"></div></div>
     <div class="projects" id="projList"></div>
   </section>
 </main>
@@ -3304,7 +3302,7 @@ function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clea
 function show(name){
   $$('section[data-screen]').forEach(s=>s.hidden=s.dataset.screen!==name);
   $$('.nav button').forEach(b=>b.setAttribute('aria-current', (b.dataset.go===name||(b.dataset.go==='start'&&['register','wizard'].includes(name)))?'page':'false'));
-  window.scrollTo(0,0);
+  window.scrollTo(0,0); const rv=document.getElementById('revs'); if(rv) rv.hidden=name!=='home'; /* fikrlar faqat bosh sahifada */
   if(name==='projects') renderProjects();
   if(name==='result' && resV && resV.ok) setTimeout(()=>resV._resize(),30);
 }
@@ -3378,7 +3376,7 @@ async function passHash(p){ try{ const b=await crypto.subtle.digest('SHA-256',ne
 async function localReg(d){ const {name,phone,city,email,pass}=d; const acc=LS.get('localAcc',{})||{}; const h=await passHash(pass);
   const id='local-'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); acc[email]={name,phone,city,h,id,at:Date.now()}; LS.set('localAcc',acc);
   S.user={name,phone,city,email:isTelMail(email)?'':email,uid:id,via:'local',at:Date.now()};
-  if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); $('#regErr').textContent=''; renderUser(); toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; }
+  if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); $('#regErr').textContent=''; renderUser(); try{ cloudReg(); }catch(_){} toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; }
 async function localLogin(id,pass){ const acc=(LS.get('localAcc',{})||{})[id]; if(!acc) return false; if(acc.h!==(await passHash(pass))) return 'bad';
   S.user={name:acc.name,phone:acc.phone,city:acc.city,email:isTelMail(id)?'':id,uid:acc.id||('local-'+acc.h.slice(0,12)),via:'local',at:Date.now()}; LS.set('user',S.user); renderUser(); return true; }
 async function regCreate(d){ const {name,phone,city,email,pass}=d;
@@ -3398,6 +3396,9 @@ async function logSubmit(){ const btn=$('#logGo'); if(btn.disabled) return; cons
   finally{ btn.disabled=false; btn.textContent='Kirish'; } }
 /* Parolni tiklash: 1) Gmail so'raladi 2) xat yuboriladi 3) havola bosilganda saytda yangi parol */
 /* Gmail'ga kod: Google Apps Script xizmati (KOD_API bo'sh bo'lsa — eski havola usuli) */
+/* Zaxira server (Cloudflare KV): Firebase ishlamasa ma'lumotlar shu yerga yoziladi, admin /admin sahifasida ko'radi */
+const UCDB='https://uychizma-pay.uychizma.workers.dev';
+async function kvAdd(col,doc){ for(let k=0;k<2;k++){ try{ const r=await fetch(UCDB+'/db/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({col,doc})}); const j=await r.json().catch(()=>({})); if(j.ok) return true; if(r.status<500) return false; }catch(_){ } await new Promise(z=>setTimeout(z,1500)); } return false; }
 const KOD_API='https://script.google.com/macros/s/AKfycbwcg9Gj4HUWPwo02IJ3U_EkS8mmOuZxACZZiuFoYSKJ4fZhyw2a_7ld7OZHOF-6lSqyyQ/exec';
 async function kodApi(body){ const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),25000); try{ const r=await fetch(KOD_API,{method:'POST',body:JSON.stringify(body),signal:ctl.signal}); return await r.json(); }catch(e){ return {ok:false,error:'net'}; } finally{ clearTimeout(t); } }
 const KOD_ERR={exists:"Bu Gmail bilan akkaunt bor. «Akkauntim bor — kirish» ni bosing.",no_user:"Bu Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.",too_many:"Juda ko'p urinish bo'ldi. Birozdan keyin qayta urining.",expired:"Kod eskirgan. «Qayta yuborish» ni bosing.",wrong_code:"Kod noto'g'ri. Gmail'dagi kodni qayta tekshiring.",weak:"Parol juda qisqa — kamida 6 ta harf yoki raqam yozing.",bad_email:"Gmail noto'g'ri yozilgan.",net:"Internet bilan aloqa yo'q. Qayta urining.",server:"Xizmatda xato bo'ldi. Birozdan keyin qayta urining."};
@@ -4094,6 +4095,7 @@ $('#arGo').onclick=async()=>{ const name=$('#arName').value.trim(), phone=$('#ar
   const link=(()=>{ try{ return shareUrl(); }catch(e){ return ''; } })();
   const doc={name,phone,note:note.slice(0,1500),pkg:arPkg,pkgName:PK[arPkg],city:(S.user&&S.user.city)||regOf(S.A),email:(S.user&&S.user.email)||'',uid:(CLOUD.user&&CLOUD.user.uid)||'',variant:v?`${v.key}: ${v.name} · ${stN(v)} · ${fmtA(v.area)} m2 · ${money(v.total)}`:'',link,at:Date.now(),status:'yangi'};
   let ok=false; try{ if(await cloudReady()){ await CLOUD.db.collection('orders').add(doc); ok=true; } }catch(e){ console.warn(e); }
+  if(!ok) ok=await kvAdd('orders',doc);
   if(TG_USER){ const txt=`Arxitektor arizasi: ${doc.pkgName}\n${name}, ${phone}\n${doc.variant}\n${note}\n${link}`; window.open(`https://t.me/${TG_USER}?text=${encodeURIComponent(txt)}`,'_blank'); ok=true; }
   $('#arMsg').textContent=ok?"✅ Arizangiz qabul qilindi. Tez orada siz bilan bog'lanamiz.":"Yuborib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."; b.disabled=false; if(ok) toast('Ariza yuborildi'); };
 let fbRate=0;
@@ -4106,13 +4108,15 @@ $('#fbSend').onclick=async()=>{ const text=$('#fbText').value.trim(); if(!fbRate
   const doc={text:text.slice(0,2900),rating:fbRate,screen:scr,step:S.step|0,mode:S.qmode||'',name:(S.user&&S.user.name)||'',phone:(S.user&&S.user.phone)||'',mobile:matchMedia('(max-width:640px)').matches,at:Date.now()};
   const pubName=($('#fbName').value.trim()||(S.user&&S.user.name)||'Mehmon').slice(0,40); doc.name=pubName;
   let ok=false; try{ if(await cloudReady()){ await CLOUD.db.collection('feedback').add(doc); ok=true; if(fbRate>=1&&fbRate<=5){ try{ await CLOUD.db.collection('reviews').add({name:pubName,rating:fbRate,text:text.slice(0,600),at:Date.now()}); loadReviews(); }catch(e){ console.warn('review',e); } } } }catch(e){ console.warn(e); }
+  if(!ok){ ok=await kvAdd('feedback',doc); if(ok&&fbRate>=1&&fbRate<=5){ await kvAdd('reviews',{name:pubName,rating:fbRate,text:text.slice(0,600)}); loadReviews(); } }
   if(!ok&&TG_USER){ window.open(`https://t.me/${TG_USER}?text=${encodeURIComponent('Fikr: '+fbRate+'★ '+text)}`,'_blank'); ok=true; }
   b.disabled=false; $('#fbMsg').textContent=ok?'Rahmat! Fikringiz yuborildi.':"Yuborib bo'lmadi, keyinroq urinib ko'ring."; if(ok){ $('#fbText').value=''; setTimeout(()=>{ $('#fbModal').hidden=true; },1200); } };
 
 /* ===== Odamlar fikri: hammaga ko'rinadi ===== */
 function revEsc(t){ return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-async function loadReviews(){ const L=$('#revsList'); if(!L) return; try{ if(!(await cloudReady())) throw 0;
-  const q=await CLOUD.db.collection('reviews').orderBy('at','desc').limit(60).get(); const rs=q.docs.map(d=>d.data()).filter(r=>r&&r.rating>=1&&r.rating<=5);
+async function loadReviews(){ const L=$('#revsList'); if(!L) return; try{ let raw;
+  if(await cloudReady()){ const q=await CLOUD.db.collection('reviews').orderBy('at','desc').limit(60).get(); raw=q.docs.map(d=>d.data()); } else { const j=await (await fetch(UCDB+'/db/reviews',{cache:'no-store'})).json(); raw=j.items||[]; }
+  const rs=raw.filter(r=>r&&r.rating>=1&&r.rating<=5);
   if(!rs.length){ L.innerHTML='<p class="note">Hali fikr yo\'q. Birinchi bo\'lib fikr qoldiring!</p>'; $('#revsAvg').textContent=''; return; }
   const avg=rs.reduce((a,r)=>a+r.rating,0)/rs.length; $('#revsAvg').innerHTML=`<b>★ ${avg.toFixed(1)}</b> · ${rs.length} ta fikr`;
   L.innerHTML=rs.map(r=>`<div class="rev"><div class="rev-top"><b>${revEsc(r.name||'Mehmon')}</b><span class="rev-st">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></div>${r.text?`<p>${revEsc(r.text)}</p>`:''}<small>${new Date(r.at||0).toLocaleDateString('uz-UZ')}</small></div>`).join('');
@@ -4668,13 +4672,16 @@ async function logVisit(){ try{ if(sessionStorage.getItem('uvis')) return; sessi
     await CLOUD.db.collection('visits').add({at:Date.now(),dev:matchMedia('(max-width:640px)').matches?'telefon':'kompyuter',ref:String(document.referrer||'to\'g\'ridan-to\'g\'ri').slice(0,120),lang:String(navigator.language||'').slice(0,10),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20)}); }catch(x){ console.warn('visit',x); } }
 /* Har bir chiqarilgan loyihani serverga yozish: kim, qanday uy (faqat admin o'qiy oladi) */
 async function logGen(){ try{ const v=S.variants&&S.variants[0], A=S.A; if(!v) return; const key=[A.plotW,A.plotL,A.floors,A.beds,A.layout,A.seed,A.style].join('|'); if(S._lg===key) return; S._lg=key;
-  if(location.protocol==='file:'||!(await cloudReady())) return; const u=S.user||{}; let link=''; try{ link=('https://afekis.github.io/uychizma/#'+encProject(A,0,v.style)).slice(0,6000); }catch(_){}
+  if(location.protocol==='file:') return; const CR=await cloudReady(); const u=S.user||{}; let link=''; try{ link=('https://afekis.github.io/uychizma/#'+encProject(A,0,v.style)).slice(0,6000); }catch(_){}
   const mode=A.layout==='custom'?'📐 Chizma':({tez:'⚡ Tez',toliq:"🧩 To'liq"})[S.qmode||'tez']||'';
-  await CLOUD.db.collection('gens').add({at:Date.now(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),email:String(u.email||'').slice(0,80),city:String(u.city||'').slice(0,40),
+  await (CR?(d=>CLOUD.db.collection('gens').add(d)):(d=>kvAdd('gens',d)))({at:Date.now(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),email:String(u.email||'').slice(0,80),city:String(u.city||'').slice(0,40),
     mode:String(mode).slice(0,20),plot:(fmt1(A.plotW)+' × '+fmt1(A.plotL)+' m').slice(0,30),floors:A.floors|0,beds:A.beds|0,style:String(stN(v)||v.style||'').slice(0,40),house:String(v.name||'').slice(0,60),area:Math.round(v.area||0),link,
     dev:matchMedia('(max-width:640px)').matches?'telefon':'kompyuter'}); try{ window.firmLogProject&&window.firmLogProject(v,A); }catch(_){} }catch(x){ console.warn('gen',x); } }
 /* Ro'yxatdan o'tganlarni serverga yozish (faqat admin o'qiy oladi) */
-async function cloudReg(){ try{ if(!(await cloudReady())) return; const u=S.user||{}; const sig=(u.name||'')+'|'+(u.phone||'')+'|'+(u.email||''); if(LS.get('regSent','')===sig) return;
+async function cloudReg(){ try{ const u=S.user||{}; const sig=(u.name||'')+'|'+(u.phone||'')+'|'+(u.email||''); if(LS.get('regSent','')===sig) return;
+  if(!(await cloudReady())){ const rb=LS.get('refBy',''); let c=LS.get('cid',''); if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); LS.set('cid',c); }
+    if(rb&&rb!==c&&!LS.get('refSent','')){ if(await kvAdd('refs',{ref:rb,cid:c})) LS.set('refSent',1); }
+    if(await kvAdd('regs',{name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),city:String(u.city||'').slice(0,40),email:String(u.email||'').slice(0,80),via:u.via||'form'})) LS.set('regSent',sig); return; }
   try{ const rb=LS.get('refBy',''); let c=LS.get('cid',''); if(!c){ c=Math.random().toString(36).slice(2)+Date.now().toString(36); LS.set('cid',c); } if(rb&&rb!==c&&!LS.get('refSent','')){ await CLOUD.db.collection('refs').doc(c).set({ref:rb,at:Date.now()}); LS.set('refSent',1); } }catch(x){ console.warn('ref',x); }
   await CLOUD.db.collection('regs').add({name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),city:String(u.city||'').slice(0,40),email:String(u.email||'').slice(0,80),via:u.via==='google'?'google':'form',at:Date.now()}); LS.set('regSent',sig); }catch(x){ console.warn('reg',x); } }
 </script>
@@ -5166,7 +5173,7 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
   function where(){ bot(`<b>Qadamlar:</b><br>1. Paketni yuklab oling va <b>litsenziyali arxitektor</b>ga imzolating (sayt orqali yuborishingiz mumkin).<br>2. <a href="${RX_LINKS.portal}" target="_blank" rel="noopener">my.gov.uz</a> ga OneID bilan kiring yoki <b>Davlat xizmatlari markazi</b>ga boring.<br>3. Xizmat: <a href="${RX_LINKS.loyiha}" target="_blank" rel="noopener">«Yakka tartibda uy-joy qurishga loyiha hujjatlarini kelishish»</a>. Yuklanadi: <b>bosh reja</b> (yer uchastkasi), <b>arxitektura chizmalari</b> (poydevor, qavatlar, kesim, old fasad) — PDF yoki JPEG. Boshqa hujjat talab qilinmaydi (kredit olinsa — smeta).<br>4. To'lov: 220 000 so'm (BHMning 50%). Javob 3 ish kunida portal orqali keladi.<br><br>Shaharsozlik hujjatlari <b>faqat</b> my.gov.uz yoki Davlat xizmatlari markazlari orqali qabul qilinadi — mansabdor bilan yuzma-yuz uchrashuv yo'q.`,"Yo'l ko'rsatuvchi"); menu(); }
   function fee(){ bot(`• <b>Loyiha hujjatlarini kelishish</b> (yakka tartibdagi uy): <b>BHMning 50%</b> — 2026-yil 1-sentyabrdan <b>220 000 so'm</b> (BHM = 440 000 so'm).<br>• Ko'rib chiqish: <b>3 ish kuni</b> (2 qavatgacha, 12 m gacha, 500 m² gacha uylar — tuman qurilish bo'limi).<br>• Yakka tartibdagi uylar «Toshkent shahrini rivojlantirish» yig'imidan (har m³ ga 1 BHM) <b>ozod</b>.<br>• To'lov faqat elektron, my.gov.uz da ariza paytida.<br>• Arxitektor xizmati (eskiz-loyiha va imzo) alohida, kelishuv asosida.<br>• Ortiqcha pul so'rashsa: <b>1066</b> yoki <a href="${RX_LINKS.komplayens}" target="_blank" rel="noopener">@QurilishKomplayensbot</a>.`,"Yo'l ko'rsatuvchi"); menu(); }
   async function sign(){ const v=cur(); const u=S.user||{}; const b=bot('Yuborilmoqda…','Hujjat agenti');
-    try{ if(!(await cloudReady())) throw 0; const oref=await CLOUD.db.collection('orders').add({name:String(D.owner||u.name||'').slice(0,80),phone:String(u.phone||'').slice(0,30),city:String(D.addr||u.city||'').slice(0,160),pkgName:'Ruxsatnoma: eskiz-loyiha + imzo',pkg:'ruxsat',note:`Kadastr: ${D.kad||'-'}; hujjat: ${D.doc||'-'}; ${D.type||''}; me'yor: ${NC?NC.ok+' ok / '+NC.bad+' buzilgan':''}`.slice(0,400),variant:`${v.key}: ${v.name}, ${fmtA(v.area)} m2`,link:shareUrl(),at:Date.now()}); D.orderId=oref.id; LS.set('rx',D);
+    try{ const CR=await cloudReady(); const odoc=({name:String(D.owner||u.name||'').slice(0,80),phone:String(u.phone||'').slice(0,30),city:String(D.addr||u.city||'').slice(0,160),pkgName:'Ruxsatnoma: eskiz-loyiha + imzo',pkg:'ruxsat',note:`Kadastr: ${D.kad||'-'}; hujjat: ${D.doc||'-'}; ${D.type||''}; me'yor: ${NC?NC.ok+' ok / '+NC.bad+' buzilgan':''}`.slice(0,400),variant:`${v.key}: ${v.name}, ${fmtA(v.area)} m2`,link:shareUrl(),at:Date.now()}); if(CR){ const oref=await CLOUD.db.collection('orders').add(odoc); D.orderId=oref.id; } else { if(!(await kvAdd('orders',odoc))) throw 0; D.orderId='kv'+Date.now(); } LS.set('rx',D);
       b.innerHTML=`<b class="ag">Hujjat agenti</b>✅ Yuborildi! Arxitektor imzolagan loyihani yuklagach, shu yerda «📥 Imzolangan loyihani olish» tugmasi orqali olasiz. Hamkor arxitektor siz bilan <b>${esc(u.phone||'telefoningiz')}</b> orqali bog'lanadi: loyihani tekshiradi, kerak bo'lsa to'g'rilaydi, imzo va muhr qo'yadi. Xizmat narxi kelishuv asosida.`; }
     catch(_){ b.innerHTML=`<b class="ag">Hujjat agenti</b>Yuborib bo'lmadi. Internetni tekshiring yoki Telegramda yozing: <a href="https://t.me/${CONTACT_TG}" target="_blank" rel="noopener">@${CONTACT_TG}</a>`; } menu(); }
   async function pdf(){ const b=bot('PDF tayyorlanmoqda…','Hujjat agenti');
@@ -5277,7 +5284,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   const credits=()=>pays().filter(x=>x.status==='ok').length*PAY.per+bonus();
   try{ const rf=new URLSearchParams(location.search).get('ref'); if(rf&&/^[a-z0-9]{6,40}$/.test(rf)&&rf!==cid()&&!LS.get('refBy','')) LS.set('refBy',rf); }catch(_){}
   const refUrl=()=>location.origin+location.pathname+'?ref='+cid();
-  async function bonusSync(){ if(!(await cloudReady())) return; try{ const q=await CLOUD.db.collection('refs').where('ref','==',cid()).limit(200).get(); const was=bonus(); LS.set('refN',q.size); if(bonus()>was){ badge(); toast(`🎁 Do'stlaringiz ro'yxatdan o'tdi — sizga ${bonus()-was} ta uy bepul!`); } }catch(x){ console.warn('refs',x); } refUI(); }
+  async function bonusSync(){ if(!(await cloudReady())){ try{ const j=await (await fetch(UCDB+'/db/refcount?ref='+encodeURIComponent(cid()),{cache:'no-store'})).json(); if(j.ok){ const was=bonus(); LS.set('refN',j.n); if(bonus()>was){ badge(); toast(`🎁 Do'stlaringiz ro'yxatdan o'tdi — sizga ${bonus()-was} ta uy bepul!`); } } }catch(_){} refUI(); return; } try{ const q=await CLOUD.db.collection('refs').where('ref','==',cid()).limit(200).get(); const was=bonus(); LS.set('refN',q.size); if(bonus()>was){ badge(); toast(`🎁 Do'stlaringiz ro'yxatdan o'tdi — sizga ${bonus()-was} ta uy bepul!`); } }catch(x){ console.warn('refs',x); } refUI(); }
   window.bonusSync=bonusSync;
   function refUI(){ const u=refUrl(), t=encodeURIComponent("UyChizma — uyingizni qurishdan oldin 3D-da ko'ring: reja, narx, smeta. Birinchi uy bepul! Shu havola orqali ro'yxatdan o'ting:"); const n=+LS.get('refN',0)||0, got=Math.floor(n/2), cur=n%2;
     document.querySelectorAll('.refcard').forEach(c=>{
