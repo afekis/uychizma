@@ -5295,8 +5295,10 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   try{ if(new URLSearchParams(location.search).get('ref')&&!LS.get('user',null)) setTimeout(()=>toast("🎁 Sizni do'stingiz taklif qildi! Ro'yxatdan o'ting — birinchi uy loyihasi bepul"),1500); }catch(_){}
   document.addEventListener('click',async e=>{ const b=e.target.closest('.refCopy'); if(!b) return; try{ await navigator.clipboard.writeText(refUrl()); toast('Havola nusxalandi'); }catch(_){ const i=b.parentNode.querySelector('.refLink'); i.select(); toast('Havolani belgilab nusxalang'); } });
   refUI(); setTimeout(bonusSync,2500);
-  async function refresh(){ try{ await bonusSync(); }catch(_){} try{ await vipSync(); }catch(_){} const list=pays(); if(!list.some(x=>x.status==='pending')) return list; if(!(await cloudReady())) return list;
-    for(const x of list) if(x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
+  async function refresh(){ try{ await bonusSync(); }catch(_){} try{ await vipSync(); }catch(_){} const list=pays(); if(!list.some(x=>x.status==='pending')) return list;
+    for(const x of list) if(x.kv&&x.status==='pending'){ try{ const j=await (await fetch(PAYAPI+'/pay/st?id='+encodeURIComponent(x.id),{cache:'no-store'})).json(); if(j.status==='paid') x.status='ok'; else if(j.status==='no') x.status='no'; }catch(_){} }
+    LS.set('pays',list); if(!list.some(x=>!x.kv&&x.status==='pending')) return list; if(!(await cloudReady())) return list;
+    for(const x of list) if(!x.kv&&x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
     LS.set('pays',list); return list; }
   try{ const vq=new URLSearchParams(location.search).get('vip'); if(vq&&/^[a-z0-9]{6,40}$/.test(vq)) LS.set('vipCid',vq); }catch(_){}
   const vipUntil=()=>+LS.get('vipUntil',0)||0, vip=()=>vipUntil()>Date.now();
@@ -5357,7 +5359,11 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   function anyFile(f){ return new Promise(res=>{ const card=()=>{ const c=document.createElement('canvas'); c.width=600; c.height=260; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,600,260); g.fillStyle='#0B5FFF'; g.font='bold 30px sans-serif'; g.fillText('📎 Chek fayli',30,70); g.fillStyle='#222'; g.font='22px sans-serif'; g.fillText(String(f.name||'fayl').slice(0,40),30,130); g.fillText(Math.round((f.size||0)/1024)+' KB · '+(f.type||'noma\'lum'),30,175); g.fillText(new Date().toLocaleString(),30,220); res(c.toDataURL('image/jpeg',0.8)); };
     if((f.size||0)>650000) return card(); const r=new FileReader(); r.onload=()=>{ const d=String(r.result||''); /^data:image\//.test(d)&&d.length<850000?res(d):card(); }; r.onerror=card; try{ r.readAsDataURL(f); }catch(_){ card(); } }); }
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
-    try{ if(!(await cloudReady())) throw new Error('net'); const u=S.user||{};
+    try{ const u=S.user||{};
+      if(!(await cloudReady())){ /* server (Firebase) ishlamasa — chek Telegram bot orqali adminga boradi */
+        const r=await fetch(PAYAPI+'/pay/chek',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per})}); const j=await r.json().catch(()=>({}));
+        if(!j.ok) throw new Error(j.error==='too_many'?"Juda ko'p urinish":(j.error||('HTTP '+r.status)));
+        const l=pays(); l.push({id:j.id,status:'pending',kv:1}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi ✅'); b.textContent='📤 Chekni yuborish'; return; }
       const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now(),...(LS.get('refBy','')?{ref:LS.get('refBy','')}:{})});
       const l=pays(); l.push({id:ref.id,status:'pending'}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi'); }
     catch(x){ console.warn('pay send',x); const code=(x&&(x.code||x.message))||''; $p('payErr').innerHTML="Yuborib bo'lmadi"+(code?" ("+String(code).slice(0,40)+")":"")+". Internetni tekshirib, qayta urinib ko'ring yoki chekni Telegramga yuboring: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>"; b.disabled=false; }

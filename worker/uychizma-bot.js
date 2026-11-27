@@ -179,6 +179,20 @@ async function payRoute(req, env, url) {
       return J(req, { ok: true, id, amount }); }
     return J(req, { ok: false, error: 'busy' }, 503);
   }
+  /* Chek (skrinshot) yuborish: adminga Telegramda rasm + ✅/❌ tugmalari */
+  if (url.pathname === '/pay/chek' && req.method === 'POST') {
+    const b = await req.json().catch(() => ({})); const img = String(b.img || ''), cid = String(b.cid || '').slice(0, 40);
+    const m = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(img);
+    if (!m || img.length > 1200000 || !cid) return J(req, { ok: false, error: 'bad' }, 400);
+    const ip = req.headers.get('CF-Connecting-IP') || ''; const rk = 'rl:' + ip; const n = +(await env.PAYKV.get(rk) || 0); if (n >= 12) return J(req, { ok: false, error: 'too_many' }, 429); await env.PAYKV.put(rk, String(n + 1), { expirationTtl: 3600 });
+    const id = 'c' + crypto.randomUUID().replace(/-/g, '').slice(0, 15), o = { id, cid, kind: 'chek', name: String(b.name || '').slice(0, 60), phone: String(b.phone || '').slice(0, 20), n: Math.max(1, Math.min(10, +b.n || 1)), at: Date.now(), status: 'wait' };
+    await env.PAYKV.put('ord:' + id, JSON.stringify(o), { expirationTtl: 30 * 86400 });
+    if (env.ADMIN_CHAT_ID) { try { const bin = Uint8Array.from(atob(m[2]), c => c.charCodeAt(0)); const fd = new FormData(); fd.append('chat_id', String(env.ADMIN_CHAT_ID)); fd.append('photo', new Blob([bin], { type: 'image/' + m[1] }), 'chek.' + (m[1] === 'jpeg' ? 'jpg' : m[1]));
+      fd.append('caption', `🧾 Yangi chek (saytdan)\n👤 ${o.name || '—'}\n📞 ${o.phone || '—'}\n🏠 ${o.n} ta uy\n🆔 ${cid}`);
+      fd.append('reply_markup', JSON.stringify({ inline_keyboard: [[{ text: '✅ Tasdiqlash', callback_data: 'P|ok|' + id }, { text: '❌ Rad etish', callback_data: 'P|no|' + id }]] }));
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd }); } catch (_) {} }
+    return J(req, { ok: true, id });
+  }
   if (url.pathname === '/pay/st') { const o = JSON.parse(await env.PAYKV.get('ord:' + String(url.searchParams.get('id') || '').slice(0, 20)) || 'null'); return J(req, o ? { ok: true, status: o.status, amount: o.amount } : { ok: false, status: 'none' }); }
   if (url.pathname === '/sms' && req.method === 'POST') {
     if (url.searchParams.get('k') !== await smsKey(env)) return new Response('forbidden', { status: 403 });
@@ -228,6 +242,16 @@ async function handle(env, u) {
   /* Til tanlandi: L|uz|+998...|src */
   if (u.callback_query) {
     const q = u.callback_query, p = (q.data || '').split('|'), chat = q.message.chat.id, uid = String(q.from.id);
+    /* Admin chekni tasdiqlaydi / rad etadi */
+    if (p[0] === 'P') {
+      if (!env.ADMIN_CHAT_ID || String(chat) !== String(env.ADMIN_CHAT_ID) || !env.PAYKV) { await tg(env, 'answerCallbackQuery', { callback_query_id: q.id, text: "Ruxsat yo'q" }); return; }
+      const id = String(p[2] || '').slice(0, 20), o = JSON.parse(await env.PAYKV.get('ord:' + id) || 'null');
+      if (!o) { await tg(env, 'answerCallbackQuery', { callback_query_id: q.id, text: 'Topilmadi (eskirgan)' }); return; }
+      o.status = p[1] === 'ok' ? 'paid' : 'no'; o.doneAt = Date.now(); await env.PAYKV.put('ord:' + id, JSON.stringify(o), { expirationTtl: 30 * 86400 });
+      await tg(env, 'answerCallbackQuery', { callback_query_id: q.id, text: o.status === 'paid' ? '✅ Tasdiqlandi' : '❌ Rad etildi' });
+      try { await tg(env, 'editMessageCaption', { chat_id: chat, message_id: q.message.message_id, caption: (q.message.caption || '') + '\n\n' + (o.status === 'paid' ? "✅ TASDIQLANDI — mijozga Premium ochildi" : '❌ RAD ETILDI') }); } catch (_) {}
+      return;
+    }
     await tg(env, 'answerCallbackQuery', { callback_query_id: q.id });
     if (p[0] !== 'L') return;
     const l = p[1] === 'ru' ? 'ru' : 'uz', phone = p[2] || '', src = p[3] || '';
