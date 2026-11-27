@@ -5248,9 +5248,9 @@ function normCheck(v,A){ const out=[], g=rxGeom(v,A), add=(s,t,d)=>out.push({s,t
   <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line,#D6DEEA);font-size:14px;line-height:1.5">
    <b>Qanday ishlaydi?</b>
    <ol style="margin:6px 0 0;padding-left:20px">
-    <li>«To'lash»ni bosing — sizga <b>noyob summa</b> chiqadi (masalan 25 137 so'm).</li>
-    <li>Shu summani aynan o'zini kartaga o'tkazing — pul tushishi bilan Premium <b>bir necha soniyada o'zi ochiladi</b>.</li>
-    <li>Agar 10 daqiqada ochilmasa — chek rasmini yuklang, admin qo'lda tasdiqlaydi.</li>
+    <li>«To'lash»ni bosing va karta raqamiga <b>25 000 so'm</b> o'tkazing.</li>
+    <li>To'lov <b>chekining rasmini</b> (skrinshot) yuklab, «Chekni yuborish»ni bosing.</li>
+    <li>Admin chekni tekshirib tasdiqlaydi — keyin «Tekshirish»ni bosing, Premium ochiladi.</li>
     <li>Ruxsatdan keyin <b>2 ta uy</b> loyihasini to'liq chiqarasiz: reja, 3D, mebel va PDF.</li>
    </ol>
    <p class="note" style="margin:8px 0 0">Savol bo'lsa: Telegram <a href="https://t.me/amirhonsh" target="_blank" rel="noopener">@amirhonsh</a></p>
@@ -5329,7 +5329,9 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   const baseNum=()=>parseInt(String(PAY.price).replace(/\D/g,''),10)||25000;
   const fmtS=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+" so'm";
   let poll=0;
-  function autoOrder(){ const o=LS.get('autoPay',null); return o&&Date.now()-o.at<864e5&&o.base===baseNum()?o:null; }
+  const AUTO_PAY=false; /* avtomatik (SMS) to'lov o'chirilgan — faqat chek + admin tasdig'i */
+  if(!AUTO_PAY) try{ LS.set('autoPay',null); }catch(_){}
+  function autoOrder(){ if(!AUTO_PAY) return null; const o=LS.get('autoPay',null); return o&&Date.now()-o.at<864e5&&o.base===baseNum()?o:null; }
   async function autoNew(){ let o=autoOrder(); if(o) return o; try{ const r=await fetch(PAYAPI+'/pay/new',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({base:baseNum(),cid:cid()})}); const j=await r.json(); if(j.ok){ o={id:j.id,amount:j.amount,at:Date.now(),base:baseNum()}; LS.set('autoPay',o); return o; } }catch(_){} return null; }
   async function autoCheck(){ const o=autoOrder(); if(!o) return false; try{ const j=await (await fetch(PAYAPI+'/pay/st?id='+o.id,{cache:'no-store'})).json();
       if(j.status==='paid'){ const l=pays(); if(!l.some(x=>x.id==='auto_'+o.id)){ l.push({id:'auto_'+o.id,status:'ok'}); LS.set('pays',l); } LS.set('autoPay',null); clearInterval(poll); poll=0; badge();
@@ -5342,7 +5344,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   (function(){ const AND=/android/i.test(navigator.userAgent); const A={payme:'uz.dida.payme',click:'air.com.ssdsoftwaresolutions.clickuz'};
     document.querySelectorAll('[data-app]').forEach(a=>{ const pk=A[a.dataset.app]; if(AND){ a.href='intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package='+pk+';S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id='+pk)+';end'; a.removeAttribute('target'); } }); })();
   $p('payShow').onclick=async()=>{ $p('payExact').hidden=true; $p('payCopied').hidden=!cpTxt(PAY.card.replace(/\s/g,'')); $p('payAuto').hidden=true; $p('payPrice2').textContent=PAY.price; $p('payFileLbl').textContent='Chek rasmini yuklang';
-    const o=await autoNew(); if(o){ $p('payPrice2').textContent=fmtS(o.amount); const ex=$p('payExact'); ex.innerHTML='⚠️ Aynan <b style="font-size:20px">'+fmtS(o.amount)+'</b> o\'tkazing — oxirgi raqamlarigacha!<br>25 000 yoki boshqa summa o\'tkazsangiz, to\'lov <b>avtomatik o\'tmaydi</b>.'; ex.hidden=false; $p('payAuto').hidden=false; $p('payFileLbl').textContent="Avtomatik ochilmasa — chek rasmini yuklang"; autoPoll(5000); } };
+    const o=AUTO_PAY?await autoNew():null; if(o){ $p('payPrice2').textContent=fmtS(o.amount); const ex=$p('payExact'); ex.innerHTML='⚠️ Aynan <b style="font-size:20px">'+fmtS(o.amount)+'</b> o\'tkazing — oxirgi raqamlarigacha!<br>25 000 yoki boshqa summa o\'tkazsangiz, to\'lov <b>avtomatik o\'tmaydi</b>.'; ex.hidden=false; $p('payAuto').hidden=false; $p('payFileLbl').textContent="Avtomatik ochilmasa — chek rasmini yuklang"; autoPoll(5000); } };
   $p('payShow').addEventListener('click',()=>{ img=''; $p('payFile').value=''; $p('payPrev').hidden=true; $p('payPrev').removeAttribute('src'); $p('payDropTxt').hidden=false; $p('paySend').disabled=true; $p('payStep1').hidden=true; $p('payStep2').hidden=false; });
   $p('payCopy').onclick=()=>{ const ok=cpTxt(PAY.card.replace(/\s/g,'')); $p('payCopied').hidden=!ok; toast(ok?'Karta raqami nusxalandi':PAY.card); };
   async function shrink(file){ let src=null, w=0, h=0;
@@ -5362,7 +5364,9 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ const u=S.user||{};
       if(!(await cloudReady())){ /* server (Firebase) ishlamasa — chek Telegram bot orqali adminga boradi */
-        const r=await fetch(CHEKAPI+'/pay/chek',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per})}); const j=await r.json().catch(()=>({}));
+        const body=JSON.stringify({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per}); let r=null;
+        for(let k=0;k<3&&!r;k++){ try{ r=await fetch(CHEKAPI+'/pay/chek',{method:'POST',headers:{'Content-Type':'application/json'},body}); }catch(e1){ if(k===2) throw e1; await new Promise(z=>setTimeout(z,2500)); } }
+        const j=await r.json().catch(()=>({}));
         if(!j.ok) throw new Error(j.error==='too_many'?"Juda ko'p urinish":(j.error||('HTTP '+r.status)));
         const l=pays(); l.push({id:j.id,status:'pending',kv:1}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi ✅'); b.textContent='📤 Chekni yuborish'; return; }
       const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now(),...(LS.get('refBy','')?{ref:LS.get('refBy','')}:{})});
