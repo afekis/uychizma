@@ -5296,7 +5296,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   document.addEventListener('click',async e=>{ const b=e.target.closest('.refCopy'); if(!b) return; try{ await navigator.clipboard.writeText(refUrl()); toast('Havola nusxalandi'); }catch(_){ const i=b.parentNode.querySelector('.refLink'); i.select(); toast('Havolani belgilab nusxalang'); } });
   refUI(); setTimeout(bonusSync,2500);
   async function refresh(){ try{ await bonusSync(); }catch(_){} try{ await vipSync(); }catch(_){} const list=pays(); if(!list.some(x=>x.status==='pending')) return list;
-    for(const x of list) if(x.kv&&x.status==='pending'){ try{ const j=await (await fetch(PAYAPI+'/pay/st?id='+encodeURIComponent(x.id),{cache:'no-store'})).json(); if(j.status==='paid') x.status='ok'; else if(j.status==='no') x.status='no'; }catch(_){} }
+    for(const x of list) if(x.kv&&x.status==='pending'){ try{ const j=await (await fetch(CHEKAPI+'/pay/st?id='+encodeURIComponent(x.id),{cache:'no-store'})).json(); if(j.status==='paid') x.status='ok'; else if(j.status==='no') x.status='no'; }catch(_){} }
     LS.set('pays',list); if(!list.some(x=>!x.kv&&x.status==='pending')) return list; if(!(await cloudReady())) return list;
     for(const x of list) if(!x.kv&&x.status==='pending'){ try{ const d=await CLOUD.db.collection('pays').doc(x.id).get(); if(d.exists) x.status=d.data().status||'pending'; }catch(_){} }
     LS.set('pays',list); return list; }
@@ -5325,6 +5325,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   $p('payX').onclick=close; box.addEventListener('click',e=>{ if(e.target===box) close(); });
   /* --- Avto-to'lov: noyob summa, bank SMS orqali avtomatik tasdiq --- */
   const PAYAPI='https://uychizma-bot.macbookmmacbook.workers.dev';
+  const CHEKAPI='https://uychizma-pay.uychizma.workers.dev'; /* chek qabul qilish (yangi Cloudflare akkaunt) */
   const baseNum=()=>parseInt(String(PAY.price).replace(/\D/g,''),10)||25000;
   const fmtS=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+" so'm";
   let poll=0;
@@ -5361,7 +5362,7 @@ setTimeout(async()=>{ try{ if(await cloudReady()){ const d=await CLOUD.db.collec
   $p('paySend').onclick=async()=>{ if(!img) return; const b=$p('paySend'); b.disabled=true; b.textContent='Yuborilmoqda…'; $p('payErr').textContent='';
     try{ const u=S.user||{};
       if(!(await cloudReady())){ /* server (Firebase) ishlamasa — chek Telegram bot orqali adminga boradi */
-        const r=await fetch(PAYAPI+'/pay/chek',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per})}); const j=await r.json().catch(()=>({}));
+        const r=await fetch(CHEKAPI+'/pay/chek',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per})}); const j=await r.json().catch(()=>({}));
         if(!j.ok) throw new Error(j.error==='too_many'?"Juda ko'p urinish":(j.error||('HTTP '+r.status)));
         const l=pays(); l.push({id:j.id,status:'pending',kv:1}); LS.set('pays',l); img=''; view(); badge(); toast('Chek yuborildi ✅'); b.textContent='📤 Chekni yuborish'; return; }
       const ref=await CLOUD.db.collection('pays').add({cid:cid(),name:String(u.name||'').slice(0,60),phone:String(u.phone||'').slice(0,20),img,n:PAY.per,status:'pending',at:Date.now(),...(LS.get('refBy','')?{ref:LS.get('refBy','')}:{})});
