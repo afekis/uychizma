@@ -11,16 +11,49 @@ const IMG_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
 const safeUrl = u => /^https:\/\/[^\s"'<>]+$/i.test(String(u || '')) ? String(u) : '';
 
 /* ===== Kichik ma'lumotlar bazasi (Firebase o'rniga): sayt yozadi, admin o'qiydi ===== */
-const COLS = { regs: 'Ro\'yxatdan o\'tganlar', gens: 'Chiqarilgan loyihalar', feedback: 'Fikrlar (xabarlar)', reviews: 'Ochiq fikrlar', orders: 'Buyurtmalar', leads: 'Usta / Biznes so\'rovlari', ustalar: 'Ustalar', refs: 'Takliflar (referal)' };
+const COLS = { resets: 'Parol tiklash so\'rovlari', regs: 'Ro\'yxatdan o\'tganlar', gens: 'Chiqarilgan loyihalar', feedback: 'Fikrlar (xabarlar)', reviews: 'Ochiq fikrlar', orders: 'Buyurtmalar', leads: 'Usta / Biznes so\'rovlari', ustalar: 'Ustalar', refs: 'Takliflar (referal)' };
 const tsKey = () => String(9e15 - Date.now()).padStart(16, '0') + '-' + crypto.randomUUID().slice(0, 6);
 function clean(o, depth) { if (depth > 3) return null; if (o == null || typeof o === 'number' || typeof o === 'boolean') return o; if (typeof o === 'string') return o.slice(0, 3000); if (Array.isArray(o)) return o.slice(0, 30).map(x => clean(x, depth + 1)); if (typeof o === 'object') { const r = {}; for (const k of Object.keys(o).slice(0, 40)) r[String(k).slice(0, 40)] = clean(o[k], depth + 1); return r; } return null; }
 async function listCol(env, col, limit) { const ls = await env.PAYKV.list({ prefix: 'd:' + col + ':', limit: limit || 200 }); const out = []; for (const k of ls.keys) { const v = JSON.parse(await env.PAYKV.get(k.name) || 'null'); if (v) { v._id = k.name; out.push(v); } } return out; }
+
+/* ===== Akkauntlar (server tomonda, parol PBKDF2 bilan) ===== */
+const normLogin = l => String(l || '').trim().toLowerCase().slice(0, 80);
+async function pwHash(pass, salt) { const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(pass)), 'PBKDF2', false, ['deriveBits']); const b = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations: 100000 }, k, 256); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+const pubUser = a => ({ id: a.id, name: a.name, phone: a.phone, city: a.city, email: a.email || '' });
+async function ipLimit(env, key, max, ttl) { const n = +(await env.PAYKV.get(key) || 0); if (n >= max) return false; await env.PAYKV.put(key, String(n + 1), { expirationTtl: ttl }); return true; }
 
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors(req) });
     if (!env.PAYKV) return J(req, { ok: false, error: 'no_kv' }, 500);
+
+    if (url.pathname.startsWith('/acc/') && req.method === 'POST') {
+      const b = await req.json().catch(() => ({})); const ip = req.headers.get('CF-Connecting-IP') || ''; const login = normLogin(b.login);
+      if (!login || login.length < 5) return J(req, { ok: false, error: 'login' }, 400);
+      if (url.pathname === '/acc/reg') {
+        if (!(await ipLimit(env, 'rlreg:' + ip, 10, 3600))) return J(req, { ok: false, error: 'too_many' }, 429);
+        const pass = String(b.pass || ''); if (pass.length < 6 || pass.length > 100) return J(req, { ok: false, error: 'weak' }, 400);
+        if (await env.PAYKV.get('acc:' + login)) return J(req, { ok: false, error: 'exists' }, 409);
+        const salt = crypto.randomUUID(), a = { id: 'u' + crypto.randomUUID().replace(/-/g, '').slice(0, 15), login, name: String(b.name || '').slice(0, 60), phone: String(b.phone || '').slice(0, 20), city: String(b.city || '').slice(0, 40), email: String(b.email || '').slice(0, 80), salt, hash: await pwHash(pass, salt), at: Date.now() };
+        await env.PAYKV.put('acc:' + login, JSON.stringify(a));
+        await env.PAYKV.put('d:regs:' + tsKey(), JSON.stringify({ name: a.name, phone: a.phone, city: a.city, email: a.email, login, via: 'server', at: a.at }));
+        return J(req, { ok: true, user: pubUser(a) });
+      }
+      if (url.pathname === '/acc/login') {
+        if (!(await ipLimit(env, 'rllog:' + ip, 30, 3600))) return J(req, { ok: false, error: 'too_many' }, 429);
+        const a = JSON.parse(await env.PAYKV.get('acc:' + login) || 'null'); if (!a) return J(req, { ok: false, error: 'nouser' }, 404);
+        if (await pwHash(String(b.pass || ''), a.salt) !== a.hash) return J(req, { ok: false, error: 'badpass' }, 401);
+        return J(req, { ok: true, user: pubUser(a) });
+      }
+      if (url.pathname === '/acc/reset') {
+        if (!(await ipLimit(env, 'rlrst:' + ip, 5, 3600))) return J(req, { ok: false, error: 'too_many' }, 429);
+        const a = JSON.parse(await env.PAYKV.get('acc:' + login) || 'null'); if (!a) return J(req, { ok: false, error: 'nouser' }, 404);
+        await env.PAYKV.put('d:resets:' + tsKey(), JSON.stringify({ login, name: a.name, phone: a.phone, email: a.email, status: 'new', at: Date.now() }));
+        return J(req, { ok: true });
+      }
+      return J(req, { ok: false }, 404);
+    }
 
     if (url.pathname === '/db/add' && req.method === 'POST') {
       const b = await req.json().catch(() => ({})); const col = String(b.col || ''); if (!COLS[col]) return J(req, { ok: false, error: 'col' }, 400);
@@ -74,7 +107,9 @@ export default {
       const k = encodeURIComponent(env.ADMIN_KEY);
       const tab = url.searchParams.get('t') || 'chek';
       if (url.pathname === '/admin/act' && req.method === 'POST' && url.searchParams.get('t')) {
-        const f = await req.formData(); const id = String(f.get('id') || ''), a = String(f.get('a') || ''); if (/^d:(ustalar|leads|orders|reviews):/.test(id)) { const o = JSON.parse(await env.PAYKV.get(id) || 'null'); if (o) { if (a === 'del') await env.PAYKV.delete(id); else { if (a === 'hide') o.hidden = !o.hidden; else o.status = a === 'ok' ? 'ok' : a === 'no' ? 'no' : a === 'done' ? 'done' : o.status; await env.PAYKV.put(id, JSON.stringify(o)); } } }
+        const f = await req.formData(); const id = String(f.get('id') || ''), a = String(f.get('a') || '');
+        if (/^d:resets:/.test(id)) { const o = JSON.parse(await env.PAYKV.get(id) || 'null'); if (o) { if (a === 'del') await env.PAYKV.delete(id); else if (a === 'newpass') { const acc = JSON.parse(await env.PAYKV.get('acc:' + o.login) || 'null'); if (acc) { const np = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000)); acc.salt = crypto.randomUUID(); acc.hash = await pwHash(np, acc.salt); await env.PAYKV.put('acc:' + o.login, JSON.stringify(acc)); o.status = 'done'; o.newPass = np; await env.PAYKV.put(id, JSON.stringify(o), { expirationTtl: 7 * 86400 }); } } } return Response.redirect(url.origin + '/admin?k=' + k + '&t=resets', 303); }
+        if (/^d:(ustalar|leads|orders|reviews):/.test(id)) { const o = JSON.parse(await env.PAYKV.get(id) || 'null'); if (o) { if (a === 'del') await env.PAYKV.delete(id); else { if (a === 'hide') o.hidden = !o.hidden; else o.status = a === 'ok' ? 'ok' : a === 'no' ? 'no' : a === 'done' ? 'done' : o.status; await env.PAYKV.put(id, JSON.stringify(o)); } } }
         return Response.redirect(url.origin + '/admin?k=' + k + '&t=' + encodeURIComponent(tab), 303);
       }
       const NAV = `<nav>${[['chek', '🧾 Cheklar'], ...Object.entries(COLS).filter(([c]) => c !== 'refs')].map(([c, t]) => `<a href="/admin?k=${k}&t=${c}" ${c === tab ? 'class="on"' : ''}>${t}</a>`).join('')}</nav>`;
@@ -83,7 +118,7 @@ export default {
         const rows = await listCol(env, tab, 300); const fmtT = t => t ? new Date(t + 5 * 3600e3).toISOString().slice(0, 16).replace('T', ' ') : '';
         const cards = await Promise.all(rows.map(async r => { const img = r.imgId ? await env.PAYKV.get('img:' + r.imgId) || '' : ''; const skip = ['_id', 'at', 'imgId'];
           const body = Object.entries(r).filter(([kk, v]) => !skip.includes(kk) && v !== '' && v != null).map(([kk, v]) => `<div><small>${esc(kk)}:</small> ${(kk === 'link' || kk === 'project') && safeUrl(v) ? `<a href="${esc(safeUrl(v))}" target="_blank" rel="noopener noreferrer">ochish</a>` : esc(typeof v === 'object' ? JSON.stringify(v) : String(v))}</div>`).join('');
-          const acts = tab === 'ustalar' ? `<button name="a" value="ok" class="ok">✅ Ro'yxatga qo'shish</button><button name="a" value="no" class="no">❌ Rad etish</button>` : tab === 'reviews' ? `<button name="a" value="hide">${r.hidden ? '👁 Ko\'rsatish' : '🙈 Yashirish'}</button><button name="a" value="del" class="no">🗑 O'chirish</button>` : (tab === 'leads' || tab === 'orders') ? `<button name="a" value="done" class="ok">✅ Bajarildi</button><button name="a" value="del" class="no">🗑 O'chirish</button>` : '';
+          const acts = tab === 'ustalar' ? `<button name="a" value="ok" class="ok">✅ Ro'yxatga qo'shish</button><button name="a" value="no" class="no">❌ Rad etish</button>` : tab === 'reviews' ? `<button name="a" value="hide">${r.hidden ? '👁 Ko\'rsatish' : '🙈 Yashirish'}</button><button name="a" value="del" class="no">🗑 O'chirish</button>` : tab === 'resets' ? (r.status === 'done' ? `<button name="a" value="del" class="no">🗑 O'chirish</button>` : `<button name="a" value="newpass" class="ok">🔑 Yangi parol berish</button><button name="a" value="del" class="no">🗑 O'chirish</button>`) : (tab === 'leads' || tab === 'orders') ? `<button name="a" value="done" class="ok">✅ Bajarildi</button><button name="a" value="del" class="no">🗑 O'chirish</button>` : '';
           return `<div class="c">${img ? `<a href="${img}" target="_blank"><img src="${img}" alt=""></a>` : ''}<div class="i"><small>${fmtT(r.at)}</small>${body}${acts ? `<form method="post" action="/admin/act?k=${k}&t=${tab}"><input type="hidden" name="id" value="${esc(r._id)}">${acts}</form>` : ''}</div></div>`; }));
         return new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UyChizma — admin</title>${STYLE}<h1>⚙️ UyChizma admin — ${COLS[tab]} (${rows.length})</h1>${NAV}<div class="w">${cards.join('') || '<p>Hozircha yo\'q.</p>'}</div>`, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
       }
