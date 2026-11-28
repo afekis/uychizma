@@ -225,7 +225,7 @@ function fillCities(){ const r=$('fReg').value, prev=$('fCity').value;
   $('fCity').innerHTML='<option value="">Hammasi</option>'+set.map(c=>`<option>${esc(c)}</option>`).join(''); if(set.includes(prev)) $('fCity').value=prev; }
 const tel=p=>'tel:'+String(p).replace(/[^\d+]/g,'');
 const tgUrl=t=>{ const h=String(t).trim().replace(/^https?:\/\/t\.me\//,'').replace(/^@/,''); return /^[A-Za-z0-9_]{4,32}$/.test(h)?'https://t.me/'+h:''; };
-function card(u){ const tags=u.work.map(k=>`<span>${esc(WORK[k]||k)}</span>`).join('');
+function card(u){ const tags=(Array.isArray(u.work)?u.work:[]).map(k=>`<span>${esc(WORK[k]||k)}</span>`).join('');
   if(u.own){ const tg=tgUrl(u.tg);
     return `<div class="u own"><span class="av">${esc((u.name||'U').trim()[0]||'U')}</span><div class="body"><b>${esc(u.name)}${u.top?' ⭐':''}</b><span class="meta"><span class="src ok">✓ UyChizma ustasi</span>${esc([u.city,u.region].filter(Boolean).join(', '))}${u.exp?' · '+esc(u.exp):''}${u.team?' · '+esc(u.team):''}</span><div class="tags">${tags}</div>${u.about?`<div class="meta" style="margin-top:6px">${esc(String(u.about).slice(0,220))}</div>`:''}
       <div class="acts">${u.phone?`<a class="call" href="${esc(tel(u.phone))}">📞 ${esc(u.phone)}</a>`:''}${tg?`<a href="${esc(tg)}" target="_blank" rel="noopener">✈️ Telegram</a>`:''}<button type="button" class="pick" data-id="${esc(u.id)}" aria-pressed="${picked.has(u.id)}">${picked.has(u.id)?'✓ Tanlandi':'So\'rovga qo\'shish'}</button></div></div></div>`; }
