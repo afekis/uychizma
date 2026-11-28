@@ -4079,9 +4079,20 @@ $('#wizNext').onclick=()=>{
   saveDraft();
   if(S.step<NSTEP-1){ S.step++; renderStep(); return; }
   if(!S.A.seed) S.A.seed=1+Math.floor(Math.random()*90000);
+  if(!fitGuard()) return; /* uy yerga sig'masa — natija chiqarilmaydi, qizil bilan tushuntiriladi */
   if(!payGate(()=>{ generate(); show('result'); })) return;
   generate(); show('result');
 };
+/* Uy yer chegarasidan chiqib ketmasligi uchun tekshiruv */
+function overPlot(A){ try{ return buildVariants(Object.assign({},A)).some(v=>(v.notes||[]).some(n=>/chiqib ketishi/.test(n))); }catch(_){ return false; } }
+function fitGuard(){ const A=S.A; if(!overPlot(A)) return true;
+  const fl=+A.floors||1, bd=+A.beds||1, opts=[];
+  if(fl<2&&!overPlot(Object.assign({},A,{floors:2}))) opts.push({t:'🏢 2 qavatli qilish',p:{floors:2}});
+  for(let b=bd-1;b>=1;b--){ if(!overPlot(Object.assign({},A,{beds:b}))){ opts.push({t:`🛏 Yotoqxonani ${b} ta qilish`,p:{beds:b}}); break; } }
+  const e=$('#wizErr'); e.innerHTML=`<b>⚠️ Bu uy yeringizga sig'maydi.</b><br>Yeringiz eni ${fmt1(A.plotW)} m — ${fl} qavatda ${bd} ta yotoqxona joylashsa, uy yer chegarasidan chiqib ketadi. Uy chiroyli va to'g'ri chiqishi uchun quyidagilardan birini tanlang:`+
+    (opts.length?`<span style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">${opts.map((o,i)=>`<button type="button" class="btn ghost" data-fit="${i}" style="border-color:var(--danger);color:var(--danger)">${o.t}</button>`).join('')}</span>`:'<br>Yer kattaroq bo\'lishi kerak yoki xonalar sonini kamaytiring.');
+  e.style.fontSize='14px'; e.querySelectorAll('[data-fit]').forEach(b=>b.onclick=()=>{ Object.assign(S.A,opts[+b.dataset.fit].p); saveDraft(); try{ syncInputs(); syncQuick(); }catch(_){} e.textContent=''; $('#wizNext').click(); });
+  e.scrollIntoView({block:'center',behavior:'smooth'}); return false; }
 $('#editAnswers').onclick=()=>{ S.qmode='toliq'; S.step=0; renderStep(); show('wizard'); };
 
 /* ===== Arxitektor tekshiruvi arizasi + fikr bildirish (Firebase'ga yoziladi) ===== */
