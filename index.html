@@ -3380,11 +3380,20 @@ async function regSubmit(){ const btn=$('#regGo'); if(btn.disabled) return;
   finally{ btn.disabled=false; btn.textContent="Ro'yxatdan o'tish"; } }
 /* Vaqtinchalik: server (Firebase) to'xtatilgan bo'lsa — akkaunt shu qurilmada saqlanadi */
 async function passHash(p){ try{ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('uc|'+p)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }catch(_){ let h=0; for(const c of 'uc|'+p) h=(h*31+c.charCodeAt(0))|0; return 'x'+h; } }
-async function localReg(d){ const {name,phone,city,email,pass}=d; const acc=LS.get('localAcc',{})||{}; const h=await passHash(pass);
+async function accApi(p,b){ try{ const r=await fetch(UCDB+'/acc/'+p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}); return await r.json().catch(()=>({ok:false,error:'HTTP '+r.status})); }catch(_){ return {ok:false,error:'net'}; } }
+async function localReg(d){ const {name,phone,city,email,pass}=d;
+  /* avval serverda akkaunt ochiladi (boshqa qurilmadan ham kirish mumkin bo'ladi) */
+  const sv=await accApi('reg',{login:email,pass,name,phone,city,email:isTelMail(email)?'':email});
+  if(sv.error==='exists'){ $('#regErr').textContent="Bu raqam/Gmail bilan akkaunt allaqachon bor. «Akkauntim bor — kirish» ni bosing."; return false; }
+  if(sv.ok&&sv.user){ S.user={name,phone,city,email:isTelMail(email)?'':email,uid:sv.user.id,via:'server',at:Date.now()};
+    if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); LS.set('regSent',(name||'')+'|'+(phone||'')+'|'+(S.user.email||'')); $('#regErr').textContent=''; renderUser(); toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; } const acc=LS.get('localAcc',{})||{}; const h=await passHash(pass);
   const id='local-'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); acc[email]={name,phone,city,h,id,at:Date.now()}; LS.set('localAcc',acc);
   S.user={name,phone,city,email:isTelMail(email)?'':email,uid:id,via:'local',at:Date.now()};
   if(!S.A.region&&REGK[city]!==undefined) S.A.region=city; LS.set('user',S.user); $('#regErr').textContent=''; renderUser(); try{ cloudReg(); }catch(_){} toast("Ro'yxatdan o'tdingiz ✅"); go('start'); return true; }
-async function localLogin(id,pass){ const acc=(LS.get('localAcc',{})||{})[id]; if(!acc) return false; if(acc.h!==(await passHash(pass))) return 'bad';
+async function localLogin(id,pass){ const sv=await accApi('login',{login:id,pass});
+  if(sv.ok&&sv.user){ const u=sv.user; S.user={name:u.name,phone:u.phone,city:u.city,email:u.email||'',uid:u.id,via:'server',at:Date.now()}; LS.set('user',S.user); renderUser(); return true; }
+  if(sv.error==='badpass') return 'bad';
+  const acc=(LS.get('localAcc',{})||{})[id]; if(!acc) return false; if(acc.h!==(await passHash(pass))) return 'bad';
   S.user={name:acc.name,phone:acc.phone,city:acc.city,email:isTelMail(id)?'':id,uid:acc.id||('local-'+acc.h.slice(0,12)),via:'local',at:Date.now()}; LS.set('user',S.user); renderUser(); return true; }
 async function regCreate(d){ const {name,phone,city,email,pass}=d;
   try{ if(!(await cloudReady())){ if(CLOUD.down) return await localReg(d); throw {code:'auth/network-request-failed'}; }
@@ -3436,7 +3445,10 @@ $('#fpKGo').onclick=async()=>{ const code=otpVal(), b=$('#fpKGo'); if(b.disabled
     else { const r=await kodApi({action:'check',purpose:'reset',email:FPE,code}); if(!r.ok){ $('#otp').classList.add('bad'); $('#fpErrK').textContent=kodMsg(r); return; } $('#otp').classList.add('good'); FPC=code; $('#fpFor').innerHTML='Akkaunt: <b>'+esc(FPE)+'</b>'; $('#fpErr3').textContent=''; $('#fpPass').value=''; $('#fpSave').hidden=false; setTimeout(()=>{ fpGo('fp3'); setTimeout(()=>$('#fpPass').focus(),120); },350); } }
   finally{ b.disabled=false; b.textContent='✅ Tasdiqlash'; } };
 function boxClose(id){ const b=$(id); if(b.hidden) return; b.classList.add('closing'); setTimeout(()=>{ b.hidden=true; b.classList.remove('closing'); },240); }
-$('#logForgot').onclick=()=>{ if(CLOUD.down){ $('#logErr').innerHTML="Parolni tiklash vaqtincha ishlamayapti. Telegramda yozing: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a> — yordam beramiz."; return; } FPM='reset'; FP_N=0; $('#fpEmail').value=$('#logEmail').value.trim(); $('#fpErr1').textContent=''; ferr('fpEmail',''); fpShow(1); setTimeout(()=>$('#fpEmail').focus(),50); };
+$('#logForgot').onclick=async()=>{ if(CLOUD.down){ const raw=$('#logEmail').value.trim(), tel=telNorm(raw), id=tel?telMail(tel):raw.toLowerCase();
+    if(!raw){ $('#logErr').textContent="Avval telefon raqamingiz yoki Gmail'ingizni yozing, keyin «Parolni unutdingizmi?» ni bosing."; ferr('logEmail',' '); return; }
+    const r=await accApi('reset',{login:id});
+    $('#logErr').innerHTML=r.ok?"✅ So'rovingiz qabul qilindi. Admin siz bilan bog'lanib, yangi parol beradi. Tezroq kerak bo'lsa: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>":(r.error==='nouser'?"Bu raqam/Gmail bilan akkaunt topilmadi. Yangi akkaunt oching.":"Hozir yuborib bo'lmadi. Telegramda yozing: <a href='https://t.me/amirhonsh' target='_blank' rel='noopener'>@amirhonsh</a>"); return; } FPM='reset'; FP_N=0; $('#fpEmail').value=$('#logEmail').value.trim(); $('#fpErr1').textContent=''; ferr('fpEmail',''); fpShow(1); setTimeout(()=>$('#fpEmail').focus(),50); };
 $('#fpX').onclick=()=>{ boxClose('#fpBox'); FP_N=0; }; $('#fpBox').addEventListener('click',e=>{ if(e.target.id==='fpBox'){ boxClose('#fpBox'); FP_N=0; } });
 async function fpSend(){ const email=$('#fpEmail').value.trim().toLowerCase(), b=$('#fpSend'); $('#fpErr1').textContent=''; if(telNorm(email)){ ferr('fpEmail',"Telefon raqam bilan ochilgan akkaunt parolini tiklash uchun adminga yozing: Telegram @"+CONTACT_TG); return; } if(!ferr('fpEmail',okEmail(email)?'':"Gmail'ni to'g'ri yozing, masalan ism@gmail.com")) return;
   b.disabled=true; b.textContent='Yuborilmoqda…';
